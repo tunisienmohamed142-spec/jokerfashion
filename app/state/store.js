@@ -124,6 +124,9 @@ export async function createAdminProduct(productInput) {
     body: JSON.stringify({
       name: String(productInput.name || '').trim(),
       category: String(productInput.category || '').trim(),
+      targetGroup: String(productInput.targetGroup || '').trim(),
+      mainCategory: String(productInput.mainCategory || '').trim(),
+      subcategory: String(productInput.subcategory || productInput.category || '').trim(),
       priceSek: Number(productInput.priceSek),
       salePriceSek: productInput.salePriceSek ? Number(productInput.salePriceSek) : null,
       inventory: Number(productInput.inventory) || 0,
@@ -165,6 +168,9 @@ export async function createAdminCategory(input) {
       description: String(input.description || '').trim(),
       icon: String(input.icon || '🏷️').trim(),
       image: String(input.image || '').trim(),
+      targetGroup: String(input.targetGroup || '').trim(),
+      parentId: String(input.parentId || '').trim(),
+      level: String(input.level || 'subcategory').trim(),
     }),
   });
 }

@@ -1,23 +1,59 @@
 import { renderCartSummary, renderCategoryPills, renderProductGrid, renderProductSpotlight, showCartToast } from '../components/renderers.js';
-import { getCategoryById } from '../data/catalog.js';
+import {
+  buildCatalogUrl,
+  DEFAULT_TARGET_GROUP_ID,
+  formatTaxonomyPath,
+  getMainCategoriesForTargetGroup,
+  getSubcategoriesForMainCategory,
+  getTargetGroupById,
+  resolveProductTaxonomy,
+  TARGET_GROUPS,
+} from '../data/catalog.js';
 import { addCartItem, getCartSummary, getCatalogCategories, getCatalogProducts } from '../state/store.js';
 
-function getActiveCategoryId(categories) {
+function getCatalogState(categories) {
   const params = new URLSearchParams(window.location.search);
-  const fromQuery = params.get('category');
-  return categories.some((category) => category.id === fromQuery) ? fromQuery : categories[0]?.id;
+  const requestedMainCategoryId = params.get('category');
+  const inferredTargetGroupFromCategory = (requestedMainCategoryId || '').split('-')[0];
+  const legacyTargetGroup = requestedMainCategoryId;
+  const requestedTargetGroup =
+    params.get('targetGroup') ||
+    TARGET_GROUPS.find((targetGroup) => targetGroup.id === inferredTargetGroupFromCategory)?.id ||
+    legacyTargetGroup ||
+    DEFAULT_TARGET_GROUP_ID;
+  const targetGroup = getTargetGroupById(requestedTargetGroup);
+  const mainCategories = getMainCategoriesForTargetGroup(categories, targetGroup.id);
+  const activeMainCategory =
+    mainCategories.find((category) => category.id === requestedMainCategoryId) || mainCategories[0] || null;
+  const subcategories = getSubcategoriesForMainCategory(categories, activeMainCategory?.id);
+  const requestedSubcategoryId = params.get('subcategory');
+  const activeSubcategory =
+    subcategories.find((subcategory) => subcategory.id === requestedSubcategoryId) || subcategories[0] || null;
+
+  return {
+    targetGroup,
+    mainCategories,
+    activeMainCategory,
+    subcategories,
+    activeSubcategory,
+  };
 }
 
-function getActiveProductFromList(products, activeCategoryId) {
+function getCatalogProductsForSelection(products, categories, state) {
+  return products.filter((product) => {
+    const taxonomy = resolveProductTaxonomy(product, categories);
+    return (
+      taxonomy.targetGroupId === state.targetGroup.id &&
+      taxonomy.mainCategoryId === state.activeMainCategory?.id &&
+      taxonomy.subcategoryId === state.activeSubcategory?.id
+    );
+  });
+}
+
+function getActiveProductFromList(products) {
   const params = new URLSearchParams(window.location.search);
   const productId = params.get('product');
-  const selectedProduct = productId ? products.find((p) => p.id === productId) : null;
-
-  if (selectedProduct && selectedProduct.category === activeCategoryId) {
-    return selectedProduct;
-  }
-
-  return products[0] || null;
+  return (productId ? products.find((product) => product.id === productId) : null) || products[0] || null;
 }
 
 function sortProducts(products, sortValue) {
@@ -38,12 +74,10 @@ function sortProducts(products, sortValue) {
 
 export async function initCatalogPage() {
   const categories = await getCatalogCategories();
-  const activeCategoryId = getActiveCategoryId(categories);
-  const activeCategory = getCategoryById(activeCategoryId);
-
+  const state = getCatalogState(categories);
   const allProducts = await getCatalogProducts();
-  const allCategoryProducts = allProducts.filter((product) => product.category === activeCategoryId);
-  const activeProduct = getActiveProductFromList(allCategoryProducts, activeCategoryId);
+  const filteredProducts = getCatalogProductsForSelection(allProducts, categories, state);
+  const activeProduct = getActiveProductFromList(filteredProducts);
 
   const heading = document.querySelector('[data-catalog-heading]');
   const intro = document.querySelector('[data-catalog-intro]');
@@ -53,18 +87,48 @@ export async function initCatalogPage() {
   const spotlightContainer = document.querySelector('[data-catalog-spotlight]');
   const cartSummaryContainer = document.querySelector('[data-catalog-cart-summary]');
   const sortSelect = document.querySelector('[data-catalog-sort]');
+  const targetGroupTabs = document.querySelector('[data-catalog-target-groups]');
+  const mainCategoryTabs = document.querySelector('[data-catalog-main-categories]');
+  const subcategoryTabs = document.querySelector('[data-catalog-subcategories]');
+  const trail = document.querySelector('[data-catalog-trail]');
 
-  if (heading && activeCategory) {
-    heading.textContent = activeCategory.name;
+  document.querySelectorAll('[data-target-link]').forEach((link) => {
+    link.classList.toggle('active', link.getAttribute('data-target-link') === state.targetGroup.id);
+  });
+
+  if (heading) {
+    heading.textContent = state.targetGroup.name;
   }
 
-  if (intro && activeCategory) {
-    intro.textContent = activeCategory.description;
+  if (intro) {
+    intro.textContent =
+      formatTaxonomyPath(
+        {
+          targetGroup: state.targetGroup,
+          mainCategory: state.activeMainCategory,
+          subcategory: state.activeSubcategory,
+        },
+        { includeTargetGroup: false, separator: ' / ' }
+      ) || state.targetGroup.description;
+  }
+
+  if (trail) {
+    trail.textContent =
+      formatTaxonomyPath(
+        {
+          targetGroup: state.targetGroup,
+          mainCategory: state.activeMainCategory,
+          subcategory: state.activeSubcategory,
+        },
+        { includeTargetGroup: true, separator: ' / ' }
+      ) || state.targetGroup.name;
   }
 
   function updateProductCount(count) {
     if (productCount) {
-      productCount.textContent = `${count} ${count === 1 ? 'produkt' : 'produkter'} i ${activeCategory?.name || 'kategorin'}`;
+      const locationLabel =
+        state.activeSubcategory?.name || state.activeMainCategory?.name || state.targetGroup.name;
+      productCount.textContent = `${count} ${count === 1 ? 'produkt' : 'produkter'} i ${locationLabel}`;
     }
   }
 
@@ -73,16 +137,37 @@ export async function initCatalogPage() {
   }
 
   function renderSortedGrid(sortValue = 'default') {
-    const sorted = sortProducts(allCategoryProducts, sortValue);
+    const sorted = sortProducts(filteredProducts, sortValue);
     updateProductCount(sorted.length);
-    renderProductGrid(grid, sorted, { activeProductId: activeProduct?.id, enableQuickAdd: true });
+    renderProductGrid(grid, sorted, { activeProductId: activeProduct?.id, enableQuickAdd: true, categories });
   }
 
-  renderCategoryPills(document.querySelector('[data-catalog-categories]'), categories, activeCategoryId);
+  renderCategoryPills(targetGroupTabs, TARGET_GROUPS, state.targetGroup.id, {
+    getHref: (targetGroup) => buildCatalogUrl({ targetGroupId: targetGroup.id }),
+    pillClassName: 'pill pill--level-1',
+  });
+
+  renderCategoryPills(mainCategoryTabs, state.mainCategories, state.activeMainCategory?.id, {
+    getHref: (category) => buildCatalogUrl({ targetGroupId: state.targetGroup.id, mainCategoryId: category.id }),
+    pillClassName: 'pill pill--level-2',
+  });
+
+  renderCategoryPills(subcategoryTabs, state.subcategories, state.activeSubcategory?.id, {
+    getHref: (subcategory) =>
+      buildCatalogUrl({
+        targetGroupId: state.targetGroup.id,
+        mainCategoryId: state.activeMainCategory?.id,
+        subcategoryId: subcategory.id,
+      }),
+    pillClassName: 'pill pill--level-3',
+  });
+
   renderSortedGrid();
-  renderProductSpotlight(spotlightContainer, activeProduct);
+  renderProductSpotlight(spotlightContainer, activeProduct, { categories });
   renderCatalogCartSummary(
-    activeProduct ? `Lägg ${activeProduct.name} i varukorgen och fortsätt sedan till checkout.` : 'Välj en produkt för att börja shoppa.'
+    activeProduct
+      ? `Lägg ${activeProduct.name} i varukorgen och fortsätt sedan till checkout.`
+      : 'Välj en produkt för att börja shoppa.'
   );
 
   sortSelect?.addEventListener('change', (event) => {
@@ -96,7 +181,7 @@ export async function initCatalogPage() {
     }
 
     const productId = String(button.dataset.addToCart || '');
-    const product = allProducts.find((p) => p.id === productId);
+    const product = allProducts.find((candidate) => candidate.id === productId);
     if (!product) {
       return;
     }
@@ -152,4 +237,3 @@ export async function initCatalogPage() {
     }
   });
 }
-

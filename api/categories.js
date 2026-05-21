@@ -41,6 +41,9 @@ export default async function handler(req, res) {
       description: String(body.description || '').trim(),
       icon: String(body.icon || '🏷️').trim(),
       image: sanitizeRemoteImageUrl(body.image, ''),
+      targetGroup: String(body.targetGroup || '').trim(),
+      parentId: String(body.parentId || '').trim(),
+      level: String(body.level || 'subcategory').trim(),
       isAdminCreated: true,
     };
 

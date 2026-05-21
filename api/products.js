@@ -19,6 +19,9 @@ function sanitizeProductInput(input) {
   return {
     name: String(input.name || '').trim(),
     category: String(input.category || '').trim(),
+    targetGroup: String(input.targetGroup || '').trim(),
+    mainCategory: String(input.mainCategory || '').trim(),
+    subcategory: String(input.subcategory || input.category || '').trim(),
     priceSek,
     salePriceSek,
     inventory,

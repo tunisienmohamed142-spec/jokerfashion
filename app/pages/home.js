@@ -1,4 +1,5 @@
-import { renderCartSummary, renderCategoryPills, renderProductGrid, showCartToast } from '../components/renderers.js';
+import { renderCartSummary, renderProductGrid, showCartToast } from '../components/renderers.js';
+import { buildCatalogUrl, TARGET_GROUPS } from '../data/catalog.js';
 import { addCartItem, getCartSummary, getCatalogCategories, getCatalogProducts, getHomepageContent } from '../state/store.js';
 
 function escapeHtml(value) {
@@ -20,10 +21,9 @@ function sanitizeImageUrl(value) {
 }
 
 const categoryIcons = {
-  women: '👗',
-  men: '🧥',
-  kids: '🎒',
-  accessories: '👜',
+  kvinna: '👗',
+  man: '🧥',
+  barn: '🎒',
 };
 
 function renderCategoryCards(container, categories) {
@@ -33,17 +33,17 @@ function renderCategoryCards(container, categories) {
 
   container.innerHTML = categories
     .map(
-      (category) => {
-        const imageUrl = sanitizeImageUrl(category.image);
+      (targetGroup) => {
+        const imageUrl = sanitizeImageUrl(targetGroup.image);
         return `
-      <a class="category-card" href="catalog.html?category=${encodeURIComponent(category.id)}">
+      <a class="category-card" href="${buildCatalogUrl({ targetGroupId: targetGroup.id })}">
         ${
           imageUrl
-            ? `<img class="category-card-image" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(category.name)}" loading="lazy" />`
-            : `<span class="category-card-icon" aria-hidden="true">${categoryIcons[category.id] || category.icon || '🛍️'}</span>`
+            ? `<img class="category-card-image" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(targetGroup.name)}" loading="lazy" />`
+            : `<span class="category-card-icon" aria-hidden="true">${categoryIcons[targetGroup.id] || targetGroup.icon || '🛍️'}</span>`
         }
-        <h3>${escapeHtml(category.name)}</h3>
-        <p>${escapeHtml(category.description)}</p>
+        <h3>${escapeHtml(targetGroup.name)}</h3>
+        <p>${escapeHtml(targetGroup.description)}</p>
       </a>
     `;
       }
@@ -168,12 +168,19 @@ export async function initHomePage() {
   const categoryCardsContainer = document.querySelector('[data-home-category-cards]');
 
   applyHomepageContent(homepageContent);
-  renderCategoryCards(categoryCardsContainer, categories);
-  renderCategoryPills(document.querySelector('[data-home-categories]'), categories);
-  renderProductGrid(featuredGrid, displayProducts, { enableQuickAdd: true, quickAddLabel: 'Snabbköp' });
+  renderCategoryCards(categoryCardsContainer, TARGET_GROUPS);
+  renderProductGrid(featuredGrid, displayProducts, {
+    enableQuickAdd: true,
+    quickAddLabel: 'Snabbköp',
+    categories,
+  });
 
   if (newArrivalsGrid) {
-    renderProductGrid(newArrivalsGrid, newArrivals, { enableQuickAdd: true, quickAddLabel: 'Snabbköp' });
+    renderProductGrid(newArrivalsGrid, newArrivals, {
+      enableQuickAdd: true,
+      quickAddLabel: 'Snabbköp',
+      categories,
+    });
   }
 
   renderHomeCart(cartSummaryContainer);

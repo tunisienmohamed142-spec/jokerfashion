@@ -58,6 +58,14 @@ export default async function handler(req, res) {
         ...existing,
         name: body.name !== undefined ? String(body.name).trim() : existing.name,
         category: body.category !== undefined ? String(body.category).trim() : existing.category,
+        targetGroup:
+          body.targetGroup !== undefined ? String(body.targetGroup).trim() : (existing.targetGroup || ''),
+        mainCategory:
+          body.mainCategory !== undefined ? String(body.mainCategory).trim() : (existing.mainCategory || ''),
+        subcategory:
+          body.subcategory !== undefined
+            ? String(body.subcategory).trim()
+            : (existing.subcategory || existing.category),
         priceSek:
           body.priceSek !== undefined ? Number(body.priceSek) : existing.priceSek,
         salePriceSek:
