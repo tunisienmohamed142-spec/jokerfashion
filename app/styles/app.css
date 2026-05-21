@@ -334,6 +334,43 @@ main {
   padding: 0.2rem 0.5rem;
   border-radius: 999px;
   font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.product-badge--rea {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #fff;
+}
+
+.product-badge--ny {
+  background: var(--accent-alt);
+  border-color: var(--accent-alt);
+  color: #070510;
+}
+
+.product-badge--populär {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.product-badge--bestseller {
+  background: #c9a96e;
+  border-color: #c9a96e;
+  color: #070510;
+}
+
+.product-detail-badge-wrap {
+  position: absolute;
+  top: 0.8rem;
+  left: 0.8rem;
+}
+
+.product-detail-media {
+  position: relative;
 }
 
 .product-copy {
@@ -598,6 +635,17 @@ textarea {
   font-size: 2rem;
   font-weight: 700;
   color: var(--text);
+}
+
+.product-detail-price .price-sale {
+  color: var(--accent-alt);
+}
+
+.product-detail-price .price-original {
+  color: var(--text-muted);
+  font-size: 1.3rem;
+  font-weight: 400;
+  margin-left: 0.5rem;
 }
 
 .product-detail-highlights {
@@ -1231,6 +1279,70 @@ textarea {
   gap: 0.65rem;
   flex-wrap: wrap;
   align-items: center;
+}
+
+/* ── Admin merchandising flags ──────────────────────────── */
+.admin-merch-flags label {
+  margin-bottom: 0.4rem;
+  font-size: 0.86rem;
+}
+
+.merch-checkboxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 0.35rem;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  margin-bottom: 0;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: auto;
+  cursor: pointer;
+}
+
+/* ── Admin merch badge in table ─────────────────────────── */
+.merch-badge {
+  display: inline-block;
+  padding: 0.18rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border);
+}
+
+.merch-badge--rea {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #fff;
+}
+
+.merch-badge--ny {
+  background: var(--accent-alt);
+  border-color: var(--accent-alt);
+  color: #070510;
+}
+
+.merch-badge--populär {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.merch-badge--bestseller {
+  background: #c9a96e;
+  border-color: #c9a96e;
+  color: #070510;
 }
 
 /* ── Admin info panel ───────────────────────────────────── */

@@ -77,6 +77,7 @@
                     <th>Kategori</th>
                     <th>Pris</th>
                     <th>Lager</th>
+                    <th>Badge</th>
                     <th>Bild</th>
                     <th>Åtgärder</th>
                   </tr>
@@ -107,6 +108,33 @@
                 <div>
                   <label for="admin-sale-price">Reapris (SEK, valfritt)</label>
                   <input id="admin-sale-price" name="salePriceSek" type="number" min="0" placeholder="799" />
+                </div>
+                <div>
+                  <label for="admin-badge">Kampanjbadge</label>
+                  <select id="admin-badge" name="badge">
+                    <option value="">Ingen badge</option>
+                    <option value="REA">REA</option>
+                    <option value="Ny">Ny</option>
+                    <option value="Populär">Populär</option>
+                    <option value="Bestseller">Bestseller</option>
+                  </select>
+                </div>
+                <div class="full admin-merch-flags">
+                  <label>Merchandising-flaggor</label>
+                  <div class="merch-checkboxes">
+                    <label class="checkbox-label">
+                      <input type="checkbox" name="isNew" id="admin-is-new" />
+                      Nyhet
+                    </label>
+                    <label class="checkbox-label">
+                      <input type="checkbox" name="featured" id="admin-featured" />
+                      Featured
+                    </label>
+                    <label class="checkbox-label">
+                      <input type="checkbox" name="isBestseller" id="admin-is-bestseller" />
+                      Bestseller
+                    </label>
+                  </div>
                 </div>
                 <div>
                   <label for="admin-inventory">Lagerantal</label>
