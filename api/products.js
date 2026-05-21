@@ -1,5 +1,6 @@
 import { isKvAvailable, kvGet, kvSet } from './_kv.js';
 import { requireAdminSession } from './_auth.js';
+import { sanitizeRemoteImageUrl } from './_media.js';
 
 const KV_KEY = 'jf:products';
 
@@ -24,7 +25,7 @@ function sanitizeProductInput(input) {
           .map((s) => s.trim())
           .filter(Boolean)
       : ['One size'],
-    image: String(input.image || '').trim() || FALLBACK_IMAGE,
+    image: sanitizeRemoteImageUrl(input.image, FALLBACK_IMAGE),
   };
 }
 

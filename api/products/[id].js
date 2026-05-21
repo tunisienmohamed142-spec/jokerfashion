@@ -1,5 +1,6 @@
 import { isKvAvailable, kvGet, kvSet } from '../_kv.js';
 import { requireAdminSession } from '../_auth.js';
+import { sanitizeRemoteImageUrl } from '../_media.js';
 
 const KV_KEY = 'jf:products';
 
@@ -77,7 +78,7 @@ export default async function handler(req, res) {
                 .filter(Boolean)
             : existing.sizes,
         image:
-          body.image !== undefined ? String(body.image).trim() : existing.image,
+          body.image !== undefined ? sanitizeRemoteImageUrl(body.image, existing.image) : existing.image,
       };
 
       if (updated.salePriceSek !== null && updated.salePriceSek >= updated.priceSek) {

@@ -10,6 +10,15 @@ function escapeHtml(value) {
     .replaceAll("'", '&#39;');
 }
 
+function sanitizeImageUrl(value) {
+  try {
+    const parsed = new URL(String(value || '').trim());
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:' ? parsed.href : '';
+  } catch {
+    return '';
+  }
+}
+
 const categoryIcons = {
   women: '👗',
   men: '🧥',
@@ -24,13 +33,20 @@ function renderCategoryCards(container, categories) {
 
   container.innerHTML = categories
     .map(
-      (category) => `
+      (category) => {
+        const imageUrl = sanitizeImageUrl(category.image);
+        return `
       <a class="category-card" href="catalog.html?category=${encodeURIComponent(category.id)}">
-        <span class="category-card-icon" aria-hidden="true">${categoryIcons[category.id] || '🛍️'}</span>
+        ${
+          imageUrl
+            ? `<img class="category-card-image" src="${escapeHtml(imageUrl)}" alt="${escapeHtml(category.name)}" loading="lazy" />`
+            : `<span class="category-card-icon" aria-hidden="true">${categoryIcons[category.id] || category.icon || '🛍️'}</span>`
+        }
         <h3>${escapeHtml(category.name)}</h3>
         <p>${escapeHtml(category.description)}</p>
       </a>
-    `
+    `;
+      }
     )
     .join('');
 }

@@ -1,5 +1,6 @@
 import { isKvAvailable, kvGet, kvSet } from './_kv.js';
 import { requireAdminSession } from './_auth.js';
+import { sanitizeRemoteImageUrl } from './_media.js';
 
 const KV_KEY = 'jf:categories';
 
@@ -39,6 +40,7 @@ export default async function handler(req, res) {
       name: String(name).trim(),
       description: String(body.description || '').trim(),
       icon: String(body.icon || '🏷️').trim(),
+      image: sanitizeRemoteImageUrl(body.image, ''),
       isAdminCreated: true,
     };
 

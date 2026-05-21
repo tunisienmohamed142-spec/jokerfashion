@@ -29,6 +29,7 @@ JokerFashion är i **Rebuild Phase 2**: backend/API-lager för riktig datalagrin
 | POST | `/api/admin/login` | Admin-inloggning (sätter sessionscookie) |
 | POST | `/api/admin/logout` | Admin-utloggning (raderar sessionscookie) |
 | GET | `/api/admin/session` | Validera aktuell admin-session |
+| POST | `/api/admin/media-upload` | Skyddad bilduppladdning (Cloudinary) |
 
 ## Appstruktur (Phase 2)
 
@@ -101,11 +102,24 @@ Utan dessa variabler:
 - `ADMIN_PASSWORD` – starkt unikt admin-lösenord
 - `ADMIN_AUTH_SECRET` – lång slumpmässig signeringshemlighet för sessionscookies
 
+### Media upload (ny i detta steg)
+- `CLOUDINARY_CLOUD_NAME` – Cloudinary cloud name
+- `CLOUDINARY_API_KEY` – Cloudinary API-nyckel
+- `CLOUDINARY_API_SECRET` – Cloudinary API-hemlighet
+- `CLOUDINARY_UPLOAD_FOLDER` (valfritt) – standardmapp för uppladdningar (default: `jokerfashion/admin`)
+
 ## Kvar före DNS/live (pre-launch gaps)
 
-1. **Bilduppladdning** – admin anger bild-URL; nästa steg är riktig upload via t.ex. Vercel Blob / Cloudinary
-2. **Shipping kopplat till checkout** – fraktkostnader finns i settings men räknas inte in i checkout-totalen ännu
-3. **Orderhantering** – ordrar sparas inte i databasen; admin kan inte se inkomna ordrar
+1. **Shipping kopplat till checkout** – fraktkostnader finns i settings men räknas inte in i checkout-totalen ännu
+2. **Orderhantering** – ordrar sparas inte i databasen; admin kan inte se inkomna ordrar
+3. **CMS-kontroll av startsidans textblock** – hero/promotexter är fortfarande kodstyrda
+
+## Mediahantering i admin (detta PR-steg)
+
+- Produkter: admin kan ladda upp bildfiler (JPG/PNG/WEBP/GIF, max 3 MB), få direkt preview och spara URL automatiskt.
+- Kategorier: admin kan ladda upp kategoribild med samma flöde och visa den på startsidans kategorikort.
+- URL-fält för bilder finns kvar för bakåtkompatibilitet, men valideras till `http/https`.
+- Upload-endpointen är server-side skyddad med admin-session och lagrar bilder via Cloudinary (signerad server-uppladdning).
 
 ## Admin-auth och accesskontroll
 
