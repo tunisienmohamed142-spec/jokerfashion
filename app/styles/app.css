@@ -376,6 +376,27 @@ main {
   font-weight: 700;
 }
 
+.summary-breakdown {
+  margin-top: 0.55rem;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.summary-breakdown p {
+  margin: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.summary-breakdown .summary-total {
+  margin-top: 0.2rem;
+  padding-top: 0.45rem;
+  border-top: 1px solid var(--border);
+  font-size: 1rem;
+}
+
 .empty-state {
   padding: 1rem;
   border-radius: var(--radius-sm);

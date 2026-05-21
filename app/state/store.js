@@ -4,6 +4,14 @@ import { DEFAULT_HOME_CONTENT, mergeHomeContent } from '../data/home-content.js'
 const MOCK_SESSION_KEY = 'jokerfashion-auth-session';
 const CART_STORAGE_KEY = 'jokerfashion-cart';
 const CHECKOUT_DRAFT_KEY = 'jokerfashion-checkout-draft';
+export const DEFAULT_SHOP_SETTINGS = Object.freeze({
+  shippingRate: 49,
+  freeShippingThreshold: 799,
+  taxRate: 25,
+  currency: 'SEK',
+  shopEmail: '',
+  shopName: 'JokerFashion',
+});
 
 // ── localStorage helpers (cart / checkout / session only) ────────────────────
 
@@ -209,6 +217,61 @@ export async function setShopSettings(settings) {
     method: 'PUT',
     body: JSON.stringify(settings),
   });
+}
+
+function toNonNegativeNumber(value, fallbackValue) {
+  const numberValue = Number(value);
+  if (!Number.isFinite(numberValue) || numberValue < 0) {
+    return fallbackValue;
+  }
+  return numberValue;
+}
+
+export function normalizeShopSettings(settingsInput = {}) {
+  const currencyInput = String(settingsInput.currency ?? DEFAULT_SHOP_SETTINGS.currency).trim();
+  const freeShippingThresholdInput = settingsInput.freeShippingThreshold;
+  const hasFreeShippingThreshold =
+    freeShippingThresholdInput !== null &&
+    freeShippingThresholdInput !== undefined &&
+    String(freeShippingThresholdInput).trim() !== '';
+
+  return {
+    ...DEFAULT_SHOP_SETTINGS,
+    ...settingsInput,
+    shippingRate: toNonNegativeNumber(
+      settingsInput.shippingRate,
+      DEFAULT_SHOP_SETTINGS.shippingRate
+    ),
+    freeShippingThreshold: hasFreeShippingThreshold
+      ? toNonNegativeNumber(
+          settingsInput.freeShippingThreshold,
+          DEFAULT_SHOP_SETTINGS.freeShippingThreshold
+        )
+      : null,
+    taxRate: toNonNegativeNumber(settingsInput.taxRate, DEFAULT_SHOP_SETTINGS.taxRate),
+    currency: currencyInput || DEFAULT_SHOP_SETTINGS.currency,
+  };
+}
+
+export function calculateCartTotals(cartItems = getCartItems(), settingsInput = DEFAULT_SHOP_SETTINGS) {
+  const settings = normalizeShopSettings(settingsInput);
+  const items = Array.isArray(cartItems) ? cartItems : [];
+  const subtotalPrice = items.reduce((sum, item) => sum + item.priceSek * item.quantity, 0);
+  const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
+  const hasThreshold = Number.isFinite(settings.freeShippingThreshold);
+  const qualifiesForFreeShipping = hasThreshold && subtotalPrice >= settings.freeShippingThreshold;
+  const shippingPrice = subtotalPrice <= 0 || qualifiesForFreeShipping ? 0 : settings.shippingRate;
+
+  return {
+    itemCount,
+    subtotalPrice,
+    shippingPrice,
+    totalPrice: subtotalPrice + shippingPrice,
+    currency: settings.currency,
+    shippingRate: settings.shippingRate,
+    freeShippingThreshold: hasThreshold ? settings.freeShippingThreshold : null,
+    qualifiesForFreeShipping,
+  };
 }
 
 // ── Cart (localStorage-backed, synchronous) ───────────────────────────────────

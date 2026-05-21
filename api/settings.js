@@ -16,16 +16,11 @@ export default async function handler(req, res) {
   res.setHeader('Content-Type', 'application/json');
 
   if (req.method === 'GET') {
-    const session = requireAdminSession(req, res);
-    if (!session) {
-      return;
-    }
-
     try {
       const saved = (await kvGet(KV_KEY)) || {};
       return res.status(200).json({ ...DEFAULTS, ...saved });
-    } catch (err) {
-      return res.status(500).json({ message: 'Failed to fetch settings.', error: err.message });
+    } catch {
+      return res.status(200).json(DEFAULTS);
     }
   }
 
