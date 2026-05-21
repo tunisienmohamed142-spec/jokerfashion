@@ -6,7 +6,7 @@
     <title>Admin | JokerFashion</title>
     <meta
       name="description"
-      content="Admin foundation för produkt- och kategorihantering i JokerFashion rebuild phase 1."
+      content="Adminpanel för produkt-, kategori- och butikinställningar i JokerFashion."
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -33,72 +33,228 @@
     <main>
       <div class="container">
         <section class="hero">
-          <p class="eyebrow">Admin Studio Scaffold</p>
-          <h1>Produkt- och kategorihantering (foundation)</h1>
+          <p class="eyebrow">Admin Studio</p>
+          <h1>Hantera din butik</h1>
           <p>
-            Fas 1 ger ett första adminflöde för att lägga till produkter i lokal draft-data.
-            I nästa fas kopplas detta till databas och autentiserad admin-CRUD.
+            Skapa och redigera produkter, bygg egna kategorier och ställ in fraktkostnader direkt härifrån.
+            Data sparas i webbläsaren och kan kopplas till ett API när backend är redo.
           </p>
         </section>
 
-        <section class="page-section grid-2">
-          <article class="form-card">
-            <h2>Lägg till produkt i draft-katalog</h2>
-            <p class="small-note">Denna version sparar i localStorage för att validera informationsarkitekturen.</p>
-            <form class="form-grid" data-admin-product-form>
-              <div>
-                <label for="admin-name">Produktnamn</label>
-                <input id="admin-name" name="name" required />
-              </div>
-              <div>
-                <label for="admin-category">Kategori</label>
-                <select id="admin-category" name="category" data-admin-category required></select>
-              </div>
-              <div>
-                <label for="admin-price">Pris (SEK)</label>
-                <input id="admin-price" name="priceSek" type="number" min="1" required />
-              </div>
-              <div>
-                <label for="admin-image">Bild-URL (valfritt)</label>
-                <input id="admin-image" name="image" type="url" />
-              </div>
-              <div class="full">
-                <label for="admin-description">Kort produkttext</label>
-                <input id="admin-description" name="description" />
-              </div>
-              <div class="full">
-                <button class="button primary" type="submit">Spara draft-produkt</button>
-              </div>
-            </form>
-            <p class="notice" data-admin-feedback></p>
-          </article>
+        <!-- Tab navigation -->
+        <nav class="admin-tabs" aria-label="Adminsektioner">
+          <button class="admin-tab" data-admin-tab="products">🛍 Produkter</button>
+          <button class="admin-tab" data-admin-tab="categories">📂 Kategorier</button>
+          <button class="admin-tab" data-admin-tab="settings">⚙️ Frakt &amp; inställningar</button>
+        </nav>
 
-          <article class="panel">
-            <h2>Nästa adminsteg</h2>
-            <ul>
-              <li>Skydda route med riktig auth + admin-roll.</li>
-              <li>Koppla formulär till API/DB (create/update/delete).</li>
-              <li>Lägg till bildhantering och lagerstatus.</li>
-              <li>Versionera produktändringar per release.</li>
-            </ul>
-          </article>
-        </section>
+        <!-- ── PRODUCTS PANEL ─────────────────────────────────── -->
+        <div data-admin-panel="products">
 
-        <section class="page-section">
-          <div class="section-header">
-            <div>
-              <p class="eyebrow">Preview</p>
-              <h2>Aktiv katalog (inkl. admin drafts)</h2>
+          <!-- Products table -->
+          <section class="page-section">
+            <div class="section-header">
+              <div>
+                <p class="eyebrow">Produkthantering</p>
+                <h2>Dina adminprodukter</h2>
+              </div>
             </div>
-          </div>
-          <div class="product-grid" data-admin-product-preview></div>
-        </section>
+            <div class="admin-table-wrap">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Namn / Storlekar</th>
+                    <th>Kategori</th>
+                    <th>Pris</th>
+                    <th>Lager</th>
+                    <th>Bild</th>
+                    <th>Åtgärder</th>
+                  </tr>
+                </thead>
+                <tbody data-products-tbody></tbody>
+              </table>
+            </div>
+          </section>
+
+          <!-- Add / Edit product form -->
+          <section class="page-section">
+            <article class="form-card">
+              <h2 data-form-title>Lägg till produkt</h2>
+              <p class="small-note">Data sparas lokalt tills ett backend-API kopplas in.</p>
+              <form class="form-grid" data-admin-product-form novalidate>
+                <div>
+                  <label for="admin-name">Produktnamn *</label>
+                  <input id="admin-name" name="name" required placeholder="T.ex. Chaos Blazer" />
+                </div>
+                <div>
+                  <label for="admin-category">Kategori *</label>
+                  <select id="admin-category" name="category" data-admin-category required></select>
+                </div>
+                <div>
+                  <label for="admin-price">Ordinarie pris (SEK) *</label>
+                  <input id="admin-price" name="priceSek" type="number" min="1" required placeholder="999" />
+                </div>
+                <div>
+                  <label for="admin-sale-price">Reapris (SEK, valfritt)</label>
+                  <input id="admin-sale-price" name="salePriceSek" type="number" min="0" placeholder="799" />
+                </div>
+                <div>
+                  <label for="admin-inventory">Lagerantal</label>
+                  <input id="admin-inventory" name="inventory" type="number" min="0" value="0" placeholder="10" />
+                </div>
+                <div>
+                  <label for="admin-sizes">Storlekar (kommaseparerat)</label>
+                  <input id="admin-sizes" name="sizes" placeholder="XS, S, M, L, XL" />
+                </div>
+                <div class="full">
+                  <label for="admin-image">Bild-URL</label>
+                  <input id="admin-image" name="image" type="url" placeholder="https://…" />
+                </div>
+                <div class="full">
+                  <label for="admin-description">Produktbeskrivning</label>
+                  <input id="admin-description" name="description" placeholder="Kort beskrivning av produkten" />
+                </div>
+                <div class="full admin-form-actions">
+                  <button class="button primary" type="submit">
+                    <span data-submit-label>Lägg till produkt</span>
+                  </button>
+                  <button class="button secondary" type="button" data-cancel-edit hidden>
+                    Avbryt redigering
+                  </button>
+                </div>
+              </form>
+              <p class="notice" data-product-feedback></p>
+            </article>
+          </section>
+
+        </div><!-- /products panel -->
+
+        <!-- ── CATEGORIES PANEL ───────────────────────────────── -->
+        <div data-admin-panel="categories" hidden>
+
+          <!-- Categories table -->
+          <section class="page-section">
+            <div class="section-header">
+              <div>
+                <p class="eyebrow">Kategorihantering</p>
+                <h2>Alla kategorier</h2>
+              </div>
+            </div>
+            <div class="admin-table-wrap">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Ikon</th>
+                    <th>Namn</th>
+                    <th>Beskrivning</th>
+                    <th>Typ</th>
+                    <th>Åtgärder</th>
+                  </tr>
+                </thead>
+                <tbody data-categories-tbody></tbody>
+              </table>
+            </div>
+          </section>
+
+          <!-- Add / Edit category form -->
+          <section class="page-section">
+            <article class="form-card">
+              <h2 data-cat-form-title>Skapa kategori</h2>
+              <p class="small-note">Egna kategorier kan tilldelas dina adminprodukter.</p>
+              <form class="form-grid" data-admin-category-form novalidate>
+                <div>
+                  <label for="cat-name">Kategorinamn *</label>
+                  <input id="cat-name" name="catName" required placeholder="T.ex. Unisex" />
+                </div>
+                <div>
+                  <label for="cat-icon">Ikon (emoji)</label>
+                  <input id="cat-icon" name="catIcon" placeholder="🏷️" maxlength="4" />
+                </div>
+                <div class="full">
+                  <label for="cat-description">Beskrivning</label>
+                  <input id="cat-description" name="catDescription" placeholder="Kort beskrivning av kategorin" />
+                </div>
+                <div class="full admin-form-actions">
+                  <button class="button primary" type="submit">
+                    <span data-cat-submit-label>Skapa kategori</span>
+                  </button>
+                  <button class="button secondary" type="button" data-cancel-cat-edit hidden>
+                    Avbryt redigering
+                  </button>
+                </div>
+              </form>
+              <p class="notice" data-category-feedback></p>
+            </article>
+          </section>
+
+        </div><!-- /categories panel -->
+
+        <!-- ── SETTINGS PANEL ─────────────────────────────────── -->
+        <div data-admin-panel="settings" hidden>
+          <section class="page-section">
+            <div class="section-header">
+              <div>
+                <p class="eyebrow">Butiksinställningar</p>
+                <h2>Frakt &amp; övriga inställningar</h2>
+              </div>
+            </div>
+            <div class="grid-2">
+              <article class="form-card">
+                <h3>Frakt</h3>
+                <form class="form-grid" data-admin-settings-form novalidate>
+                  <div>
+                    <label for="setting-shipping-rate">Fast fraktkostnad (SEK)</label>
+                    <input id="setting-shipping-rate" name="shippingRate" type="number" min="0" />
+                  </div>
+                  <div>
+                    <label for="setting-free-shipping">Fri frakt från (SEK)</label>
+                    <input id="setting-free-shipping" name="freeShippingThreshold" type="number" min="0" />
+                  </div>
+                  <div>
+                    <label for="setting-tax-rate">Moms (%)</label>
+                    <input id="setting-tax-rate" name="taxRate" type="number" min="0" max="100" />
+                  </div>
+                  <div>
+                    <label for="setting-currency">Valuta</label>
+                    <input id="setting-currency" name="currency" maxlength="10" placeholder="SEK" />
+                  </div>
+                  <div>
+                    <label for="setting-shop-name">Butiksnamn</label>
+                    <input id="setting-shop-name" name="shopName" placeholder="JokerFashion" />
+                  </div>
+                  <div>
+                    <label for="setting-shop-email">Kontakt-e-post</label>
+                    <input id="setting-shop-email" name="shopEmail" type="email" placeholder="info@jokerfashion.se" />
+                  </div>
+                  <div class="full">
+                    <button class="button primary" type="submit">Spara inställningar</button>
+                  </div>
+                </form>
+                <p class="notice" data-settings-feedback></p>
+              </article>
+
+              <article class="panel admin-info-panel">
+                <h3>Vad dessa inställningar styr</h3>
+                <ul class="admin-info-list">
+                  <li><strong>Fast fraktkostnad</strong> – läggs till i kassan per order.</li>
+                  <li><strong>Fri frakt från</strong> – ordrar över detta belopp slipper fraktkostnad.</li>
+                  <li><strong>Moms</strong> – används vid prisdisplay och ordersammanfattning.</li>
+                  <li><strong>Valuta</strong> – visas bredvid priser i hela butiken.</li>
+                  <li><strong>Butiksnamn</strong> – visas i orderbekräftelser och mailutskick.</li>
+                  <li><strong>Kontakt-e-post</strong> – används i ordermail som avsändaradress.</li>
+                </ul>
+                <p class="small-note" style="margin-top: 1rem;">Nästa steg: koppla dessa inställningar till checkout och ordermailflödet.</p>
+              </article>
+            </div>
+          </section>
+        </div><!-- /settings panel -->
+
       </div>
     </main>
 
     <footer class="site-footer">
       <div class="container">
-        <p>Admin-funktionen i denna fas är en scaffold och avsiktligt utan persistent backend.</p>
+        <p>Adminpanelen sparar data lokalt. Backend-koppling planeras i nästa fas.</p>
       </div>
     </footer>
 
