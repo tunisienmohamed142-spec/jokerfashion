@@ -958,6 +958,216 @@ select {
   color: var(--accent-alt);
 }
 
+/* ── Admin tabs ─────────────────────────────────────────── */
+.admin-tabs {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 1.5rem;
+  padding: 0.4rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.admin-tab {
+  padding: 0.55rem 1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  background: none;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.admin-tab:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.admin-tab.is-active {
+  background: linear-gradient(135deg, var(--accent), #6c2ce6);
+  color: #fff;
+  border-color: transparent;
+}
+
+/* ── Admin data table ───────────────────────────────────── */
+.admin-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.admin-table th {
+  text-align: left;
+  padding: 0.7rem 0.9rem;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent-alt);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.admin-table td {
+  padding: 0.7rem 0.9rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  vertical-align: middle;
+  color: var(--text-muted);
+}
+
+.admin-table tr:last-child td {
+  border-bottom: none;
+}
+
+.admin-table tr:hover td {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.table-empty {
+  text-align: center;
+  padding: 2rem !important;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.table-product-name {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.table-sub {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 0.2rem;
+}
+
+.table-price {
+  white-space: nowrap;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.price-sale {
+  color: var(--accent-alt);
+}
+
+.price-original {
+  color: var(--text-muted);
+  font-weight: 400;
+  font-size: 0.84em;
+  margin-left: 0.3rem;
+}
+
+.table-img {
+  width: 60px;
+}
+
+.table-thumb {
+  width: 52px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  display: block;
+}
+
+.table-actions {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+/* ── Inventory badges ───────────────────────────────────── */
+.inv-badge {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.inv-badge.ok {
+  background: rgba(57, 255, 136, 0.18);
+  color: var(--accent-alt);
+  border: 1px solid rgba(57, 255, 136, 0.35);
+}
+
+.inv-badge.low {
+  background: rgba(255, 200, 59, 0.18);
+  color: #ffc83b;
+  border: 1px solid rgba(255, 200, 59, 0.35);
+}
+
+.inv-badge.out {
+  background: rgba(255, 63, 127, 0.18);
+  color: var(--danger);
+  border: 1px solid rgba(255, 63, 127, 0.35);
+}
+
+/* ── Danger button ──────────────────────────────────────── */
+.button.danger {
+  background: rgba(255, 63, 127, 0.15);
+  border-color: rgba(255, 63, 127, 0.45);
+  color: var(--danger);
+}
+
+.button.danger:hover {
+  background: rgba(255, 63, 127, 0.28);
+  border-color: var(--danger);
+  transform: translateY(-1px);
+  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+/* ── Small button variant ───────────────────────────────── */
+.btn-sm {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8rem;
+  border-radius: var(--radius-sm);
+}
+
+/* ── Admin form actions row ─────────────────────────────── */
+.admin-form-actions {
+  display: flex;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+/* ── Admin info panel ───────────────────────────────────── */
+.admin-info-panel h3 {
+  font-size: 1.05rem;
+  margin-bottom: 0.85rem;
+}
+
+.admin-info-list {
+  margin: 0;
+  padding-left: 1.2rem;
+  display: grid;
+  gap: 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+}
+
+.admin-info-list li strong {
+  color: var(--text);
+}
+
+/* ── Notice variants ────────────────────────────────────── */
+.notice-error {
+  color: var(--danger);
+}
+
 @media (max-width: 720px) {
   .nav-row {
     flex-direction: column;
@@ -1002,5 +1212,24 @@ select {
     right: 1rem;
     left: 1rem;
     max-width: none;
+  }
+
+  .admin-tabs {
+    gap: 0.35rem;
+  }
+
+  .admin-tab {
+    font-size: 0.82rem;
+    padding: 0.45rem 0.75rem;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    padding: 0.55rem 0.65rem;
+  }
+
+  .table-thumb {
+    width: 40px;
+    height: 50px;
   }
 }
