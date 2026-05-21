@@ -22,8 +22,10 @@ const initializers = {
 const pageKey = document.body.dataset.page;
 const initPage = initializers[pageKey];
 
-// Mega menu runs on every page
-initMegaMenu();
+// Mega menu runs on all pages except custom-designed homepage
+if (pageKey !== 'home') {
+  initMegaMenu();
+}
 
 if (typeof initPage === 'function') {
   Promise.resolve(initPage()).catch((err) => {

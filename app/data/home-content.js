@@ -2,13 +2,13 @@ const INTERNAL_BASE_URL = 'https://jokerfashion.local';
 
 export const DEFAULT_HOME_CONTENT = {
   hero: {
-    eyebrow: 'JokerFashion Signature',
-    title: 'Mode med ett vassare leende.',
-    body: 'Bär looks med mörk elegans, skarp silhuett och rå Joker-energi. Skapad för dig som vill väcka blickar direkt.',
-    primaryCtaLabel: 'Shoppa kampanjen',
+    eyebrow: 'Jokerfashion Collection',
+    title: 'Våga sticka ut. Våga Jokerfashion.',
+    body: 'En mörk och uttrycksfull stil med exklusiva detaljer för dig som vill bära något djärvare än mängden.',
+    primaryCtaLabel: 'Shoppa nu',
     primaryCtaHref: '/catalog.html',
-    secondaryCtaLabel: 'Se nya drops',
-    secondaryCtaHref: '/catalog.html?targetGroup=man',
+    secondaryCtaLabel: 'Se nyheter',
+    secondaryCtaHref: '/catalog.html',
   },
   highlight: {
     eyebrow: 'Trending now',
@@ -24,9 +24,9 @@ export const DEFAULT_HOME_CONTENT = {
     title: 'Shoppa efter målgrupp',
   },
   featuredSection: {
-    eyebrow: 'Populärt just nu',
-    title: 'Utvalda premiumprodukter',
-    ctaLabel: 'Se hela katalogen',
+    eyebrow: 'Trendande',
+    title: 'Populärt just nu',
+    ctaLabel: 'Se hela sortimentet',
     ctaHref: '/catalog.html',
   },
   newArrivalsSection: {
@@ -36,10 +36,10 @@ export const DEFAULT_HOME_CONTENT = {
     ctaHref: '/catalog.html',
   },
   footer: {
-    marketingLine: 'JokerFashion • Exklusiv modekänsla • Fri frakt över 999 kr • Leverans 2–4 dagar',
+    marketingLine: 'Jokerfashion',
     followTitle: 'Följ oss',
-    instagramUrl: 'https://www.instagram.com/jokerfashion',
-    tiktokUrl: 'https://www.tiktok.com/@jokerfashion',
+    instagramUrl: 'https://www.instagram.com/jokerfashion01',
+    tiktokUrl: 'https://www.tiktok.com/@joker.fashion.7',
   },
 };
 
