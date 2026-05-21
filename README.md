@@ -32,6 +32,9 @@ JokerFashion är i **Rebuild Phase 2**: backend/API-lager för riktig datalagrin
 | POST | `/api/admin/logout` | Admin-utloggning (raderar sessionscookie) |
 | GET | `/api/admin/session` | Validera aktuell admin-session |
 | POST | `/api/admin/media-upload` | Skyddad bilduppladdning (Cloudinary) |
+| GET | `/api/admin/orders` | Lista persisterade ordrar (admin) |
+| GET | `/api/admin/orders/:id` | Hämta orderdetaljer (admin) |
+| PATCH | `/api/admin/orders/:id` | Uppdatera orderstatus (admin) |
 | POST | `/api/send-order` | Skapa och persistera order + försöker skicka ordermail |
 
 ## Appstruktur (Phase 2)
@@ -61,6 +64,8 @@ JokerFashion är i **Rebuild Phase 2**: backend/API-lager för riktig datalagrin
 - `api/admin/login.js` – admin login endpoint
 - `api/admin/logout.js` – admin logout endpoint
 - `api/admin/session.js` – admin session validation endpoint
+- `api/admin/orders.js` – orderlista för admin
+- `api/admin/orders/[id].js` – orderdetaljer + statusuppdatering för admin
 
 ## Persistence-arkitektur
 
@@ -116,8 +121,8 @@ Utan dessa variabler:
 
 ## Kvar före DNS/live (pre-launch gaps)
 
-1. **Admin orderhantering** – ordrar persisteras nu i KV men adminvy/statusflöden för hantering byggs i nästa steg
-2. **Rikare homepage-CMS** – hero/highlight/rubriker/CTA är dynamiska, men fler block/ordning/fler homepage-bilder kan fortfarande byggas ut senare
+1. **Rikare homepage-CMS** – hero/highlight/rubriker/CTA är dynamiska, men fler block/ordning/fler homepage-bilder kan fortfarande byggas ut senare
+2. **Fördjupad orderdrift** – MVP-statusflöde finns nu (pending/paid/fulfilled/cancelled), men avancerad analys, batchhantering och fakturering ligger i senare faser
 
 ## Homepage CMS (detta PR-steg)
 
@@ -148,6 +153,9 @@ Utan dessa variabler:
   - `GET/PUT/DELETE /api/categories/:id`
   - `PUT /api/settings`
   - `PUT /api/content/home`
+  - `GET /api/admin/orders`
+  - `GET /api/admin/orders/:id`
+  - `PATCH /api/admin/orders/:id`
 
 ## Shipping i checkout (detta PR-steg)
 
@@ -167,7 +175,15 @@ Utan dessa variabler:
   - `totals` (subtotal, frakt, total, shipping rate/tröskel, valuta)
 - Befintligt mailflöde via Resend behålls: API:t försöker fortfarande skicka notis-mail när konfiguration finns.
 - Om mail misslyckas returneras ändå lyckat ordersvar så att ordern förblir durabelt sparad.
-- Nästa fas är admin order-view/management (lista ordrar, statusändringar och operativ hantering).
+
+## Admin orderhantering (detta PR-steg)
+
+- Ny **Orders-flik** i `admin.html` där admin kan:
+  - se persisterade ordrar i lista (orderreferens, kund, total, status, tidsstämpel)
+  - öppna orderdetaljer (kunddata, adress, orderrader, subtotal/frakt/total)
+  - uppdatera orderstatus via skyddat API (`pending`, `paid`, `fulfilled`, `cancelled`)
+- Alla order-endpoints kräver aktiv admin-session (`requireAdminSession`), samma säkerhetsmodell som övriga admin-API:er.
+- Om inga ordrar finns visas tydlig empty-state i adminpanelen.
 
 ## Migration från Phase 1
 
