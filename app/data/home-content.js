@@ -2,13 +2,13 @@ const INTERNAL_BASE_URL = 'https://jokerfashion.local';
 
 export const DEFAULT_HOME_CONTENT = {
   hero: {
-    eyebrow: 'JokerFashion Studio',
-    title: 'Mörk elegans i en ren premium-look',
-    body: 'Upptäck en modern modebutik med tydlig navigation, kuraterade kollektioner och subtil Joker-energi i varje detalj.',
-    primaryCtaLabel: 'Shoppa nu',
+    eyebrow: 'JokerFashion Signature',
+    title: 'Mode med ett vassare leende.',
+    body: 'Bär looks med mörk elegans, skarp silhuett och rå Joker-energi. Skapad för dig som vill väcka blickar direkt.',
+    primaryCtaLabel: 'Shoppa kampanjen',
     primaryCtaHref: '/catalog.html',
-    secondaryCtaLabel: 'Se kampanjer',
-    secondaryCtaHref: '/catalog.html?targetGroup=kvinna',
+    secondaryCtaLabel: 'Se nya drops',
+    secondaryCtaHref: '/catalog.html?targetGroup=man',
   },
   highlight: {
     eyebrow: 'Trending now',
@@ -37,6 +37,9 @@ export const DEFAULT_HOME_CONTENT = {
   },
   footer: {
     marketingLine: 'JokerFashion • Exklusiv modekänsla • Fri frakt över 999 kr • Leverans 2–4 dagar',
+    followTitle: 'Följ oss',
+    instagramUrl: 'https://www.instagram.com/jokerfashion',
+    tiktokUrl: 'https://www.tiktok.com/@jokerfashion',
   },
 };
 
@@ -148,6 +151,9 @@ export function mergeHomeContent(input = {}, baseContent = DEFAULT_HOME_CONTENT)
     },
     footer: {
       marketingLine: sanitizeText(source.footer?.marketingLine, baseContent.footer.marketingLine, 220),
+      followTitle: sanitizeText(source.footer?.followTitle, baseContent.footer.followTitle, 60),
+      instagramUrl: sanitizeContentLink(source.footer?.instagramUrl, baseContent.footer.instagramUrl),
+      tiktokUrl: sanitizeContentLink(source.footer?.tiktokUrl, baseContent.footer.tiktokUrl),
     },
   };
 }

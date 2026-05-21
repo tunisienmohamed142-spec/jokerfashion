@@ -139,7 +139,9 @@ Utan dessa variabler:
   - hero-överblick, rubrik, supporting text och båda hero-CTA:erna
   - highlight-/bannerkortets text och två CTA-länkar
   - rubriker/CTA för kategori-, featured- och nyhetssektionerna
-  - footerns sammanfattande marketingrad
+  - footerns sammanfattande marketingrad + social sektion
+- Sociala länkar för storefrontens **Följ oss** (Instagram/TikTok) styrs via Homepage CMS-fälten (`footerInstagramUrl`, `footerTiktokUrl`).
+- Default/fallback är säkra platshållare (`https://www.instagram.com/jokerfashion`, `https://www.tiktok.com/@jokerfashion`) och kan bytas utan kodändring via adminpanelen.
 - `index.html` läser detta dynamiskt via `/api/content/home` och faller tillbaka till säkra defaultvärden om inget är sparat eller API:t inte svarar.
 - Kategorikortens bilder fortsätter styras via kategori-adminen och produktgriderna fortsätter läsa riktiga katalog-/adminprodukter.
 

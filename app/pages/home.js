@@ -76,6 +76,14 @@ function setElementLink(selector, label, href) {
   }
 }
 
+function setFooterSocialLink(selector, href) {
+  const element = document.querySelector(selector);
+  if (!element || !href) {
+    return;
+  }
+  element.setAttribute('href', href);
+}
+
 function applyHomepageContent(content) {
   setElementText('[data-home-hero-eyebrow]', content.hero.eyebrow);
   setElementText('[data-home-hero-title]', content.hero.title);
@@ -117,6 +125,9 @@ function applyHomepageContent(content) {
   );
 
   setElementText('[data-home-footer-marketing]', content.footer.marketingLine);
+  setElementText('[data-home-follow-title]', content.footer.followTitle);
+  setFooterSocialLink('[data-home-instagram-link]', content.footer.instagramUrl);
+  setFooterSocialLink('[data-home-tiktok-link]', content.footer.tiktokUrl);
 }
 
 function handleAddToCart(event, allProducts, feedbackEl, cartSummaryContainer) {
