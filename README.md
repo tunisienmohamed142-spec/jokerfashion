@@ -26,6 +26,9 @@ JokerFashion är i **Rebuild Phase 2**: backend/API-lager för riktig datalagrin
 | DELETE | `/api/categories/:id` | Ta bort kategori |
 | GET | `/api/settings` | Hämta butiksinställningar |
 | PUT | `/api/settings` | Uppdatera butiksinställningar |
+| POST | `/api/admin/login` | Admin-inloggning (sätter sessionscookie) |
+| POST | `/api/admin/logout` | Admin-utloggning (raderar sessionscookie) |
+| GET | `/api/admin/session` | Validera aktuell admin-session |
 
 ## Appstruktur (Phase 2)
 
@@ -34,6 +37,7 @@ JokerFashion är i **Rebuild Phase 2**: backend/API-lager för riktig datalagrin
 - `checkout.html` – kundvagn + checkout
 - `account.html` – scaffold för konto/login-flöden
 - `admin.html` – adminpanel med API-backed CRUD
+- `admin-login.html` – admininloggning för skyddad panelåtkomst
 - `product.html` – produktdetaljsida
 - `app/main.js` – page-bootstrap per route (hanterar async init)
 - `app/pages/*` – sidinitiering per route (alla async)
@@ -47,6 +51,10 @@ JokerFashion är i **Rebuild Phase 2**: backend/API-lager för riktig datalagrin
 - `api/categories.js` – kategorier list + create
 - `api/categories/[id].js` – kategori get/update/delete
 - `api/settings.js` – butiksinställningar get + update
+- `api/_auth.js` – server-side admin-auth helper (credentials + sessionscookie)
+- `api/admin/login.js` – admin login endpoint
+- `api/admin/logout.js` – admin logout endpoint
+- `api/admin/session.js` – admin session validation endpoint
 
 ## Persistence-arkitektur
 
@@ -88,12 +96,27 @@ Utan dessa variabler:
 - `KV_REST_API_URL` – sätts automatiskt av Vercel KV
 - `KV_REST_API_TOKEN` – sätts automatiskt av Vercel KV
 
+### Admin-auth (ny i detta steg)
+- `ADMIN_USERNAME` – admin-användarnamn (t.ex. `admin`)
+- `ADMIN_PASSWORD` – starkt unikt admin-lösenord
+- `ADMIN_AUTH_SECRET` – lång slumpmässig signeringshemlighet för sessionscookies
+
 ## Kvar före DNS/live (pre-launch gaps)
 
-1. **Admin-autentisering** – adminpanelen är fortfarande öppen; nästa steg är inloggning + rollbaserad access
-2. **Bilduppladdning** – admin anger bild-URL; nästa steg är riktig upload via t.ex. Vercel Blob / Cloudinary
-3. **Shipping kopplat till checkout** – fraktkostnader finns i settings men räknas inte in i checkout-totalen ännu
-4. **Orderhantering** – ordrar sparas inte i databasen; admin kan inte se inkomna ordrar
+1. **Bilduppladdning** – admin anger bild-URL; nästa steg är riktig upload via t.ex. Vercel Blob / Cloudinary
+2. **Shipping kopplat till checkout** – fraktkostnader finns i settings men räknas inte in i checkout-totalen ännu
+3. **Orderhantering** – ordrar sparas inte i databasen; admin kan inte se inkomna ordrar
+
+## Admin-auth och accesskontroll
+
+- `admin.html` är nu gated via server-validerad admin-session (`/api/admin/session`)
+- Obehöriga användare omdirigeras till `admin-login.html`
+- Följande admin-endpoints kräver autentiserad adminsessionscookie:
+  - `POST /api/products`
+  - `GET/PUT/DELETE /api/products/:id`
+  - `POST /api/categories`
+  - `GET/PUT/DELETE /api/categories/:id`
+  - `GET/PUT /api/settings`
 
 ## Migration från Phase 1
 

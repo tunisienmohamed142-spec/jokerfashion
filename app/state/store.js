@@ -23,6 +23,7 @@ function saveStorageItem(storageKey, value) {
 
 async function apiFetch(path, options = {}) {
   const res = await fetch(path, {
+    credentials: 'same-origin',
     ...options,
     headers: {
       'Content-Type': 'application/json',
@@ -42,6 +43,31 @@ async function apiFetch(path, options = {}) {
   }
 
   return res.json();
+}
+
+// ── Admin auth (API-backed) ───────────────────────────────────────────────────
+
+export async function getAdminSession() {
+  return apiFetch('/api/admin/session', {
+    cache: 'no-store',
+  });
+}
+
+export async function loginAdmin({ username, password }) {
+  return apiFetch('/api/admin/login', {
+    method: 'POST',
+    body: JSON.stringify({
+      username: String(username || '').trim(),
+      password: String(password || ''),
+    }),
+  });
+}
+
+export async function logoutAdmin() {
+  return apiFetch('/api/admin/logout', {
+    method: 'POST',
+    body: JSON.stringify({}),
+  });
 }
 
 // ── Admin products (API-backed) ───────────────────────────────────────────────
@@ -265,4 +291,3 @@ export function setMockSession(role) {
 export function clearMockSession() {
   localStorage.removeItem(MOCK_SESSION_KEY);
 }
-

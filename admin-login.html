@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="sv">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Login | JokerFashion</title>
+    <meta
+      name="description"
+      content="Säker inloggning för JokerFashion-admin med server-side sessionsvalidering."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="app/styles/app.css" />
+  </head>
+  <body data-page="admin-login">
+    <header class="site-header">
+      <div class="container nav-row">
+        <a class="brand" href="index.html">Joker<span>Fashion</span></a>
+        <nav class="main-nav" aria-label="Huvudnavigation">
+          <a class="nav-link" href="index.html">Hem</a>
+          <a class="nav-link" href="catalog.html">Katalog</a>
+          <a class="nav-link" href="checkout.html">Varukorg <span class="cart-count" data-cart-count>0</span></a>
+          <a class="nav-link" href="account.html">Konto</a>
+          <a class="nav-link active" href="admin-login.html">Admin</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <div class="container">
+        <section class="hero">
+          <p class="eyebrow">Admin Access</p>
+          <h1>Logga in som admin</h1>
+          <p>Endast behörig administratör får åtkomst till butikens hanteringspanel.</p>
+        </section>
+
+        <section class="page-section">
+          <article class="form-card">
+            <h2>Admininloggning</h2>
+            <form class="form-grid" data-admin-login-form novalidate>
+              <div>
+                <label for="admin-login-username">Användarnamn</label>
+                <input id="admin-login-username" name="username" autocomplete="username" required />
+              </div>
+              <div>
+                <label for="admin-login-password">Lösenord</label>
+                <input
+                  id="admin-login-password"
+                  name="password"
+                  type="password"
+                  autocomplete="current-password"
+                  required
+                />
+              </div>
+              <div class="full admin-form-actions">
+                <button class="button primary" type="submit">Logga in</button>
+                <a class="button secondary" href="index.html">Till startsidan</a>
+              </div>
+            </form>
+            <p class="notice" data-admin-login-feedback></p>
+          </article>
+        </section>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <p>Inloggning använder säker, httpOnly sessionscookie och server-side accesskontroll.</p>
+      </div>
+    </footer>
+
+    <script type="module" src="app/main.js"></script>
+  </body>
+</html>
