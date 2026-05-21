@@ -49,6 +49,22 @@ function getOrderData() {
   };
 }
 
+function clearOrderState() {
+  cart.length = 0;
+  renderCart();
+
+  if (orderForm) {
+    orderForm.reset();
+  }
+
+  productCards.forEach((card) => {
+    const quantityField = card.querySelector('.product-qty');
+    if (quantityField) {
+      quantityField.value = '1';
+    }
+  });
+}
+
 function renderCart() {
   if (!cartItemsContainer || !cartCount || !cartTotalItems || !cartTotalPrice) {
     return;
@@ -260,8 +276,9 @@ if (orderForm) {
 
     try {
       await sendOrderEmail(orderData);
+      clearOrderState();
       if (orderStatus) {
-        orderStatus.textContent = 'Beställningen har skickats till mejl och är klar för PDF.';
+        orderStatus.textContent = 'Beställningen har skickats. Varukorgen och formuläret har tömts.';
       }
     } catch (error) {
       console.error(error);
