@@ -33,14 +33,16 @@ function getOrderData() {
   }));
 
   return {
-    firstName: formData.get('firstName')?.toString().trim() || '',
-    lastName: formData.get('lastName')?.toString().trim() || '',
-    email: formData.get('email')?.toString().trim() || '',
-    phone: formData.get('phone')?.toString().trim() || '',
-    address: formData.get('address')?.toString().trim() || '',
-    postalCode: formData.get('postalCode')?.toString().trim() || '',
-    city: formData.get('city')?.toString().trim() || '',
-    message: formData.get('message')?.toString().trim() || '',
+    customer: {
+      firstName: formData.get('firstName')?.toString().trim() || '',
+      lastName: formData.get('lastName')?.toString().trim() || '',
+      email: formData.get('email')?.toString().trim() || '',
+      phone: formData.get('phone')?.toString().trim() || '',
+      address: formData.get('address')?.toString().trim() || '',
+      postalCode: formData.get('postalCode')?.toString().trim() || '',
+      city: formData.get('city')?.toString().trim() || '',
+      message: formData.get('message')?.toString().trim() || '',
+    },
     items: orderItems,
     totalPrice: orderItems.reduce((sum, item) => sum + item.subtotal, 0),
     totalItems: orderItems.reduce((sum, item) => sum + item.quantity, 0),
@@ -111,19 +113,19 @@ function createPdf(orderData) {
   y += 10;
 
   doc.setFontSize(11);
-  doc.text(`Kund: ${orderData.firstName} ${orderData.lastName}`, 14, y);
+  doc.text(`Kund: ${orderData.customer.firstName} ${orderData.customer.lastName}`, 14, y);
   y += 7;
-  doc.text(`E-post: ${orderData.email}`, 14, y);
+  doc.text(`E-post: ${orderData.customer.email}`, 14, y);
   y += 7;
-  doc.text(`Telefon: ${orderData.phone}`, 14, y);
+  doc.text(`Telefon: ${orderData.customer.phone}`, 14, y);
   y += 7;
-  doc.text(`Adress: ${orderData.address}`, 14, y);
+  doc.text(`Adress: ${orderData.customer.address}`, 14, y);
   y += 7;
-  doc.text(`Postnummer/Stad: ${orderData.postalCode} ${orderData.city}`, 14, y);
+  doc.text(`Postnummer/Stad: ${orderData.customer.postalCode} ${orderData.customer.city}`, 14, y);
   y += 10;
 
-  if (orderData.message) {
-    doc.text(`Meddelande: ${orderData.message}`, 14, y);
+  if (orderData.customer.message) {
+    doc.text(`Meddelande: ${orderData.customer.message}`, 14, y);
     y += 10;
   }
 
@@ -167,6 +169,37 @@ function createPdf(orderData) {
   doc.save(`jokerfashion-bestallning-${Date.now()}.pdf`);
 }
 
+function hasRequiredCustomerFields(orderData) {
+  const { customer } = orderData;
+  return Boolean(
+    customer.firstName &&
+      customer.lastName &&
+      customer.email &&
+      customer.phone &&
+      customer.address &&
+      customer.postalCode &&
+      customer.city
+  );
+}
+
+async function sendOrderEmail(orderData) {
+  const response = await fetch('/api/send-order', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(orderData),
+  });
+
+  const result = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(result.message || 'Det gick inte att skicka beställningen.');
+  }
+
+  return result;
+}
+
 productCards.forEach((card) => {
   const addButton = card.querySelector('.add-to-cart');
   const sizeField = card.querySelector('.product-select');
@@ -199,7 +232,7 @@ productCards.forEach((card) => {
 });
 
 if (orderForm) {
-  orderForm.addEventListener('submit', (event) => {
+  orderForm.addEventListener('submit', async (event) => {
     event.preventDefault();
 
     if (cart.length === 0) {
@@ -214,34 +247,27 @@ if (orderForm) {
       return;
     }
 
-    const lines = orderData.items
-      .map(
-        (item) =>
-          `${item.name} | ${item.category} | ${item.size} | antal ${item.quantity} | ${formatPrice(item.subtotal)}`
-      )
-      .join('\n');
-
-    const orderSummary = [
-      'Ny beställning från JokerFashion',
-      '',
-      `Kund: ${orderData.firstName} ${orderData.lastName}`,
-      `E-post: ${orderData.email}`,
-      `Telefon: ${orderData.phone}`,
-      `Adress: ${orderData.address}`,
-      `Postnummer: ${orderData.postalCode}`,
-      `Stad: ${orderData.city}`,
-      orderData.message ? `Meddelande: ${orderData.message}` : 'Meddelande: -',
-      '',
-      'Produkter:',
-      lines,
-      '',
-      `Totalsumma: ${formatPrice(orderData.totalPrice)}`,
-    ].join('\n');
-
-    console.log(orderSummary);
+    if (!hasRequiredCustomerFields(orderData)) {
+      if (orderStatus) {
+        orderStatus.textContent = 'Fyll i alla kunduppgifter innan du skickar beställningen.';
+      }
+      return;
+    }
 
     if (orderStatus) {
-      orderStatus.textContent = 'Beställningen är sammanställd. Du kan nu ladda ner PDF-filen.';
+      orderStatus.textContent = 'Skickar beställningen...';
+    }
+
+    try {
+      await sendOrderEmail(orderData);
+      if (orderStatus) {
+        orderStatus.textContent = 'Beställningen har skickats till mejl och är klar för PDF.';
+      }
+    } catch (error) {
+      console.error(error);
+      if (orderStatus) {
+        orderStatus.textContent = error.message || 'Det gick inte att skicka beställningen.';
+      }
     }
   });
 }
@@ -261,7 +287,7 @@ if (downloadPdfButton) {
       return;
     }
 
-    if (!orderData.firstName || !orderData.lastName || !orderData.email || !orderData.phone || !orderData.address || !orderData.postalCode || !orderData.city) {
+    if (!hasRequiredCustomerFields(orderData)) {
       if (orderStatus) {
         orderStatus.textContent = 'Fyll i alla kunduppgifter innan du laddar ner PDF.';
       }
