@@ -21,9 +21,9 @@ function sanitizeImageUrl(value) {
 }
 
 const categoryIcons = {
-  kvinna: '👗',
-  man: '🧥',
-  barn: '🎒',
+  kvinna: 'K',
+  man: 'M',
+  barn: 'B',
 };
 
 function renderCategoryCards(container, categories) {
