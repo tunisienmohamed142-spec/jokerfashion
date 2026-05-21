@@ -32,6 +32,7 @@ JokerFashion är i **Rebuild Phase 2**: backend/API-lager för riktig datalagrin
 | POST | `/api/admin/logout` | Admin-utloggning (raderar sessionscookie) |
 | GET | `/api/admin/session` | Validera aktuell admin-session |
 | POST | `/api/admin/media-upload` | Skyddad bilduppladdning (Cloudinary) |
+| POST | `/api/send-order` | Skapa och persistera order + försöker skicka ordermail |
 
 ## Appstruktur (Phase 2)
 
@@ -115,7 +116,7 @@ Utan dessa variabler:
 
 ## Kvar före DNS/live (pre-launch gaps)
 
-1. **Orderhantering** – ordrar sparas fortfarande inte i databasen; admin kan ännu inte se inkomna ordrar
+1. **Admin orderhantering** – ordrar persisteras nu i KV men adminvy/statusflöden för hantering byggs i nästa steg
 2. **Rikare homepage-CMS** – hero/highlight/rubriker/CTA är dynamiska, men fler block/ordning/fler homepage-bilder kan fortfarande byggas ut senare
 
 ## Homepage CMS (detta PR-steg)
@@ -155,6 +156,18 @@ Utan dessa variabler:
 - Fri-frakt-regeln appliceras automatiskt när subtotal når tröskeln i settings.
 - Vid settings-fel används säkra fallback-värden så checkout fortsätter fungera.
 - Nästa commerce-steg för MVP är order persistence + admin order management.
+
+## Order persistence i checkout (detta PR-steg)
+
+- Checkout-submission via `POST /api/send-order` skapar nu en riktig orderpost i Vercel KV (`jf:orders`).
+- Persisterad order innehåller:
+  - `id`, mänsklig `orderReference`, `status` (initialt `pending`), `createdAt`, `updatedAt`
+  - `customer` + `shippingAddress`
+  - normaliserade `items` (produkt-id, namn, kategori, storlek, antal, enhetspris, radsubtotal)
+  - `totals` (subtotal, frakt, total, shipping rate/tröskel, valuta)
+- Befintligt mailflöde via Resend behålls: API:t försöker fortfarande skicka notis-mail när konfiguration finns.
+- Om mail misslyckas returneras ändå lyckat ordersvar så att ordern förblir durabelt sparad.
+- Nästa fas är admin order-view/management (lista ordrar, statusändringar och operativ hantering).
 
 ## Migration från Phase 1
 
