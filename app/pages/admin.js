@@ -235,6 +235,10 @@ async function renderProductsTable() {
         const displayPrice = p.salePriceSek
           ? `<span class="price-sale">${formatPrice(p.salePriceSek)}</span> <s class="price-original">${formatPrice(p.priceSek)}</s>`
           : formatPrice(p.priceSek);
+        const effectiveBadge = p.salePriceSek ? 'REA' : (p.badge || '');
+        const badgeCell = effectiveBadge
+          ? `<span class="merch-badge merch-badge--${escapeHtml(effectiveBadge.toLowerCase())}">${escapeHtml(effectiveBadge)}</span>`
+          : '–';
         return `
         <tr data-product-row="${escapeHtml(p.id)}">
           <td>
@@ -244,6 +248,7 @@ async function renderProductsTable() {
           <td>${escapeHtml(catMap[p.category] || p.category)}</td>
           <td class="table-price">${displayPrice}</td>
           <td>${inventoryBadge(p.inventory)}</td>
+          <td>${badgeCell}</td>
           <td class="table-img">
             ${p.image ? `<img src="${escapeHtml(p.image)}" alt="" class="table-thumb" loading="lazy" />` : '–'}
           </td>
@@ -275,6 +280,16 @@ function populateProductEditForm(product) {
   setImagePreview('product', product.image || '');
   form.querySelector('[name="description"]').value = product.description || '';
   form.querySelector('[name="sizes"]').value = product.sizes.join(', ');
+  const badgeSelect = form.querySelector('[name="badge"]');
+  if (badgeSelect) {
+    badgeSelect.value = product.badge || '';
+  }
+  const isNewCheck = form.querySelector('[name="isNew"]');
+  if (isNewCheck) isNewCheck.checked = Boolean(product.isNew);
+  const featuredCheck = form.querySelector('[name="featured"]');
+  if (featuredCheck) featuredCheck.checked = Boolean(product.featured);
+  const isBestsellerCheck = form.querySelector('[name="isBestseller"]');
+  if (isBestsellerCheck) isBestsellerCheck.checked = Boolean(product.isBestseller);
   const catSelect = form.querySelector('[data-admin-category]');
   if (catSelect) {
     catSelect.value = product.category;
@@ -354,6 +369,10 @@ async function initProductsTab() {
     const image = String(data.get('image') || '').trim();
     const description = String(data.get('description') || '').trim();
     const sizes = String(data.get('sizes') || '').trim();
+    const badge = String(data.get('badge') || '').trim();
+    const isNew = Boolean(data.get('isNew'));
+    const featured = Boolean(data.get('featured'));
+    const isBestseller = Boolean(data.get('isBestseller'));
 
     if (!name || !category || Number.isNaN(priceSek) || priceSek <= 0) {
       showFeedback(feedback, 'Fyll i namn, kategori och ett giltigt pris.', true);
@@ -374,10 +393,10 @@ async function initProductsTab() {
 
     try {
       if (editingId) {
-        await updateAdminProduct(editingId, { name, category, priceSek, salePriceSek, inventory, image, description, sizes });
+        await updateAdminProduct(editingId, { name, category, priceSek, salePriceSek, inventory, image, description, sizes, badge, isNew, featured, isBestseller });
         showFeedback(feedback, `"${name}" har uppdaterats.`);
       } else {
-        await createAdminProduct({ name, category, priceSek, salePriceSek, inventory, image, description, sizes });
+        await createAdminProduct({ name, category, priceSek, salePriceSek, inventory, image, description, sizes, badge, isNew, featured, isBestseller });
         showFeedback(feedback, `"${name}" har lagts till.`);
       }
 

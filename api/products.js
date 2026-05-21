@@ -7,10 +7,14 @@ const KV_KEY = 'jf:products';
 const FALLBACK_IMAGE =
   'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=900&q=80';
 
+const ALLOWED_BADGES = ['', 'REA', 'Ny', 'Populär', 'Bestseller'];
+
 function sanitizeProductInput(input) {
   const priceSek = Number(input.priceSek);
   const salePriceSek = input.salePriceSek ? Number(input.salePriceSek) : null;
   const inventory = Number(input.inventory) || 0;
+  const rawBadge = String(input.badge || '').trim();
+  const badge = ALLOWED_BADGES.includes(rawBadge) ? rawBadge : '';
 
   return {
     name: String(input.name || '').trim(),
@@ -26,6 +30,10 @@ function sanitizeProductInput(input) {
           .filter(Boolean)
       : ['One size'],
     image: sanitizeRemoteImageUrl(input.image, FALLBACK_IMAGE),
+    badge,
+    isNew: Boolean(input.isNew),
+    featured: Boolean(input.featured),
+    isBestseller: Boolean(input.isBestseller),
   };
 }
 
@@ -74,7 +82,6 @@ export default async function handler(req, res) {
 
     const product = {
       id: `jf-admin-${Date.now()}`,
-      badge: 'Admin',
       story: 'Produkt tillagd via adminpanelen.',
       highlights: ['Admin-skapad produkt'],
       isAdminCreated: true,

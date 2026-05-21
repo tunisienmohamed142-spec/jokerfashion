@@ -51,6 +51,8 @@ export default async function handler(req, res) {
 
       const existing = products[index];
       const body = req.body || {};
+      const ALLOWED_BADGES = ['', 'REA', 'Ny', 'Populär', 'Bestseller'];
+      const rawBadge = body.badge !== undefined ? String(body.badge).trim() : existing.badge;
 
       const updated = {
         ...existing,
@@ -79,6 +81,10 @@ export default async function handler(req, res) {
             : existing.sizes,
         image:
           body.image !== undefined ? sanitizeRemoteImageUrl(body.image, existing.image) : existing.image,
+        badge: ALLOWED_BADGES.includes(rawBadge) ? rawBadge : (existing.badge || ''),
+        isNew: body.isNew !== undefined ? Boolean(body.isNew) : Boolean(existing.isNew),
+        featured: body.featured !== undefined ? Boolean(body.featured) : Boolean(existing.featured),
+        isBestseller: body.isBestseller !== undefined ? Boolean(body.isBestseller) : Boolean(existing.isBestseller),
       };
 
       if (updated.salePriceSek !== null && updated.salePriceSek >= updated.priceSek) {

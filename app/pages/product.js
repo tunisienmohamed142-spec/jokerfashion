@@ -61,19 +61,29 @@ function renderProductDetail(container, product) {
     .map((h) => `<li>${escapeHtml(h)}</li>`)
     .join('');
 
+  const effectiveBadge = product.salePriceSek ? 'REA' : (product.badge || '');
+  const badgeHtml = effectiveBadge
+    ? `<span class="product-badge product-badge--${escapeHtml(effectiveBadge.toLowerCase())}">${escapeHtml(effectiveBadge)}</span>`
+    : '';
+
+  const priceHtml = product.salePriceSek
+    ? `<p class="product-detail-price"><span class="price-sale">${formatPrice(product.salePriceSek)}</span> <s class="price-original">${formatPrice(product.priceSek)}</s></p>`
+    : `<p class="product-detail-price">${formatPrice(product.priceSek)}</p>`;
+
   container.innerHTML = `
     <div class="product-detail-grid">
       <div class="product-detail-media">
         <img src="${imageUrl}" alt="${escapeHtml(product.name)}" loading="eager" />
+        ${badgeHtml ? `<div class="product-detail-badge-wrap">${badgeHtml}</div>` : ''}
       </div>
 
       <div class="product-detail-copy">
         <div>
-          <p class="eyebrow">${escapeHtml(categoryName)} &bull; ${escapeHtml(product.badge || 'Shop')}</p>
+          <p class="eyebrow">${escapeHtml(categoryName)} &bull; ${escapeHtml(effectiveBadge || 'Shop')}</p>
           <h1>${escapeHtml(product.name)}</h1>
         </div>
 
-        <p class="product-detail-price">${formatPrice(product.priceSek)}</p>
+        ${priceHtml}
 
         <p class="product-detail-story">${escapeHtml(product.story || product.description || '')}</p>
 
@@ -209,6 +219,7 @@ export async function initProductPage() {
       size: selectedSize,
       quantity,
       priceSek: product.priceSek,
+      salePriceSek: product.salePriceSek || null,
     });
 
     if (feedback) {

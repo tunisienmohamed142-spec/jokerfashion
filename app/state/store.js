@@ -130,6 +130,10 @@ export async function createAdminProduct(productInput) {
       description: String(productInput.description || '').trim(),
       sizes: productInput.sizes,
       image: String(productInput.image || '').trim(),
+      badge: String(productInput.badge || '').trim(),
+      isNew: Boolean(productInput.isNew),
+      featured: Boolean(productInput.featured),
+      isBestseller: Boolean(productInput.isBestseller),
     }),
   });
 }
@@ -316,6 +320,9 @@ export function getCheckoutTotals(cartItems, settingsInput = DEFAULT_SHOP_SETTIN
 
 export function addCartItem(itemInput) {
   const cartItems = getCartItems();
+  const effectivePrice = itemInput.salePriceSek
+    ? Number(itemInput.salePriceSek)
+    : Number(itemInput.priceSek) || 0;
   const normalizedItem = {
     productId: itemInput.productId,
     name: itemInput.name,
@@ -323,7 +330,8 @@ export function addCartItem(itemInput) {
     image: itemInput.image,
     size: itemInput.size,
     quantity: Number(itemInput.quantity) || 1,
-    priceSek: Number(itemInput.priceSek) || 0,
+    priceSek: effectivePrice,
+    compareAtPriceSek: itemInput.salePriceSek ? Number(itemInput.priceSek) || 0 : null,
   };
 
   const existingItem = cartItems.find(

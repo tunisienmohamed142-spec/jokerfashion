@@ -58,17 +58,26 @@ export function renderProductGrid(container, products, options = {}) {
       const isActive = product.id === options.activeProductId;
       const quickAddLabel = options.quickAddLabel || 'Lägg i varukorg';
 
+      const effectiveBadge = product.salePriceSek ? 'REA' : (product.badge || '');
+      const badgeHtml = effectiveBadge
+        ? `<span class="product-badge product-badge--${escapeHtml(effectiveBadge.toLowerCase())}">${escapeHtml(effectiveBadge)}</span>`
+        : '';
+
+      const priceHtml = product.salePriceSek
+        ? `<p class="price"><span class="price-sale">${formatPrice(product.salePriceSek)}</span> <s class="price-original">${formatPrice(product.priceSek)}</s></p>`
+        : `<p class="price">${formatPrice(product.priceSek)}</p>`;
+
       return `
         <article class="product-card ${isActive ? 'is-active' : ''}">
           <div class="product-image-wrap">
             <img src="${imageUrl}" alt="${escapeHtml(product.name)}" loading="lazy" />
-            <span class="product-badge">${escapeHtml(product.badge || 'Shop')}</span>
+            ${badgeHtml}
           </div>
           <div class="product-copy">
             <p class="meta">${escapeHtml(categoryName)}</p>
             <h3>${escapeHtml(product.name)}</h3>
             <p class="product-description">${escapeHtml(description)}</p>
-            <p class="price">${formatPrice(product.priceSek)}</p>
+            ${priceHtml}
             <div class="product-card-actions">
               ${options.enableQuickAdd ? `<button class="button primary" type="button" data-add-to-cart="${escapeHtml(product.id)}">${escapeHtml(quickAddLabel)}</button>` : ''}
               <a class="button secondary" href="${detailUrl}">${isActive ? 'Aktiv produkt' : 'Se detaljer'}</a>
@@ -100,17 +109,22 @@ export function renderProductSpotlight(container, product) {
     .map((highlight) => `<li>${escapeHtml(highlight)}</li>`)
     .join('');
 
+  const effectiveBadge = product.salePriceSek ? 'REA' : (product.badge || '');
+  const priceHtml = product.salePriceSek
+    ? `<p class="price spotlight-price"><span class="price-sale">${formatPrice(product.salePriceSek)}</span> <s class="price-original">${formatPrice(product.priceSek)}</s></p>`
+    : `<p class="price spotlight-price">${formatPrice(product.priceSek)}</p>`;
+
   container.innerHTML = `
     <div class="spotlight-media">
       <img src="${imageUrl}" alt="${escapeHtml(product.name)}" loading="lazy" />
     </div>
     <div class="spotlight-copy">
-      <p class="eyebrow">${escapeHtml(categoryName)} • ${escapeHtml(product.badge || 'Shop')}</p>
+      <p class="eyebrow">${escapeHtml(categoryName)} • ${escapeHtml(effectiveBadge || 'Shop')}</p>
       <h2>${escapeHtml(product.name)}</h2>
       <p class="spotlight-story">${escapeHtml(product.story || product.description || '')}</p>
       <p>${escapeHtml(product.description || '')}</p>
       <ul class="spotlight-list">${highlights}</ul>
-      <p class="price spotlight-price">${formatPrice(product.priceSek)}</p>
+      ${priceHtml}
       <form class="spotlight-form" data-product-form>
         <div>
           <label for="product-size">Storlek</label>
@@ -177,7 +191,11 @@ export function renderCheckoutCart(container, cartItems) {
 
   container.innerHTML = cartItems
     .map(
-      (item, index) => `
+      (item, index) => {
+        const itemPriceHtml = item.compareAtPriceSek
+          ? `<span class="price-sale">${formatPrice(item.priceSek * item.quantity)}</span> <s class="price-original">${formatPrice(item.compareAtPriceSek * item.quantity)}</s>`
+          : formatPrice(item.priceSek * item.quantity);
+        return `
         <article class="checkout-item">
           <img class="checkout-item-image" src="${sanitizeImageUrl(item.image)}" alt="${escapeHtml(item.name)}" loading="lazy" />
           <div class="checkout-item-copy">
@@ -198,9 +216,10 @@ export function renderCheckoutCart(container, cartItems) {
               <button class="button secondary" type="button" data-remove-cart-item="${index}">Ta bort</button>
             </div>
           </div>
-          <p class="price">${formatPrice(item.priceSek * item.quantity)}</p>
+          <p class="price">${itemPriceHtml}</p>
         </article>
-      `
+      `;
+      }
     )
     .join('');
 }
