@@ -1,5 +1,5 @@
 import { requireAdminSession } from '../_auth.js';
-import { isKvAvailable, kvGet, kvSet } from '../_kv.js';
+import { isKvAvailable, kvGet, kvSet, STORAGE_CONFIG_MESSAGE } from '../_kv.js';
 import { DEFAULT_HOME_CONTENT, mergeHomeContent } from '../../app/data/home-content.js';
 
 const KV_KEY = 'jf:home-content';
@@ -24,7 +24,7 @@ export default async function handler(req, res) {
 
     if (!isKvAvailable) {
       return res.status(503).json({
-        message: 'Storage not configured. Set KV_REST_API_URL and KV_REST_API_TOKEN in Vercel.',
+        message: STORAGE_CONFIG_MESSAGE,
       });
     }
 
