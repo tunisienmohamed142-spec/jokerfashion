@@ -52,7 +52,7 @@ export function renderProductGrid(container, products, options = {}) {
     .map((product) => {
       const category = getCategoryById(product.category);
       const categoryName = category ? category.name : 'Övrigt';
-      const detailUrl = `catalog.html?category=${encodeURIComponent(product.category)}&product=${encodeURIComponent(product.id)}`;
+      const detailUrl = `product.html?id=${encodeURIComponent(product.id)}`;
       const description = product.description || 'Mer produktdetaljer visas i spotlight-läget.';
       const imageUrl = sanitizeImageUrl(product.image);
       const isActive = product.id === options.activeProductId;
@@ -71,7 +71,7 @@ export function renderProductGrid(container, products, options = {}) {
             <p class="price">${formatPrice(product.priceSek)}</p>
             <div class="product-card-actions">
               ${options.enableQuickAdd ? `<button class="button primary" type="button" data-add-to-cart="${escapeHtml(product.id)}">${escapeHtml(quickAddLabel)}</button>` : ''}
-              <a class="button secondary" href="${detailUrl}">${isActive ? 'Aktiv produkt' : 'Visa detaljer'}</a>
+              <a class="button secondary" href="${detailUrl}">${isActive ? 'Aktiv produkt' : 'Se detaljer'}</a>
             </div>
           </div>
         </article>
@@ -122,10 +122,9 @@ export function renderProductSpotlight(container, product) {
         </div>
         <div class="spotlight-actions">
           <button class="button primary" type="submit">Lägg i varukorg</button>
-          <a class="button secondary" href="checkout.html">Gå till checkout</a>
+          <a class="button secondary" href="product.html?id=${encodeURIComponent(product.id)}">Se fullständig produktsida</a>
         </div>
       </form>
-      <p class="small-note">Fri stylingkänsla, men fokuserad vertical slice: browse → välj → lägg i varukorg → checkout.</p>
     </div>
   `;
 }
@@ -217,4 +216,29 @@ export function syncCartCountBadges(count) {
   document.querySelectorAll('[data-cart-count]').forEach((badge) => {
     badge.textContent = String(count);
   });
+}
+
+export function showCartToast(productName) {
+  const toast = document.querySelector('[data-cart-toast]');
+  const toastText = document.querySelector('[data-cart-toast-text]');
+  if (!toast) {
+    return;
+  }
+
+  if (toastText) {
+    toastText.textContent = `${productName} lades till i varukorgen.`;
+  }
+
+  toast.classList.remove('is-hidden');
+  let toastTimer = setTimeout(() => toast.classList.add('is-hidden'), 3500);
+
+  const closeBtn = toast.querySelector('[data-cart-toast-close]');
+  if (closeBtn) {
+    const handler = () => {
+      clearTimeout(toastTimer);
+      toast.classList.add('is-hidden');
+    };
+
+    closeBtn.addEventListener('click', handler, { once: true });
+  }
 }

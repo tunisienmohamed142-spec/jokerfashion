@@ -3,8 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Katalog | JokerFashion</title>
-    <meta name="description" content="Kategoribaserad produktkatalog med produktdetaljer och varukorg för JokerFashion." />
+    <title>Produkt | JokerFashion</title>
+    <meta
+      name="description"
+      content="Fullständig produktsida med storlekar, detaljer och snabbt köpflöde hos JokerFashion."
+    />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -13,13 +16,13 @@
     />
     <link rel="stylesheet" href="app/styles/app.css" />
   </head>
-  <body data-page="catalog">
+  <body data-page="product">
     <header class="site-header">
       <div class="container nav-row">
         <a class="brand" href="index.html">Joker<span>Fashion</span></a>
         <nav class="main-nav" aria-label="Huvudnavigation">
           <a class="nav-link" href="index.html">Hem</a>
-          <a class="nav-link active" href="catalog.html">Katalog</a>
+          <a class="nav-link" href="catalog.html">Katalog</a>
           <a class="nav-link" href="checkout.html">Varukorg <span class="cart-count" data-cart-count>0</span></a>
           <a class="nav-link" href="account.html">Konto</a>
           <a class="nav-link" href="admin.html">Admin</a>
@@ -29,40 +32,27 @@
 
     <main>
       <div class="container">
-        <section class="hero">
-          <p class="eyebrow">Curated catalog</p>
-          <h1 data-catalog-heading>Katalog</h1>
-          <p data-catalog-intro>Utforska produkter per kategori och bygg din look med snabbköp eller detaljvy.</p>
-        </section>
+        <nav class="breadcrumb" aria-label="Brödsmulor" data-product-breadcrumb>
+          <a href="index.html">Hem</a>
+          <span class="breadcrumb-sep" aria-hidden="true">/</span>
+          <a href="catalog.html" data-product-category-link>Katalog</a>
+          <span class="breadcrumb-sep" aria-hidden="true">/</span>
+          <span data-product-breadcrumb-name>Produkt</span>
+        </nav>
 
         <section class="page-section">
-          <div class="pill-row" data-catalog-categories></div>
+          <div data-product-detail></div>
         </section>
 
-        <section class="page-section">
-          <div class="catalog-toolbar">
-            <p class="small-note" data-catalog-product-count></p>
-            <div style="display:flex;gap:0.6rem;align-items:center;flex-wrap:wrap;">
-              <select class="sort-select" data-catalog-sort aria-label="Sortera produkter">
-                <option value="default">Standardordning</option>
-                <option value="price-asc">Pris: lägst först</option>
-                <option value="price-desc">Pris: högst först</option>
-                <option value="name-asc">Namn A–Ö</option>
-                <option value="new">Nyheter först</option>
-              </select>
-              <a class="button secondary" href="checkout.html">Gå till varukorg</a>
+        <section class="page-section" data-product-related-section style="display:none">
+          <div class="section-header">
+            <div>
+              <p class="eyebrow">Fler från samma kollektion</p>
+              <h2>Relaterade produkter</h2>
             </div>
+            <a class="button secondary" href="catalog.html" data-product-catalog-link>Se hela kategorin</a>
           </div>
-        </section>
-
-        <section class="page-section grid-2">
-          <article class="spotlight-card" data-catalog-spotlight></article>
-          <aside class="panel" data-catalog-cart-summary></aside>
-        </section>
-
-        <section class="page-section">
-          <p class="notice" data-catalog-feedback></p>
-          <div class="product-grid" data-catalog-grid></div>
+          <div class="related-grid" data-product-related></div>
         </section>
       </div>
     </main>

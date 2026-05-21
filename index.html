@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>JokerFashion | Rebuild Shop Slice</title>
+    <title>JokerFashion | Premium Street Couture</title>
     <meta
       name="description"
-      content="JokerFashion rebuild: Joker-temad shop med kategorier, produktdetaljer, varukorg och checkout."
+      content="JokerFashion — premium street couture med Joker-signatur. Shoppa dam, herr, barn och accessoarer."
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -38,8 +38,8 @@
               <p class="eyebrow">JokerFashion Atelier</p>
               <h1>Premium street couture med Joker-signatur</h1>
               <p>
-                Shoppen har nu tydligare shoppingflöde med snabbköp från korten, förbättrad hierarki och en mer
-                exklusiv presentation av sortimentet.
+                Kuraterade kollektioner med dramatisk silhuett, statement-detaljer och Joker-attityd.
+                Shoppa dam, herr, barn och accessoarer.
               </p>
               <div class="hero-actions">
                 <a class="button primary" href="catalog.html">Shoppa kollektion</a>
@@ -52,12 +52,12 @@
               </div>
             </div>
             <aside class="hero-highlight">
-              <p class="eyebrow">Kundflöde</p>
-              <h2>Från inspiration till checkout</h2>
-              <p>Utforska kategorier, lägg produkter direkt i varukorgen och checka ut i samma upplevelse.</p>
+              <p class="eyebrow">Nytt i kollektionen</p>
+              <h2>Senaste dropparna</h2>
+              <p>Utforska nya statement-plagg och senaste accessoarer — limited drops och exklusiva silhuetter.</p>
               <div class="panel-actions">
-                <a class="button primary" href="catalog.html">Till katalog</a>
-                <a class="button secondary" href="checkout.html">Till checkout</a>
+                <a class="button primary" href="catalog.html?category=women">Dam</a>
+                <a class="button secondary" href="catalog.html?category=men">Herr</a>
               </div>
             </aside>
           </div>
@@ -66,11 +66,11 @@
         <section class="page-section">
           <div class="section-header">
             <div>
-              <p class="eyebrow">Kategorier</p>
-              <h2>Handla efter avdelning</h2>
+              <p class="eyebrow">Shoppa efter avdelning</p>
+              <h2>Kollektioner</h2>
             </div>
           </div>
-          <div class="pill-row" data-home-categories></div>
+          <div class="category-grid" data-home-category-cards></div>
         </section>
 
         <section class="page-section">
@@ -79,33 +79,42 @@
               <p class="eyebrow">Utvalda produkter</p>
               <h2>Joker-kuraterat sortiment</h2>
             </div>
+            <a class="button secondary" href="catalog.html">Se hela katalogen</a>
           </div>
-          <p class="small-note">Snabbköp direkt från korten eller öppna detaljläget i katalogen.</p>
           <div class="product-grid" data-home-featured-products></div>
           <p class="notice" data-home-feedback></p>
         </section>
 
         <section class="page-section">
-          <div class="panel" data-home-cart-summary></div>
+          <div class="section-header">
+            <div>
+              <p class="eyebrow">Nyast i lager</p>
+              <h2>Nya kollektionen</h2>
+            </div>
+            <a class="button secondary" href="catalog.html">Se alla nyheter</a>
+          </div>
+          <div class="product-grid" data-home-new-arrivals></div>
         </section>
 
         <section class="page-section">
-          <div class="section-header">
-            <div>
-              <p class="eyebrow">Rutter att fortsätta i</p>
-              <h2>Kundflöde nu, konto/admin senare</h2>
-            </div>
-          </div>
-          <div class="route-grid" data-home-future-routes></div>
+          <div class="panel" data-home-cart-summary></div>
         </section>
       </div>
     </main>
 
     <footer class="site-footer">
       <div class="container">
-        <p>JokerFashion • Shop slice klar • Nästa steg: riktig auth, persistent produkter och skyddad admin-CRUD.</p>
+        <p>JokerFashion &bull; Fri frakt över 999 kr &bull; 14 dagars öppet köp &bull; Leverans 2–4 dagar</p>
       </div>
     </footer>
+
+    <div class="cart-toast is-hidden" role="alert" aria-live="polite" data-cart-toast>
+      <div class="cart-toast-copy">
+        <p data-cart-toast-text>Produkten lades till i varukorgen.</p>
+        <a href="checkout.html">Gå till varukorg →</a>
+      </div>
+      <button class="cart-toast-close" type="button" data-cart-toast-close aria-label="Stäng">✕</button>
+    </div>
 
     <script type="module" src="app/main.js"></script>
   </body>

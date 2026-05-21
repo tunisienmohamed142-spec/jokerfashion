@@ -3,6 +3,7 @@ import { initCatalogPage } from './pages/catalog.js';
 import { initCheckoutPage } from './pages/checkout.js';
 import { initAccountPage } from './pages/account.js';
 import { initAdminPage } from './pages/admin.js';
+import { initProductPage } from './pages/product.js';
 import { getCartSummary } from './state/store.js';
 import { syncCartCountBadges } from './components/renderers.js';
 
@@ -12,6 +13,7 @@ const initializers = {
   checkout: initCheckoutPage,
   account: initAccountPage,
   admin: initAdminPage,
+  product: initProductPage,
 };
 
 const pageKey = document.body.dataset.page;

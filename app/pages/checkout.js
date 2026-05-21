@@ -108,6 +108,43 @@ function saveCheckoutDraft(form) {
   setCheckoutDraft(Object.fromEntries(formData.entries()));
 }
 
+function setCheckoutStep(stepNumber) {
+  document.querySelectorAll('[data-checkout-step]').forEach((el) => {
+    const step = Number(el.dataset.checkoutStep);
+    el.classList.remove('is-active', 'is-done');
+
+    if (step < stepNumber) {
+      el.classList.add('is-done');
+      const num = el.querySelector('.checkout-step-num');
+      if (num) num.textContent = '✓';
+    } else if (step === stepNumber) {
+      el.classList.add('is-active');
+    }
+  });
+}
+
+function showOrderSuccess(orderData) {
+  const successSection = document.querySelector('[data-checkout-success]');
+  const mainSection = document.querySelector('[data-checkout-main]');
+  const itemSummary = document.querySelector('[data-order-success-items]');
+
+  if (mainSection) {
+    mainSection.style.display = 'none';
+  }
+
+  if (successSection) {
+    successSection.style.display = '';
+  }
+
+  if (itemSummary && orderData) {
+    const itemCount = orderData.items.reduce((sum, item) => sum + item.quantity, 0);
+    const itemLabel = itemCount === 1 ? 'produkt' : 'produkter';
+    itemSummary.textContent = `${itemCount} ${itemLabel} för totalt ${formatPrice(orderData.totalPrice)} är nu på väg till oss.`;
+  }
+
+  setCheckoutStep(3);
+}
+
 export function initCheckoutPage() {
   const cartContainer = document.querySelector('[data-checkout-cart]');
   const summaryContainer = document.querySelector('[data-checkout-summary]');
@@ -192,17 +229,12 @@ export function initCheckoutPage() {
       await sendOrderEmail(orderData);
       clearCart();
       clearCheckoutDraft();
-      form.reset();
-      renderCheckoutState('Ordern skickades och varukorgen tömdes.');
-
-      if (feedback) {
-        feedback.textContent = 'Tack! Din order skickades och checkout-flödet i den nya shoppen fungerar nu hela vägen till API:t.';
-      }
+      showOrderSuccess(orderData);
     } catch (error) {
       if (feedback) {
         feedback.textContent = error.message || 'Det gick inte att skicka ordern.';
       }
-    } finally {
+
       if (submitButton) {
         submitButton.disabled = getCartItems().length === 0;
         submitButton.textContent = 'Skicka order';
@@ -210,3 +242,4 @@ export function initCheckoutPage() {
     }
   });
 }
+
