@@ -1,4 +1,4 @@
-import { renderCartSummary, renderCategoryPills, renderProductGrid, renderRouteCards } from '../components/renderers.js';
+import { renderCartSummary, renderCategoryPills, renderProductGrid } from '../components/renderers.js';
 import { addCartItem, getCartSummary, getCatalogCategories, getCatalogProductById, getCatalogProducts } from '../state/store.js';
 
 export function initHomePage() {
@@ -43,25 +43,4 @@ export function initHomePage() {
       feedback.textContent = `${product.name} (${size}) tillagd. Gå till varukorgen när du vill checka ut.`;
     }
   });
-
-  renderRouteCards(document.querySelector('[data-home-future-routes]'), [
-    {
-      title: 'Varukorg & checkout',
-      description: 'Sammanhållet kundflöde för varukorg, orderöversikt och väg in till beställnings-API:t.',
-      href: 'checkout.html',
-      cta: 'Öppna varukorg',
-    },
-    {
-      title: 'Mitt konto',
-      description: 'Scaffold för registrering, login och framtida orderhistorik.',
-      href: 'account.html',
-      cta: 'Gå till kontostruktur',
-    },
-    {
-      title: 'Admin Studio',
-      description: 'Grund för produkt- och kategorihantering i kommande sprintar.',
-      href: 'admin.html',
-      cta: 'Öppna admin foundation',
-    },
-  ]);
 }

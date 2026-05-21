@@ -57,12 +57,15 @@ export function renderProductGrid(container, products, options = {}) {
       const imageUrl = sanitizeImageUrl(product.image);
       const isActive = product.id === options.activeProductId;
       const quickAddLabel = options.quickAddLabel || 'Lägg i varukorg';
+      const badgeText = product.badge || 'Shop';
+      const badgeClass = `product-badge--${badgeText.toLowerCase().replace(/\s+/g, '-')}`;
 
       return `
         <article class="product-card ${isActive ? 'is-active' : ''}">
           <div class="product-image-wrap">
             <img src="${imageUrl}" alt="${escapeHtml(product.name)}" loading="lazy" />
-            <span class="product-badge">${escapeHtml(product.badge || 'Shop')}</span>
+            <span class="product-badge ${badgeClass}">${escapeHtml(badgeText)}</span>
+            <div class="product-card-overlay" aria-hidden="true"></div>
           </div>
           <div class="product-copy">
             <p class="meta">${escapeHtml(categoryName)}</p>
@@ -71,7 +74,7 @@ export function renderProductGrid(container, products, options = {}) {
             <p class="price">${formatPrice(product.priceSek)}</p>
             <div class="product-card-actions">
               ${options.enableQuickAdd ? `<button class="button primary" type="button" data-add-to-cart="${escapeHtml(product.id)}">${escapeHtml(quickAddLabel)}</button>` : ''}
-              <a class="button secondary" href="${detailUrl}">${isActive ? 'Aktiv produkt' : 'Visa detaljer'}</a>
+              <a class="button secondary" href="${detailUrl}">${isActive ? 'Aktiv' : 'Detaljer'}</a>
             </div>
           </div>
         </article>
@@ -137,11 +140,12 @@ export function renderCartSummary(container, summary, options = {}) {
 
   const itemLabel = summary.itemCount === 1 ? 'produkt' : 'produkter';
   const helperText = options.helperText || 'Fortsätt till checkout när du är redo att skicka ordern.';
+  const hasItems = summary.itemCount > 0;
 
   container.innerHTML = `
     <p class="eyebrow">Varukorg</p>
-    <h2>${summary.itemCount} ${itemLabel}</h2>
-    <p class="price">${formatPrice(summary.totalPrice)}</p>
+    <h2>${summary.itemCount} ${itemLabel}${hasItems ? '' : ' — tom'}</h2>
+    ${hasItems ? `<p class="price">${formatPrice(summary.totalPrice)}</p>` : ''}
     <p>${escapeHtml(helperText)}</p>
     <div class="panel-actions">
       <a class="button primary" href="checkout.html">Öppna checkout</a>

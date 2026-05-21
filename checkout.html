@@ -6,12 +6,12 @@
     <title>Checkout | JokerFashion</title>
     <meta
       name="description"
-      content="JokerFashion checkout med varukorg, orderöversikt och leveransformulär i den nya shoppen."
+      content="JokerFashion checkout — granska varukorg, justera antal och skicka ordern."
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="app/styles/app.css" />
@@ -25,7 +25,6 @@
           <a class="nav-link" href="catalog.html">Katalog</a>
           <a class="nav-link active" href="checkout.html">Varukorg <span class="cart-count" data-cart-count>0</span></a>
           <a class="nav-link" href="account.html">Konto</a>
-          <a class="nav-link" href="admin.html">Admin</a>
         </nav>
       </div>
     </header>
@@ -34,10 +33,9 @@
       <div class="container">
         <section class="hero">
           <p class="eyebrow">Checkout</p>
-          <h1>Din Joker-kundvagn, nu i den nya shoppen</h1>
-          <p>
-            Granska valda produkter, justera antal och skicka ordern genom samma Resend-drivna beställnings-API
-            som tidigare låg kvar i legacy-flödet.
+          <h1>Din Joker-varukorg</h1>
+          <p class="hero-lead">
+            Granska valda produkter, justera antal och skicka ordern via vår beställnings-API.
           </p>
         </section>
 
@@ -112,7 +110,10 @@
 
     <footer class="site-footer">
       <div class="container">
-        <p>Checkout-flödet använder samma order-API som tidigare, men är nu integrerat i rebuild-arkitekturen.</p>
+        <div class="footer-bottom">
+          <p class="footer-copy">&copy; 2026 JokerFashion Atelier</p>
+          <a class="footer-copy" href="catalog.html">← Fortsätt handla</a>
+        </div>
       </div>
     </footer>
 
