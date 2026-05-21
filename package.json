@@ -1,0 +1,21 @@
+{
+  "name": "jokerfashion",
+  "version": "1.0.0",
+  "description": "JokerFashion är i **Rebuild Phase 2**: backend/API-lager för riktig datalagring av admin-hanterat innehåll.",
+  "main": "script.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tunisienmohamed142-spec/jokerfashion.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/tunisienmohamed142-spec/jokerfashion/issues"
+  },
+  "homepage": "https://github.com/tunisienmohamed142-spec/jokerfashion#readme",
+  "dependencies": {
+    "redis": "^5.12.1"
+  }
+}

@@ -32,7 +32,7 @@ export default async function handler(req, res) {
 
     if (!isKvAvailable) {
       return res.status(503).json({
-        message: 'Storage not configured. Set KV_REST_API_URL and KV_REST_API_TOKEN in Vercel.',
+        message: 'Storage not configured. Set REDIS_URL in Vercel.',
       });
     }
 

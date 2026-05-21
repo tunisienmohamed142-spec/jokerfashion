@@ -4,7 +4,7 @@ JokerFashion är i **Rebuild Phase 2**: backend/API-lager för riktig datalagrin
 
 ## Vad som är nytt i Phase 2
 
-- **Riktig backend-persistence** via Vercel KV (Upstash Redis)
+- **Riktig backend-persistence** via Vercel Redis
 - **REST API-endpoints** för produkter, kategorier och butiksinställningar
 - Admin-CRUD går nu via riktiga API-anrop – inte längre bara localStorage
 - Produkter och kategorier skapade via adminpanelen överlever sessioner och enheter
@@ -62,7 +62,7 @@ JokerFashion är i **Rebuild Phase 2**: backend/API-lager för riktig datalagrin
 - `app/data/home-content.js` – default/saniterat CMS-innehåll för startsidan
 - `app/state/store.js` – API-klient för admin/catalog; localStorage för cart/checkout/session
 - `app/styles/app.css` – Joker design tokens + layout primitives
-- `api/_kv.js` – Vercel KV REST API-helper (pipeline-baserad)
+- `api/_kv.js` – Redis-helper via `REDIS_URL` (lazy-initierad Redis client)
 - `api/products.js` – produkter list + create
 - `api/products/[id].js` – produkt get/update/delete
 - `api/categories.js` – kategorier list + create
@@ -81,7 +81,7 @@ JokerFashion är i **Rebuild Phase 2**: backend/API-lager för riktig datalagrin
 Admin-panel (admin.html)
   └─→ app/state/store.js (async API-klient)
         └─→ /api/products, /api/categories, /api/settings  (Vercel serverless)
-              └─→ Vercel KV (Upstash Redis) ← riktig persistence
+              └─→ Vercel Redis ← riktig persistence
 
 Storefront (catalog.html, index.html, product.html)
   └─→ app/state/store.js (async, graceful fallback)
@@ -93,14 +93,14 @@ Varukorg / Checkout / Session
   └─→ localStorage (client-side, oförändrat)
 ```
 
-## Sätt upp Vercel KV (krävs för persistence)
+## Sätt upp Vercel Redis (krävs för persistence)
 
 1. Öppna [Vercel Dashboard](https://vercel.com/dashboard)
-2. Gå till **Storage** → **Create Database** → välj **KV**
+2. Gå till **Storage** → **Create Database** → välj **Redis**
 3. Anslut databasen till ditt project via **Connect to Project**
-4. Vercel sätter automatiskt `KV_REST_API_URL` och `KV_REST_API_TOKEN` i din deploy-miljö
+4. Säkerställ att `REDIS_URL` finns i din deploy-miljö
 
-Utan dessa variabler:
+Utan `REDIS_URL`:
 - GET-endpoints returnerar tomma arrayer (inga adminprodukter)
 - POST/PUT/DELETE returnerar `503 Storage not configured`
 - Storefront och adminpanel fungerar fortfarande (med bas-data)
@@ -113,8 +113,7 @@ Utan dessa variabler:
 - `ORDER_TO_EMAIL`
 
 ### Persistence (ny i Phase 2)
-- `KV_REST_API_URL` – sätts automatiskt av Vercel KV
-- `KV_REST_API_TOKEN` – sätts automatiskt av Vercel KV
+- `REDIS_URL` – anslutningssträng för Vercel Redis
 
 ### Admin-auth (ny i detta steg)
 - `ADMIN_USERNAME` – admin-användarnamn (t.ex. `admin`)
@@ -129,7 +128,7 @@ Utan dessa variabler:
 
 ## Kvar före DNS/live (pre-launch gaps)
 
-1. **Admin orderhantering** – ordrar persisteras nu i KV men adminvy/statusflöden för hantering byggs i nästa steg
+1. **Admin orderhantering** – ordrar persisteras nu i Redis men adminvy/statusflöden för hantering byggs i nästa steg
 2. **Rikare homepage-CMS** – hero/highlight/rubriker/CTA är dynamiska, men fler block/ordning/fler homepage-bilder kan fortfarande byggas ut senare
 
 ## Homepage CMS (detta PR-steg)
@@ -172,7 +171,7 @@ Utan dessa variabler:
 
 ## Order persistence i checkout (detta PR-steg)
 
-- Checkout-submission via `POST /api/send-order` skapar nu en riktig orderpost i Vercel KV (`jf:orders`).
+- Checkout-submission via `POST /api/send-order` skapar nu en riktig orderpost i Vercel Redis (`jf:orders`).
 - Persisterad order innehåller:
   - `id`, mänsklig `orderReference`, `status` (initialt `pending`), `createdAt`, `updatedAt`
   - `customer` + `shippingAddress`
@@ -184,7 +183,7 @@ Utan dessa variabler:
 
 ## Migration från Phase 1
 
-Produkter och kategorier skapade i Phase 1 (lagrades i `localStorage` under `jokerfashion-admin-products` / `jokerfashion-admin-categories`) migreras inte automatiskt. Lägg in dem på nytt via adminpanelen när Vercel KV är konfigurerat.
+Produkter och kategorier skapade i Phase 1 (lagrades i `localStorage` under `jokerfashion-admin-products` / `jokerfashion-admin-categories`) migreras inte automatiskt. Lägg in dem på nytt via adminpanelen när Vercel Redis är konfigurerat.
 
 ## Målgruppstaxonomi (detta PR-steg)
 
@@ -215,4 +214,4 @@ För att testa API lokalt, kör:
 ```bash
 vercel dev
 ```
-(kräver [Vercel CLI](https://vercel.com/docs/cli) och att Vercel KV-variabler finns i `.env.local`)
+(kräver [Vercel CLI](https://vercel.com/docs/cli) och att `REDIS_URL` finns i `.env.local`)
