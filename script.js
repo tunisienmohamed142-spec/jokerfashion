@@ -475,7 +475,7 @@ async function sendOrderEmail(orderData) {
   const result = await response.json().catch(() => ({}));
 
   if (!response.ok) {
-    throw new Error(result.message || 'Det gick inte att skicka beställningen.');
+    throw new Error(result.error || result.message || 'Det gick inte att skicka beställningen.');
   }
 
   return result;
