@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="sv">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Konto | JokerFashion</title>
+    <meta
+      name="description"
+      content="Auth-ready foundation för registrering och inloggning i JokerFashion rebuild phase 1."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="app/styles/app.css" />
+  </head>
+  <body data-page="account">
+    <header class="site-header">
+      <div class="container nav-row">
+        <a class="brand" href="index.html">Joker<span>Fashion</span></a>
+        <nav class="main-nav" aria-label="Huvudnavigation">
+          <a class="nav-link" href="index.html">Hem</a>
+          <a class="nav-link" href="catalog.html">Katalog</a>
+          <a class="nav-link active" href="account.html">Konto</a>
+          <a class="nav-link" href="admin.html">Admin</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <div class="container">
+        <section class="hero">
+          <p class="eyebrow">Auth Foundation</p>
+          <h1>Skapa konto och logga in (scaffold)</h1>
+          <p>
+            Den här fasen etablerar route, session-interface och rolltänk för nästa steg med riktig auth-provider
+            (t.ex. NextAuth/Clerk/Supabase Auth).
+          </p>
+          <p class="notice" data-account-status></p>
+        </section>
+
+        <section class="page-section grid-2">
+          <article class="info-card">
+            <h2>Kundkonto</h2>
+            <p>Kommande: registrering, inloggning, adresser och orderhistorik.</p>
+            <button class="button secondary" type="button" data-account-login-user>Skapa mock kundsession</button>
+          </article>
+          <article class="info-card">
+            <h2>Admininloggning</h2>
+            <p>Kommande: skyddad adminroll med behörighetskontroller.</p>
+            <button class="button secondary" type="button" data-account-login-admin>Skapa mock adminsession</button>
+          </article>
+        </section>
+
+        <section class="page-section">
+          <button class="button primary" type="button" data-account-logout>Logga ut mock-session</button>
+        </section>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <p>Konto-flödet i denna fas är auth-ready struktur, inte full produktionauth.</p>
+      </div>
+    </footer>
+
+    <script type="module" src="app/main.js"></script>
+  </body>
+</html>

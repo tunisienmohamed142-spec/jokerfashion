@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="sv">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin | JokerFashion</title>
+    <meta
+      name="description"
+      content="Admin foundation för produkt- och kategorihantering i JokerFashion rebuild phase 1."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="app/styles/app.css" />
+  </head>
+  <body data-page="admin">
+    <header class="site-header">
+      <div class="container nav-row">
+        <a class="brand" href="index.html">Joker<span>Fashion</span></a>
+        <nav class="main-nav" aria-label="Huvudnavigation">
+          <a class="nav-link" href="index.html">Hem</a>
+          <a class="nav-link" href="catalog.html">Katalog</a>
+          <a class="nav-link" href="account.html">Konto</a>
+          <a class="nav-link active" href="admin.html">Admin</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <div class="container">
+        <section class="hero">
+          <p class="eyebrow">Admin Studio Scaffold</p>
+          <h1>Produkt- och kategorihantering (foundation)</h1>
+          <p>
+            Fas 1 ger ett första adminflöde för att lägga till produkter i lokal draft-data.
+            I nästa fas kopplas detta till databas och autentiserad admin-CRUD.
+          </p>
+        </section>
+
+        <section class="page-section grid-2">
+          <article class="form-card">
+            <h2>Lägg till produkt i draft-katalog</h2>
+            <p class="small-note">Denna version sparar i localStorage för att validera informationsarkitekturen.</p>
+            <form class="form-grid" data-admin-product-form>
+              <div>
+                <label for="admin-name">Produktnamn</label>
+                <input id="admin-name" name="name" required />
+              </div>
+              <div>
+                <label for="admin-category">Kategori</label>
+                <select id="admin-category" name="category" data-admin-category required></select>
+              </div>
+              <div>
+                <label for="admin-price">Pris (SEK)</label>
+                <input id="admin-price" name="priceSek" type="number" min="1" required />
+              </div>
+              <div>
+                <label for="admin-image">Bild-URL (valfritt)</label>
+                <input id="admin-image" name="image" type="url" />
+              </div>
+              <div class="full">
+                <button class="button primary" type="submit">Spara draft-produkt</button>
+              </div>
+            </form>
+            <p class="notice" data-admin-feedback></p>
+          </article>
+
+          <article class="panel">
+            <h2>Nästa adminsteg</h2>
+            <ul>
+              <li>Skydda route med riktig auth + admin-roll.</li>
+              <li>Koppla formulär till API/DB (create/update/delete).</li>
+              <li>Lägg till bildhantering och lagerstatus.</li>
+              <li>Versionera produktändringar per release.</li>
+            </ul>
+          </article>
+        </section>
+
+        <section class="page-section">
+          <div class="section-header">
+            <div>
+              <p class="eyebrow">Preview</p>
+              <h2>Aktiv katalog (inkl. admin drafts)</h2>
+            </div>
+          </div>
+          <div class="product-grid" data-admin-product-preview></div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <p>Admin-funktionen i denna fas är en scaffold och avsiktligt utan persistent backend.</p>
+      </div>
+    </footer>
+
+    <script type="module" src="app/main.js"></script>
+  </body>
+</html>

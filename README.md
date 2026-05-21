@@ -1,50 +1,64 @@
 # JokerFashion
 
-JokerFashion är en modern modebutik byggd som en statisk frontend med en serverless API-endpoint för att skicka beställningar via Resend.
+JokerFashion är nu i **Rebuild Phase 1**: första vertikala steget från enkel storefront/orderform till en skalbar e-handelsapplikation med Joker-inspirerad design.
 
-## Innehåll
+## Vad som ingår i Phase 1
 
-- startsida med kategorier och utvalda produkter
-- separata kategorisidor för dam, herr och barn
-- varukorg med localStorage
-- orderformulär med fältvis validering
-- serverless endpoint för mejlutskick via Resend
+- Joker-inspirerat designsystem (färgtema, typografi, UI-primitiver)
+- ny modulär appstruktur (`app/`) för fortsatt utbyggnad
+- ny startsida med tydlig e-handelsriktning
+- kategoribaserad produktvisning med strukturerad lokal datamodell
+- produktkort/grid-komponenter för återanvändning
+- auth-ready kontostruktur (`account.html`) med sessionscaffold
+- admin foundation (`admin.html`) för lokal produkt-draft-hantering
 
-## Filer
+## Appstruktur (foundation)
 
-- `index.html` – startsida och orderflöde
-- `dam.html` – kategori för dam
-- `herr.html` – kategori för herr
-- `barn.html` – kategori för barn
-- `style.css` – all styling
-- `script.js` – varukorg, formulär och validering
-- `api/send-order.js` – serverless funktion för att skicka beställning via Resend
-- `CNAME` – anpassad domän för publicering
+- `index.html` – ny Joker-themed landningssida
+- `catalog.html` – kategoribaserad browsing
+- `account.html` – scaffold för konto/login-flöden
+- `admin.html` – scaffold för admininnehåll och produktutkast
+- `app/main.js` – page-bootstrap per route
+- `app/pages/*` – sidinitiering per route
+- `app/components/renderers.js` – återanvändbara UI-renderers
+- `app/data/catalog.js` – kategorier + seed-produkter
+- `app/state/store.js` – lokal state för mock session/admin drafts
+- `app/styles/app.css` – Joker design tokens + layout primitives
 
-## Miljövariabler
+## Migration från tidigare storefront
 
-Följande miljövariabler måste finnas i din deploymiljö (t.ex. Vercel):
+Tidigare sidor (`dam.html`, `herr.html`, `barn.html`) och beställnings-API (`api/send-order.js`) ligger kvar för kompatibilitet under ombyggnaden.
 
-- `RESEND_API_KEY` – din API-nyckel från [resend.com](https://resend.com)
-- `ORDER_FROM_EMAIL` – avsändaradress som är verifierad i Resend (t.ex. `orders@dindoman.se`)
-- `ORDER_TO_EMAIL` – mottagaradress dit beställningar ska skickas (t.ex. `info@jokerfashion.se`)
+Detta gör att vi kan iterera stegvis utan att riva hela lösningen i en enda PR.
 
-## Ordermejl
+## Miljövariabler (beställnings-API)
 
-När en order skickas skickar frontend orderinformationen till `api/send-order.js`.
-Serverless-funktionen skickar sedan ett vanligt ordermejl via **Resend**.
+Följande miljövariabler krävs fortsatt för ordermejl via Resend i `api/send-order.js`:
 
-Resend kräver att avsändaradressen (`ORDER_FROM_EMAIL`) är kopplad till en verifierad domän i Resend-dashboarden.
-Se [resend.com/docs](https://resend.com/docs) för hur du verifierar din domän.
+- `RESEND_API_KEY`
+- `ORDER_FROM_EMAIL`
+- `ORDER_TO_EMAIL`
 
-## Deploy
+## Nästa planerade faser
 
-För att `api/send-order.js` ska fungera behöver projektet deployas på en plattform som stödjer serverless functions, till exempel Vercel.
+### Phase 2
 
-## Testchecklista
+- koppla riktig auth-provider (registrering/login/logout)
+- införa backend/API-lager för produkter/kategorier
+- skydda admin route med rollbaserad access
 
-1. Lägg till produkter i varukorgen.
-2. Ladda om sidan och kontrollera att varukorgen ligger kvar.
-3. Fyll i formuläret och kontrollera att uppgifter sparas lokalt.
-4. Testa ogiltig e-post, telefon och postnummer.
-5. Skicka beställningen live efter att miljövariablerna är satta.
+### Phase 3
+
+- persistent admin CRUD (databas)
+- kundkonto med orderhistorik
+- checkout/orderflöde i nya arkitekturen
+
+## Lokal verifiering
+
+Det finns ingen test-runner i repot. Kör syntaktisk validering:
+
+```bash
+node --check script.js
+node --check api/send-order.js
+find app -name '*.js' -print0 | xargs -0 -n1 node --check
+```
