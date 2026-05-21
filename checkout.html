@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Checkout | JokerFashion</title>
+    <title>Varukorg & Checkout | JokerFashion</title>
     <meta
       name="description"
-      content="JokerFashion checkout med varukorg, orderöversikt och leveransformulär i den nya shoppen."
+      content="JokerFashion checkout — granska varukorg, fyll i leveransuppgifter och skicka din order."
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -34,85 +34,124 @@
       <div class="container">
         <section class="hero">
           <p class="eyebrow">Checkout</p>
-          <h1>Din Joker-kundvagn, nu i den nya shoppen</h1>
-          <p>
-            Granska valda produkter, justera antal och skicka ordern genom samma Resend-drivna beställnings-API
-            som tidigare låg kvar i legacy-flödet.
-          </p>
+          <h1>Din varukorg</h1>
+          <p>Granska valda produkter, justera antal och skicka ordern.</p>
         </section>
 
-        <section class="page-section grid-2">
-          <article class="panel">
-            <div class="section-header">
-              <div>
-                <p class="eyebrow">Varukorg</p>
-                <h2>Dina valda produkter</h2>
-              </div>
-              <button class="button secondary" type="button" data-clear-cart>Töm varukorg</button>
+        <section class="page-section">
+          <div class="checkout-steps" aria-label="Checkout-steg">
+            <div class="checkout-step is-done" data-checkout-step="1">
+              <span class="checkout-step-num">✓</span>
+              <span class="checkout-step-label">Varukorg</span>
             </div>
-            <div class="checkout-cart-list" data-checkout-cart></div>
-          </article>
-
-          <div class="page-section">
-            <aside class="panel" data-checkout-summary></aside>
-
-            <article class="form-card">
-              <div class="section-header">
-                <div>
-                  <p class="eyebrow">Leveransuppgifter</p>
-                  <h2>Skicka order</h2>
-                </div>
-                <p class="price" data-checkout-total>0 kr</p>
-              </div>
-
-              <form class="form-grid" data-checkout-form>
-                <div>
-                  <label for="checkout-first-name">Förnamn</label>
-                  <input id="checkout-first-name" name="firstName" required />
-                </div>
-                <div>
-                  <label for="checkout-last-name">Efternamn</label>
-                  <input id="checkout-last-name" name="lastName" required />
-                </div>
-                <div>
-                  <label for="checkout-email">E-post</label>
-                  <input id="checkout-email" name="email" type="email" required />
-                </div>
-                <div>
-                  <label for="checkout-phone">Telefon</label>
-                  <input id="checkout-phone" name="phone" inputmode="tel" required />
-                </div>
-                <div class="full">
-                  <label for="checkout-address">Adress</label>
-                  <input id="checkout-address" name="address" required />
-                </div>
-                <div>
-                  <label for="checkout-postal-code">Postnummer</label>
-                  <input id="checkout-postal-code" name="postalCode" inputmode="numeric" required />
-                </div>
-                <div>
-                  <label for="checkout-city">Stad</label>
-                  <input id="checkout-city" name="city" required />
-                </div>
-                <div class="full">
-                  <label for="checkout-message">Meddelande (valfritt)</label>
-                  <input id="checkout-message" name="message" />
-                </div>
-                <div class="full">
-                  <button class="button primary" type="submit">Skicka order</button>
-                </div>
-              </form>
-
-              <p class="notice" data-checkout-feedback></p>
-            </article>
+            <div class="checkout-step-line" aria-hidden="true"></div>
+            <div class="checkout-step is-active" data-checkout-step="2">
+              <span class="checkout-step-num">2</span>
+              <span class="checkout-step-label">Leveransuppgifter</span>
+            </div>
+            <div class="checkout-step-line" aria-hidden="true"></div>
+            <div class="checkout-step" data-checkout-step="3">
+              <span class="checkout-step-num">3</span>
+              <span class="checkout-step-label">Bekräftelse</span>
+            </div>
           </div>
         </section>
+
+        <div data-checkout-success style="display:none">
+          <section class="page-section">
+            <div class="order-success">
+              <div class="order-success-icon" aria-hidden="true">✅</div>
+              <h2>Tack för din order!</h2>
+              <p>Din beställning har skickats till JokerFashion-teamet. Du får en bekräftelse via e-post inom kort.</p>
+              <p data-order-success-items></p>
+              <div style="display:flex;gap:0.8rem;justify-content:center;flex-wrap:wrap;margin-top:0.5rem;">
+                <a class="button primary" href="catalog.html">Fortsätt handla</a>
+                <a class="button secondary" href="index.html">Tillbaka till startsidan</a>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <div data-checkout-main>
+          <section class="page-section grid-2">
+            <article class="panel">
+              <div class="section-header">
+                <div>
+                  <p class="eyebrow">Varukorg</p>
+                  <h2>Dina valda produkter</h2>
+                </div>
+                <button class="button secondary" type="button" data-clear-cart>Töm varukorg</button>
+              </div>
+              <div class="checkout-cart-list" data-checkout-cart></div>
+            </article>
+
+            <div class="page-section">
+              <aside class="panel" data-checkout-summary></aside>
+
+              <article class="form-card">
+                <div class="section-header">
+                  <div>
+                    <p class="eyebrow">Leveransuppgifter</p>
+                    <h2>Skicka order</h2>
+                  </div>
+                  <p class="price" data-checkout-total>0 kr</p>
+                </div>
+
+                <form class="form-grid" data-checkout-form>
+                  <div>
+                    <label for="checkout-first-name">Förnamn</label>
+                    <input id="checkout-first-name" name="firstName" required />
+                  </div>
+                  <div>
+                    <label for="checkout-last-name">Efternamn</label>
+                    <input id="checkout-last-name" name="lastName" required />
+                  </div>
+                  <div>
+                    <label for="checkout-email">E-post</label>
+                    <input id="checkout-email" name="email" type="email" required />
+                  </div>
+                  <div>
+                    <label for="checkout-phone">Telefon</label>
+                    <input id="checkout-phone" name="phone" inputmode="tel" required />
+                  </div>
+                  <div class="full">
+                    <label for="checkout-address">Adress</label>
+                    <input id="checkout-address" name="address" required />
+                  </div>
+                  <div>
+                    <label for="checkout-postal-code">Postnummer</label>
+                    <input id="checkout-postal-code" name="postalCode" inputmode="numeric" required />
+                  </div>
+                  <div>
+                    <label for="checkout-city">Stad</label>
+                    <input id="checkout-city" name="city" required />
+                  </div>
+                  <div class="full">
+                    <label for="checkout-message">Meddelande (valfritt)</label>
+                    <input id="checkout-message" name="message" />
+                  </div>
+                  <div class="full">
+                    <button class="button primary" type="submit" style="width:100%;font-size:1rem;padding:0.85rem;">Skicka order</button>
+                  </div>
+                </form>
+
+                <p class="notice" data-checkout-feedback></p>
+              </article>
+
+              <div class="delivery-strip">
+                <span><strong>Fri frakt</strong> över 999 kr</span>
+                <span><strong>2–4 dagar</strong> leverans</span>
+                <span><strong>14 dagar</strong> öppet köp</span>
+              </div>
+            </div>
+          </section>
+        </div>
       </div>
     </main>
 
     <footer class="site-footer">
       <div class="container">
-        <p>Checkout-flödet använder samma order-API som tidigare, men är nu integrerat i rebuild-arkitekturen.</p>
+        <p>JokerFashion &bull; Fri frakt över 999 kr &bull; 14 dagars öppet köp &bull; Leverans 2–4 dagar</p>
       </div>
     </footer>
 

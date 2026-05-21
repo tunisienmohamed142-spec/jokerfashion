@@ -1,4 +1,4 @@
-import { renderCartSummary, renderCategoryPills, renderProductGrid, renderProductSpotlight } from '../components/renderers.js';
+import { renderCartSummary, renderCategoryPills, renderProductGrid, renderProductSpotlight, showCartToast } from '../components/renderers.js';
 import { getCategoryById } from '../data/catalog.js';
 import { addCartItem, getCartSummary, getCatalogCategories, getCatalogProductById, getCatalogProducts } from '../state/store.js';
 
@@ -20,13 +20,29 @@ function getActiveProduct(products, activeCategoryId) {
   return products[0] || null;
 }
 
+function sortProducts(products, sortValue) {
+  const sorted = [...products];
+
+  if (sortValue === 'price-asc') {
+    sorted.sort((a, b) => a.priceSek - b.priceSek);
+  } else if (sortValue === 'price-desc') {
+    sorted.sort((a, b) => b.priceSek - a.priceSek);
+  } else if (sortValue === 'name-asc') {
+    sorted.sort((a, b) => a.name.localeCompare(b.name, 'sv'));
+  } else if (sortValue === 'new') {
+    sorted.sort((a, b) => (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0));
+  }
+
+  return sorted;
+}
+
 export function initCatalogPage() {
   const categories = getCatalogCategories();
   const activeCategoryId = getActiveCategoryId(categories);
   const activeCategory = getCategoryById(activeCategoryId);
 
-  const products = getCatalogProducts().filter((product) => product.category === activeCategoryId);
-  const activeProduct = getActiveProduct(products, activeCategoryId);
+  const allCategoryProducts = getCatalogProducts().filter((product) => product.category === activeCategoryId);
+  const activeProduct = getActiveProduct(allCategoryProducts, activeCategoryId);
 
   const heading = document.querySelector('[data-catalog-heading]');
   const intro = document.querySelector('[data-catalog-intro]');
@@ -35,6 +51,7 @@ export function initCatalogPage() {
   const grid = document.querySelector('[data-catalog-grid]');
   const spotlightContainer = document.querySelector('[data-catalog-spotlight]');
   const cartSummaryContainer = document.querySelector('[data-catalog-cart-summary]');
+  const sortSelect = document.querySelector('[data-catalog-sort]');
 
   if (heading && activeCategory) {
     heading.textContent = activeCategory.name;
@@ -44,20 +61,32 @@ export function initCatalogPage() {
     intro.textContent = activeCategory.description;
   }
 
-  if (productCount) {
-    productCount.textContent = `${products.length} ${products.length === 1 ? 'produkt' : 'produkter'} i ${activeCategory?.name || 'kategorin'}`;
+  function updateProductCount(count) {
+    if (productCount) {
+      productCount.textContent = `${count} ${count === 1 ? 'produkt' : 'produkter'} i ${activeCategory?.name || 'kategorin'}`;
+    }
   }
 
   function renderCatalogCartSummary(helperText) {
     renderCartSummary(cartSummaryContainer, getCartSummary(), { helperText });
   }
 
+  function renderSortedGrid(sortValue = 'default') {
+    const sorted = sortProducts(allCategoryProducts, sortValue);
+    updateProductCount(sorted.length);
+    renderProductGrid(grid, sorted, { activeProductId: activeProduct?.id, enableQuickAdd: true });
+  }
+
   renderCategoryPills(document.querySelector('[data-catalog-categories]'), categories, activeCategoryId);
-  renderProductGrid(grid, products, { activeProductId: activeProduct?.id, enableQuickAdd: true });
+  renderSortedGrid();
   renderProductSpotlight(spotlightContainer, activeProduct);
   renderCatalogCartSummary(
     activeProduct ? `Lägg ${activeProduct.name} i varukorgen och fortsätt sedan till checkout.` : 'Välj en produkt för att börja shoppa.'
   );
+
+  sortSelect?.addEventListener('change', (event) => {
+    renderSortedGrid(event.currentTarget.value);
+  });
 
   grid?.addEventListener('click', (event) => {
     const button = event.target.closest('[data-add-to-cart]');
@@ -83,6 +112,8 @@ export function initCatalogPage() {
     });
 
     renderCatalogCartSummary(`${product.name} (${size}) lades till i varukorgen.`);
+    showCartToast(product.name);
+
     if (feedback) {
       feedback.textContent = `${product.name} tillagd. Du kan fortsätta handla eller gå direkt till varukorgen.`;
     }
@@ -110,9 +141,11 @@ export function initCatalogPage() {
     });
 
     renderCatalogCartSummary(`${activeProduct.name} (${size}) lades till i varukorgen.`);
+    showCartToast(activeProduct.name);
 
     if (feedback) {
       feedback.textContent = `${activeProduct.name} lades till i varukorgen. Du kan fortsätta handla eller gå direkt till checkout.`;
     }
   });
 }
+

@@ -1,67 +1,99 @@
-import { renderCartSummary, renderCategoryPills, renderProductGrid, renderRouteCards } from '../components/renderers.js';
+import { renderCartSummary, renderCategoryPills, renderProductGrid, showCartToast } from '../components/renderers.js';
 import { addCartItem, getCartSummary, getCatalogCategories, getCatalogProductById, getCatalogProducts } from '../state/store.js';
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
+const categoryIcons = {
+  women: '👗',
+  men: '🧥',
+  kids: '🎒',
+  accessories: '👜',
+};
+
+function renderCategoryCards(container, categories) {
+  if (!container) {
+    return;
+  }
+
+  container.innerHTML = categories
+    .map(
+      (category) => `
+      <a class="category-card" href="catalog.html?category=${encodeURIComponent(category.id)}">
+        <span class="category-card-icon" aria-hidden="true">${categoryIcons[category.id] || '🛍️'}</span>
+        <h3>${escapeHtml(category.name)}</h3>
+        <p>${escapeHtml(category.description)}</p>
+      </a>
+    `
+    )
+    .join('');
+}
+
+function renderHomeCart(container, helperText = 'Din varukorg följer med dig hela vägen till checkout.') {
+  renderCartSummary(container, getCartSummary(), { helperText });
+}
+
+function handleAddToCart(event, feedbackEl, cartSummaryContainer) {
+  const button = event.target.closest('[data-add-to-cart]');
+  if (!button) {
+    return;
+  }
+
+  const product = getCatalogProductById(String(button.dataset.addToCart || ''));
+  if (!product) {
+    return;
+  }
+
+  const size = product.sizes?.[0] || 'One size';
+  addCartItem({
+    productId: product.id,
+    name: product.name,
+    category: product.category,
+    image: product.image,
+    size,
+    quantity: 1,
+    priceSek: product.priceSek,
+  });
+
+  renderHomeCart(cartSummaryContainer, `${product.name} lades till i varukorgen.`);
+  showCartToast(product.name);
+
+  if (feedbackEl) {
+    feedbackEl.textContent = `${product.name} (${size}) tillagd. Gå till varukorgen när du vill checka ut.`;
+  }
+}
 
 export function initHomePage() {
   const categories = getCatalogCategories();
-  const products = getCatalogProducts().slice(0, 4);
+  const allProducts = getCatalogProducts();
+
+  const featuredProducts = allProducts.filter((p) => p.isFeatured).slice(0, 4);
+  const displayProducts = featuredProducts.length > 0 ? featuredProducts : allProducts.slice(0, 4);
+  const newArrivals = allProducts.filter((p) => p.isNew).slice(0, 4);
+
   const cartSummaryContainer = document.querySelector('[data-home-cart-summary]');
   const feedback = document.querySelector('[data-home-feedback]');
   const featuredGrid = document.querySelector('[data-home-featured-products]');
+  const newArrivalsGrid = document.querySelector('[data-home-new-arrivals]');
+  const categoryCardsContainer = document.querySelector('[data-home-category-cards]');
 
-  function renderHomeCart(helperText = 'Din varukorg följer med mellan katalog och checkout i den nya Joker-upplevelsen.') {
-    renderCartSummary(cartSummaryContainer, getCartSummary(), { helperText });
+  renderCategoryCards(categoryCardsContainer, categories);
+  renderCategoryPills(document.querySelector('[data-home-categories]'), categories);
+  renderProductGrid(featuredGrid, displayProducts, { enableQuickAdd: true, quickAddLabel: 'Snabbköp' });
+
+  if (newArrivalsGrid) {
+    renderProductGrid(newArrivalsGrid, newArrivals, { enableQuickAdd: true, quickAddLabel: 'Snabbköp' });
   }
 
-  renderCategoryPills(document.querySelector('[data-home-categories]'), categories);
-  renderProductGrid(featuredGrid, products, { enableQuickAdd: true, quickAddLabel: 'Snabbköp' });
-  renderHomeCart();
+  renderHomeCart(cartSummaryContainer);
 
-  featuredGrid?.addEventListener('click', (event) => {
-    const button = event.target.closest('[data-add-to-cart]');
-    if (!button) {
-      return;
-    }
-
-    const product = getCatalogProductById(String(button.dataset.addToCart || ''));
-    if (!product) {
-      return;
-    }
-
-    const size = product.sizes?.[0] || 'One size';
-    addCartItem({
-      productId: product.id,
-      name: product.name,
-      category: product.category,
-      image: product.image,
-      size,
-      quantity: 1,
-      priceSek: product.priceSek,
-    });
-
-    renderHomeCart(`${product.name} lades till i varukorgen.`);
-    if (feedback) {
-      feedback.textContent = `${product.name} (${size}) tillagd. Gå till varukorgen när du vill checka ut.`;
-    }
-  });
-
-  renderRouteCards(document.querySelector('[data-home-future-routes]'), [
-    {
-      title: 'Varukorg & checkout',
-      description: 'Sammanhållet kundflöde för varukorg, orderöversikt och väg in till beställnings-API:t.',
-      href: 'checkout.html',
-      cta: 'Öppna varukorg',
-    },
-    {
-      title: 'Mitt konto',
-      description: 'Scaffold för registrering, login och framtida orderhistorik.',
-      href: 'account.html',
-      cta: 'Gå till kontostruktur',
-    },
-    {
-      title: 'Admin Studio',
-      description: 'Grund för produkt- och kategorihantering i kommande sprintar.',
-      href: 'admin.html',
-      cta: 'Öppna admin foundation',
-    },
-  ]);
+  const addToCartHandler = (event) => handleAddToCart(event, feedback, cartSummaryContainer);
+  featuredGrid?.addEventListener('click', addToCartHandler);
+  newArrivalsGrid?.addEventListener('click', addToCartHandler);
 }
