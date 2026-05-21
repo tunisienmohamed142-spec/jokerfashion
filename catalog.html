@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Katalog | JokerFashion</title>
-    <meta name="description" content="Kategoribaserad produktkatalog för JokerFashion rebuild phase 1." />
+    <meta name="description" content="Kategoribaserad produktkatalog med produktdetaljer och varukorg för JokerFashion." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -20,6 +20,7 @@
         <nav class="main-nav" aria-label="Huvudnavigation">
           <a class="nav-link" href="index.html">Hem</a>
           <a class="nav-link active" href="catalog.html">Katalog</a>
+          <a class="nav-link" href="checkout.html">Checkout <span class="cart-count" data-cart-count>0</span></a>
           <a class="nav-link" href="account.html">Konto</a>
           <a class="nav-link" href="admin.html">Admin</a>
         </nav>
@@ -29,13 +30,22 @@
     <main>
       <div class="container">
         <section class="hero">
-          <p class="eyebrow">Kategoridriven browsing</p>
+          <p class="eyebrow">Shop by category</p>
           <h1 data-catalog-heading>Katalog</h1>
-          <p data-catalog-intro>Utforska produkter per kategori.</p>
+          <p data-catalog-intro>Utforska produkter per kategori och öppna en detaljvy som går att handla från.</p>
         </section>
 
         <section class="page-section">
           <div class="pill-row" data-catalog-categories></div>
+        </section>
+
+        <section class="page-section grid-2">
+          <article class="spotlight-card" data-catalog-spotlight></article>
+          <aside class="panel" data-catalog-cart-summary></aside>
+        </section>
+
+        <section class="page-section">
+          <p class="notice" data-catalog-feedback></p>
           <div class="product-grid" data-catalog-grid></div>
         </section>
       </div>
@@ -43,7 +53,7 @@
 
     <footer class="site-footer">
       <div class="container">
-        <p>Produktdata drivs i denna fas av strukturerad lokal datamodell.</p>
+        <p>Produktdata drivs fortfarande lokalt, men shoppingflödet lever nu i den nya arkitekturen.</p>
       </div>
     </footer>
 

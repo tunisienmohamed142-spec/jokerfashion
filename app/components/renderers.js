@@ -1,6 +1,24 @@
 import { getCategoryById } from '../data/catalog.js';
 
-function formatPrice(priceSek) {
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
+function sanitizeImageUrl(url) {
+  try {
+    const parsedUrl = new URL(String(url));
+    return parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:' ? parsedUrl.href : '';
+  } catch {
+    return '';
+  }
+}
+
+export function formatPrice(priceSek) {
   return `${new Intl.NumberFormat('sv-SE').format(priceSek)} kr`;
 }
 
@@ -20,7 +38,7 @@ export function renderCategoryPills(container, categories, activeCategoryId) {
     .join('');
 }
 
-export function renderProductGrid(container, products) {
+export function renderProductGrid(container, products, options = {}) {
   if (!container) {
     return;
   }
@@ -34,21 +52,145 @@ export function renderProductGrid(container, products) {
     .map((product) => {
       const category = getCategoryById(product.category);
       const categoryName = category ? category.name : 'Övrigt';
+      const detailUrl = `catalog.html?category=${encodeURIComponent(product.category)}&product=${encodeURIComponent(product.id)}`;
+      const description = product.description || 'Mer produktdetaljer visas i spotlight-läget.';
+      const imageUrl = sanitizeImageUrl(product.image);
+      const isActive = product.id === options.activeProductId;
 
       return `
-        <article class="product-card">
+        <article class="product-card ${isActive ? 'is-active' : ''}">
           <div class="product-image-wrap">
-            <img src="${product.image}" alt="${product.name}" loading="lazy" />
-            <span class="product-badge">${product.badge}</span>
+            <img src="${imageUrl}" alt="${escapeHtml(product.name)}" loading="lazy" />
+            <span class="product-badge">${escapeHtml(product.badge || 'Shop')}</span>
           </div>
           <div class="product-copy">
-            <p class="meta">${categoryName}</p>
-            <h3>${product.name}</h3>
+            <p class="meta">${escapeHtml(categoryName)}</p>
+            <h3>${escapeHtml(product.name)}</h3>
+            <p class="product-description">${escapeHtml(description)}</p>
             <p class="price">${formatPrice(product.priceSek)}</p>
+            <div class="product-card-actions">
+              <a class="button secondary" href="${detailUrl}">${isActive ? 'Aktiv produkt' : 'Visa detaljer'}</a>
+              <a class="text-link compact" href="checkout.html">Till varukorg</a>
+            </div>
           </div>
         </article>
       `;
     })
+    .join('');
+}
+
+export function renderProductSpotlight(container, product) {
+  if (!container) {
+    return;
+  }
+
+  if (!product) {
+    container.innerHTML = '<p class="empty-state">Välj en produkt för att se detaljer, storlekar och köpknappar.</p>';
+    return;
+  }
+
+  const category = getCategoryById(product.category);
+  const categoryName = category ? category.name : 'Övrigt';
+  const imageUrl = sanitizeImageUrl(product.image);
+  const sizeOptions = (product.sizes || ['One size'])
+    .map((size) => `<option value="${escapeHtml(size)}">${escapeHtml(size)}</option>`)
+    .join('');
+  const highlights = (product.highlights || [])
+    .map((highlight) => `<li>${escapeHtml(highlight)}</li>`)
+    .join('');
+
+  container.innerHTML = `
+    <div class="spotlight-media">
+      <img src="${imageUrl}" alt="${escapeHtml(product.name)}" loading="lazy" />
+    </div>
+    <div class="spotlight-copy">
+      <p class="eyebrow">${escapeHtml(categoryName)} • ${escapeHtml(product.badge || 'Shop')}</p>
+      <h2>${escapeHtml(product.name)}</h2>
+      <p class="spotlight-story">${escapeHtml(product.story || product.description || '')}</p>
+      <p>${escapeHtml(product.description || '')}</p>
+      <ul class="spotlight-list">${highlights}</ul>
+      <p class="price spotlight-price">${formatPrice(product.priceSek)}</p>
+      <form class="spotlight-form" data-product-form>
+        <div>
+          <label for="product-size">Storlek</label>
+          <select id="product-size" name="size">${sizeOptions}</select>
+        </div>
+        <div>
+          <label for="product-quantity">Antal</label>
+          <input id="product-quantity" name="quantity" type="number" min="1" value="1" inputmode="numeric" />
+        </div>
+        <div class="spotlight-actions">
+          <button class="button primary" type="submit">Lägg i varukorg</button>
+          <a class="button secondary" href="checkout.html">Gå till checkout</a>
+        </div>
+      </form>
+      <p class="small-note">Fri stylingkänsla, men fokuserad vertical slice: browse → välj → lägg i varukorg → checkout.</p>
+    </div>
+  `;
+}
+
+export function renderCartSummary(container, summary, options = {}) {
+  if (!container) {
+    return;
+  }
+
+  const itemLabel = summary.itemCount === 1 ? 'produkt' : 'produkter';
+  const helperText = options.helperText || 'Fortsätt till checkout när du är redo att skicka ordern.';
+
+  container.innerHTML = `
+    <p class="eyebrow">Varukorg</p>
+    <h2>${summary.itemCount} ${itemLabel}</h2>
+    <p class="price">${formatPrice(summary.totalPrice)}</p>
+    <p>${escapeHtml(helperText)}</p>
+    <div class="panel-actions">
+      <a class="button primary" href="checkout.html">Öppna checkout</a>
+      <a class="button secondary" href="catalog.html">Fortsätt handla</a>
+    </div>
+  `;
+}
+
+export function renderCheckoutCart(container, cartItems) {
+  if (!container) {
+    return;
+  }
+
+  if (!cartItems.length) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <p>Varukorgen är tom. Lägg till produkter från katalogen för att fortsätta till orderflödet.</p>
+        <a class="button primary" href="catalog.html">Till katalogen</a>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = cartItems
+    .map(
+      (item, index) => `
+        <article class="checkout-item">
+          <img class="checkout-item-image" src="${sanitizeImageUrl(item.image)}" alt="${escapeHtml(item.name)}" loading="lazy" />
+          <div class="checkout-item-copy">
+            <p class="meta">${escapeHtml(getCategoryById(item.category)?.name || item.category)}</p>
+            <h3>${escapeHtml(item.name)}</h3>
+            <p class="small-note">Storlek: ${escapeHtml(item.size || 'One size')}</p>
+            <div class="checkout-item-controls">
+              <label>
+                Antal
+                <input
+                  type="number"
+                  min="1"
+                  value="${item.quantity}"
+                  data-cart-quantity="${index}"
+                  inputmode="numeric"
+                />
+              </label>
+              <button class="button secondary" type="button" data-remove-cart-item="${index}">Ta bort</button>
+            </div>
+          </div>
+          <p class="price">${formatPrice(item.priceSek * item.quantity)}</p>
+        </article>
+      `
+    )
     .join('');
 }
 
@@ -61,11 +203,17 @@ export function renderRouteCards(container, routes) {
     .map(
       (route) => `
       <article class="route-card">
-        <h3>${route.title}</h3>
-        <p>${route.description}</p>
+        <h3>${escapeHtml(route.title)}</h3>
+        <p>${escapeHtml(route.description)}</p>
         <a class="text-link" href="${route.href}">${route.cta}</a>
       </article>
     `
     )
     .join('');
+}
+
+export function syncCartCountBadges(count) {
+  document.querySelectorAll('[data-cart-count]').forEach((badge) => {
+    badge.textContent = String(count);
+  });
 }

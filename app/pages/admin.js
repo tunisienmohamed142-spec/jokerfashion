@@ -33,6 +33,7 @@ export function initAdminPage() {
     const category = String(formData.get('category') || '').trim();
     const priceSek = Number(formData.get('priceSek'));
     const image = String(formData.get('image') || '').trim();
+    const description = String(formData.get('description') || '').trim();
 
     if (!name || !category || Number.isNaN(priceSek) || priceSek <= 0) {
       if (feedback) {
@@ -41,7 +42,7 @@ export function initAdminPage() {
       return;
     }
 
-    createAdminProduct({ name, category, priceSek, image });
+    createAdminProduct({ name, category, priceSek, image, description });
     form.reset();
     renderCategoryOptions(categorySelect, categories);
     renderAdminPreview();

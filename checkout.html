@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="sv">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Checkout | JokerFashion</title>
+    <meta
+      name="description"
+      content="JokerFashion checkout med varukorg, orderöversikt och leveransformulär i den nya shoppen."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="app/styles/app.css" />
+  </head>
+  <body data-page="checkout">
+    <header class="site-header">
+      <div class="container nav-row">
+        <a class="brand" href="index.html">Joker<span>Fashion</span></a>
+        <nav class="main-nav" aria-label="Huvudnavigation">
+          <a class="nav-link" href="index.html">Hem</a>
+          <a class="nav-link" href="catalog.html">Katalog</a>
+          <a class="nav-link active" href="checkout.html">Checkout <span class="cart-count" data-cart-count>0</span></a>
+          <a class="nav-link" href="account.html">Konto</a>
+          <a class="nav-link" href="admin.html">Admin</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <div class="container">
+        <section class="hero">
+          <p class="eyebrow">Checkout</p>
+          <h1>Din Joker-kundvagn, nu i den nya shoppen</h1>
+          <p>
+            Granska valda produkter, justera antal och skicka ordern genom samma Resend-drivna beställnings-API
+            som tidigare låg kvar i legacy-flödet.
+          </p>
+        </section>
+
+        <section class="page-section grid-2">
+          <article class="panel">
+            <div class="section-header">
+              <div>
+                <p class="eyebrow">Varukorg</p>
+                <h2>Dina valda produkter</h2>
+              </div>
+              <button class="button secondary" type="button" data-clear-cart>Töm varukorg</button>
+            </div>
+            <div class="checkout-cart-list" data-checkout-cart></div>
+          </article>
+
+          <div class="page-section">
+            <aside class="panel" data-checkout-summary></aside>
+
+            <article class="form-card">
+              <div class="section-header">
+                <div>
+                  <p class="eyebrow">Leveransuppgifter</p>
+                  <h2>Skicka order</h2>
+                </div>
+                <p class="price" data-checkout-total>0 kr</p>
+              </div>
+
+              <form class="form-grid" data-checkout-form>
+                <div>
+                  <label for="checkout-first-name">Förnamn</label>
+                  <input id="checkout-first-name" name="firstName" required />
+                </div>
+                <div>
+                  <label for="checkout-last-name">Efternamn</label>
+                  <input id="checkout-last-name" name="lastName" required />
+                </div>
+                <div>
+                  <label for="checkout-email">E-post</label>
+                  <input id="checkout-email" name="email" type="email" required />
+                </div>
+                <div>
+                  <label for="checkout-phone">Telefon</label>
+                  <input id="checkout-phone" name="phone" inputmode="tel" required />
+                </div>
+                <div class="full">
+                  <label for="checkout-address">Adress</label>
+                  <input id="checkout-address" name="address" required />
+                </div>
+                <div>
+                  <label for="checkout-postal-code">Postnummer</label>
+                  <input id="checkout-postal-code" name="postalCode" inputmode="numeric" required />
+                </div>
+                <div>
+                  <label for="checkout-city">Stad</label>
+                  <input id="checkout-city" name="city" required />
+                </div>
+                <div class="full">
+                  <label for="checkout-message">Meddelande (valfritt)</label>
+                  <input id="checkout-message" name="message" />
+                </div>
+                <div class="full">
+                  <button class="button primary" type="submit">Skicka order</button>
+                </div>
+              </form>
+
+              <p class="notice" data-checkout-feedback></p>
+            </article>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <p>Checkout-flödet använder samma order-API som tidigare, men är nu integrerat i rebuild-arkitekturen.</p>
+      </div>
+    </footer>
+
+    <script type="module" src="app/main.js"></script>
+  </body>
+</html>
