@@ -741,6 +741,9 @@ async function initContentTab() {
     form.querySelector('[name="newArrivalsCtaLabel"]').value = content.newArrivalsSection.ctaLabel;
     form.querySelector('[name="newArrivalsCtaHref"]').value = content.newArrivalsSection.ctaHref;
     form.querySelector('[name="footerMarketingLine"]').value = content.footer.marketingLine;
+    form.querySelector('[name="footerFollowTitle"]').value = content.footer.followTitle;
+    form.querySelector('[name="footerInstagramUrl"]').value = content.footer.instagramUrl;
+    form.querySelector('[name="footerTiktokUrl"]').value = content.footer.tiktokUrl;
   };
 
   try {
@@ -791,6 +794,9 @@ async function initContentTab() {
         },
         footer: {
           marketingLine: data.get('footerMarketingLine'),
+          followTitle: data.get('footerFollowTitle'),
+          instagramUrl: data.get('footerInstagramUrl'),
+          tiktokUrl: data.get('footerTiktokUrl'),
         },
       });
 

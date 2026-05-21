@@ -1965,8 +1965,8 @@ body.mega-menu-open {
   --surface-soft: #f8f8fb;
   --text: #111111;
   --text-muted: #525260;
-  --accent: #4a246f;
-  --accent-alt: #1d4e38;
+  --accent: #5b2a86;
+  --accent-alt: #2b8f58;
   --danger: #ba2d44;
   --border: rgba(15, 15, 20, 0.14);
   --shadow: 0 18px 34px rgba(14, 14, 18, 0.1);
@@ -1974,8 +1974,8 @@ body.mega-menu-open {
 
 body {
   background:
-    radial-gradient(circle at 8% 12%, rgba(74, 36, 111, 0.09), transparent 32%),
-    radial-gradient(circle at 90% 18%, rgba(29, 78, 56, 0.08), transparent 28%),
+    radial-gradient(circle at 8% 12%, rgba(91, 42, 134, 0.14), transparent 35%),
+    radial-gradient(circle at 90% 18%, rgba(43, 143, 88, 0.12), transparent 31%),
     linear-gradient(180deg, #f7f7f8, #f2f2f5 42%, #f4f4f6);
 }
 
@@ -1986,8 +1986,10 @@ body::before {
   pointer-events: none;
   z-index: -1;
   background:
-    radial-gradient(circle at 86% 30%, rgba(18, 18, 22, 0.04) 0 18%, transparent 19%),
-    radial-gradient(circle at 15% 78%, rgba(18, 18, 22, 0.035) 0 15%, transparent 16%);
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 600'%3E%3Cg fill='none' stroke='%2315151a' stroke-width='2.2' opacity='0.12'%3E%3Cpath d='M145 300c0-86 61-154 155-154 92 0 155 66 155 154 0 88-61 154-155 154S145 387 145 300z'/%3E%3Cpath d='M210 270c22-26 45-39 90-39 42 0 67 11 90 39'/%3E%3Cpath d='M232 354c18 18 40 27 68 27 30 0 52-9 70-27'/%3E%3Cpath d='M262 296h0M338 296h0' stroke-linecap='round' stroke-width='8'/%3E%3C/g%3E%3C/svg%3E")
+      -120px 90px / 360px no-repeat,
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 600'%3E%3Cg fill='none' stroke='%2315151a' stroke-width='2' opacity='0.1'%3E%3Cpath d='M120 300c0-98 75-172 180-172s180 73 180 172-75 172-180 172S120 398 120 300z'/%3E%3Cpath d='M220 252c24-16 45-24 81-24 38 0 59 8 83 24'/%3E%3Cpath d='M228 356c20 22 45 32 75 32s56-10 78-32'/%3E%3C/g%3E%3C/svg%3E")
+      right -90px bottom 80px / 360px no-repeat;
 }
 
 .site-header {
@@ -1996,20 +1998,23 @@ body::before {
 }
 
 .brand {
-  color: #111;
+  color: var(--accent-alt);
 }
 
 .brand span {
   color: var(--accent);
 }
 
-.hero {
+body[data-page='home'] .hero {
   position: relative;
   border: 1px solid rgba(15, 15, 20, 0.12);
-  background: linear-gradient(140deg, #ffffff, #f4f4f8);
+  background:
+    radial-gradient(circle at 13% 18%, rgba(43, 143, 88, 0.17), transparent 34%),
+    radial-gradient(circle at 86% 22%, rgba(91, 42, 134, 0.2), transparent 36%),
+    linear-gradient(140deg, #ffffff, #f4f4f8);
 }
 
-.hero::before {
+body[data-page='home'] .hero::before {
   content: 'J';
   position: absolute;
   right: 1.2rem;
@@ -2019,6 +2024,16 @@ body::before {
   color: rgba(17, 17, 17, 0.04);
   line-height: 1;
   pointer-events: none;
+}
+
+body[data-page='home'] .hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(110deg, transparent 0 72%, rgba(91, 42, 134, 0.12) 85%, transparent 100%),
+    linear-gradient(250deg, transparent 0 78%, rgba(43, 143, 88, 0.12) 89%, transparent 100%);
 }
 
 .hero--editorial .hero-grid {
@@ -2059,6 +2074,21 @@ body::before {
     radial-gradient(circle at 78% 22%, rgba(74, 36, 111, 0.34), transparent 38%),
     radial-gradient(circle at 32% 82%, rgba(29, 78, 56, 0.3), transparent 34%),
     linear-gradient(180deg, rgba(10, 10, 12, 0.12), rgba(10, 10, 12, 0.55));
+}
+
+.hero-joker-sigil {
+  position: absolute;
+  right: 1rem;
+  top: 1rem;
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  background:
+    radial-gradient(circle at 50% 50%, rgba(17, 17, 17, 0.2), rgba(17, 17, 17, 0.03) 62%, transparent 67%),
+    linear-gradient(135deg, rgba(91, 42, 134, 0.48), rgba(43, 143, 88, 0.42));
+  mix-blend-mode: screen;
+  box-shadow: 0 0 28px rgba(91, 42, 134, 0.3);
 }
 
 .hero-highlight {
@@ -2117,7 +2147,9 @@ body::before {
   text-decoration: none;
   border: 1px solid rgba(15, 15, 20, 0.12);
   border-radius: var(--radius-md);
-  background: #fff;
+  background:
+    linear-gradient(155deg, rgba(255, 255, 255, 0.97), rgba(247, 247, 251, 0.95)),
+    #fff;
   padding: 1rem;
   box-shadow: 0 12px 24px rgba(14, 14, 18, 0.08);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -2133,6 +2165,7 @@ body::before {
 .promo-tile:hover {
   transform: translateY(-3px);
   box-shadow: 0 16px 26px rgba(14, 14, 18, 0.14);
+  border-color: rgba(91, 42, 134, 0.32);
 }
 
 .campaign-banner {
@@ -2155,6 +2188,17 @@ body::before {
   top: -45px;
   border-radius: 50%;
   background: radial-gradient(circle, rgba(74, 36, 111, 0.52), rgba(29, 78, 56, 0.24), transparent 70%);
+}
+
+.campaign-banner::before {
+  content: '';
+  position: absolute;
+  left: -34px;
+  bottom: -48px;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(43, 143, 88, 0.35), rgba(91, 42, 134, 0.12), transparent 72%);
 }
 
 .campaign-banner p,
@@ -2241,6 +2285,10 @@ body::before {
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+.site-footer .brand {
+  color: var(--accent-alt);
+}
+
 .site-footer p,
 .site-footer a {
   color: rgba(255, 255, 255, 0.78);
@@ -2265,6 +2313,66 @@ body::before {
 
 .footer-links a:hover {
   color: #fff;
+}
+
+.footer-social {
+  margin-top: 1rem;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.footer-social .eyebrow {
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.footer-social-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.footer-social-links a {
+  text-decoration: none;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+  padding: 0.4rem 0.8rem;
+  transition: border-color 0.18s ease, color 0.18s ease, background 0.18s ease;
+}
+
+.footer-social-links a:hover {
+  border-color: rgba(43, 143, 88, 0.9);
+  color: #fff;
+  background: rgba(43, 143, 88, 0.16);
+}
+
+.home-shell {
+  position: relative;
+}
+
+.home-shell::before,
+.home-shell::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+  border-radius: 50%;
+  filter: blur(2px);
+  z-index: -1;
+}
+
+.home-shell::before {
+  width: 340px;
+  height: 340px;
+  top: 120px;
+  left: -160px;
+  background: radial-gradient(circle, rgba(43, 143, 88, 0.16), transparent 70%);
+}
+
+.home-shell::after {
+  width: 380px;
+  height: 380px;
+  bottom: 200px;
+  right: -160px;
+  background: radial-gradient(circle, rgba(91, 42, 134, 0.16), transparent 73%);
 }
 
 .mega-trigger:hover,
