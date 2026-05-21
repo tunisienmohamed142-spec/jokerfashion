@@ -4,11 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Katalog | JokerFashion</title>
-    <meta name="description" content="Kategoribaserad produktkatalog med produktdetaljer och varukorg för JokerFashion." />
+    <meta name="description" content="JokerFashion katalog — utforska kollektioner per kategori, se produktdetaljer och lägg till i varukorgen." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@400;500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,600&family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="app/styles/app.css" />
@@ -22,23 +22,26 @@
           <a class="nav-link active" href="catalog.html">Katalog</a>
           <a class="nav-link" href="checkout.html">Varukorg <span class="cart-count" data-cart-count>0</span></a>
           <a class="nav-link" href="account.html">Konto</a>
-          <a class="nav-link" href="admin.html">Admin</a>
         </nav>
       </div>
     </header>
 
     <main>
       <div class="container">
+
+        <!-- Page hero -->
         <section class="hero">
           <p class="eyebrow">Curated catalog</p>
           <h1 data-catalog-heading>Katalog</h1>
-          <p data-catalog-intro>Utforska produkter per kategori och bygg din look med snabbköp eller detaljvy.</p>
+          <p data-catalog-intro class="hero-lead">Utforska produkter per kategori och bygg din look med snabbköp eller detaljvy.</p>
         </section>
 
+        <!-- Category navigation -->
         <section class="page-section">
           <div class="pill-row" data-catalog-categories></div>
         </section>
 
+        <!-- Toolbar -->
         <section class="page-section">
           <div class="catalog-toolbar">
             <p class="small-note" data-catalog-product-count></p>
@@ -46,21 +49,27 @@
           </div>
         </section>
 
+        <!-- Spotlight + cart summary -->
         <section class="page-section grid-2">
           <article class="spotlight-card" data-catalog-spotlight></article>
           <aside class="panel" data-catalog-cart-summary></aside>
         </section>
 
+        <!-- Product grid -->
         <section class="page-section">
           <p class="notice" data-catalog-feedback></p>
           <div class="product-grid" data-catalog-grid></div>
         </section>
+
       </div>
     </main>
 
     <footer class="site-footer">
       <div class="container">
-        <p>Produktdata drivs fortfarande lokalt, men shoppingflödet lever nu i den nya arkitekturen.</p>
+        <div class="footer-bottom">
+          <p class="footer-copy">&copy; 2026 JokerFashion Atelier</p>
+          <a class="footer-copy" href="index.html">← Tillbaka till start</a>
+        </div>
       </div>
     </footer>
 
