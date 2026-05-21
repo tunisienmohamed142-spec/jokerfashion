@@ -1,6 +1,6 @@
 # JokerFashion
 
-JokerFashion är en modern modebutik byggd som en statisk frontend med en serverless API-endpoint för att skicka beställningar via EmailJS.
+JokerFashion är en modern modebutik byggd som en statisk frontend med en serverless API-endpoint för att skicka beställningar via Resend.
 
 ## Innehåll
 
@@ -9,7 +9,7 @@ JokerFashion är en modern modebutik byggd som en statisk frontend med en server
 - varukorg med localStorage
 - orderformulär med fältvis validering
 - PDF-generering av beställning
-- serverless endpoint för mejlutskick via EmailJS
+- serverless endpoint för mejlutskick via Resend
 
 ## Filer
 
@@ -19,23 +19,24 @@ JokerFashion är en modern modebutik byggd som en statisk frontend med en server
 - `barn.html` – kategori för barn
 - `style.css` – all styling
 - `script.js` – varukorg, formulär, validering och PDF
-- `api/send-order.js` – serverless funktion för att skicka beställning via EmailJS
+- `api/send-order.js` – serverless funktion för att skicka beställning via Resend
 - `CNAME` – anpassad domän för publicering
 
 ## Miljövariabler
 
-Följande miljövariabler måste finnas i din deploymiljö:
+Följande miljövariabler måste finnas i din deploymiljö (t.ex. Vercel):
 
-- `EMAILJS_SERVICE_ID`
-- `EMAILJS_TEMPLATE_ID`
-- `EMAILJS_PUBLIC_KEY`
-- `EMAILJS_PRIVATE_KEY`
+- `RESEND_API_KEY` – din API-nyckel från [resend.com](https://resend.com)
+- `ORDER_FROM_EMAIL` – avsändaradress som är verifierad i Resend (t.ex. `orders@dindoman.se`)
+- `ORDER_TO_EMAIL` – mottagaradress dit beställningar ska skickas (t.ex. `info@jokerfashion.se`)
 
 ## Ordermejl med PDF-bilaga
 
-När en order skickas genererar frontend en PDF och skickar den till `api/send-order.js`.
-Serverless-funktionen skickar sedan PDF-filen vidare till EmailJS som en bilaga via `template_params.attachments_1`.
-Se till att din EmailJS-tjänst och mall tillåter bilagor för REST-anrop.
+När en order skickas genererar frontend en PDF och skickar den base64-kodad till `api/send-order.js`.
+Serverless-funktionen skickar sedan mejlet via **Resend** med PDF-filen bifogad som en riktig `.pdf`-bilaga.
+
+Resend kräver att avsändaradressen (`ORDER_FROM_EMAIL`) är kopplad till en verifierad domän i Resend-dashboarden.
+Se [resend.com/docs](https://resend.com/docs) för hur du verifierar din domän.
 
 ## Deploy
 

@@ -31,6 +31,8 @@ export default async function handler(req, res) {
       return res.status(400).json({ message: 'PDF attachment is too large.' });
     }
 
+    const pdfBase64 = normalizedOrderPdfData.replace(/^data:application\/pdf;base64,/, '');
+
     const lines = items
       .map(
         (item) =>
@@ -38,32 +40,38 @@ export default async function handler(req, res) {
       )
       .join('\n');
 
+    const emailBody = [
+      `Kund: ${customer.firstName} ${customer.lastName}`,
+      `E-post: ${customer.email}`,
+      `Telefon: ${customer.phone}`,
+      `Adress: ${customer.address}`,
+      `Postnummer/Stad: ${customer.postalCode} ${customer.city}`,
+      `Meddelande: ${customer.message || '-'}`,
+      '',
+      'Produkter:',
+      lines,
+      '',
+      `Totalt: ${totalPrice} kr`,
+    ].join('\n');
+
     const payload = {
-      service_id: process.env.EMAILJS_SERVICE_ID,
-      template_id: process.env.EMAILJS_TEMPLATE_ID,
-      user_id: process.env.EMAILJS_PUBLIC_KEY,
-      accessToken: process.env.EMAILJS_PRIVATE_KEY,
-      template_params: {
-        customer_name: `${customer.firstName} ${customer.lastName}`,
-        customer_email: customer.email,
-        customer_phone: customer.phone,
-        customer_address: customer.address,
-        customer_postal_code: customer.postalCode,
-        customer_city: customer.city,
-        customer_message: customer.message || '-',
-        order_items: lines,
-        order_total: `${totalPrice} kr`,
-        attachments_1: {
-          name: orderPdfAttachment.name,
-          data: normalizedOrderPdfData,
+      from: process.env.ORDER_FROM_EMAIL,
+      to: [process.env.ORDER_TO_EMAIL],
+      subject: `Ny beställning – ${customer.firstName} ${customer.lastName}`,
+      text: emailBody,
+      attachments: [
+        {
+          filename: orderPdfAttachment.name,
+          content: pdfBase64,
         },
-      },
+      ],
     };
 
-    const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+    const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
       },
       body: JSON.stringify(payload),
     });
