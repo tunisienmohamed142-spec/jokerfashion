@@ -299,7 +299,14 @@
                 <button class="btn btn-primary submit-order" type="submit">Skapa beställning</button>
                 <button id="download-pdf" class="btn btn-secondary submit-order" type="button">Ladda ner PDF</button>
               </div>
-              <p id="order-status" class="order-status"></p>
+              <p id="order-status" class="order-status" role="status" aria-live="polite"></p>
+              <div id="order-feedback" class="order-feedback" hidden>
+                <div class="order-feedback-card">
+                  <p class="order-feedback-label">Orderstatus</p>
+                  <h3 id="order-feedback-title">Tack för din beställning!</h3>
+                  <p id="order-feedback-text">Vi har tagit emot din order och återkommer snart.</p>
+                </div>
+              </div>
             </form>
           </div>
         </div>
