@@ -24,7 +24,7 @@ JokerFashion är i **Rebuild Phase 2**: backend/API-lager för riktig datalagrin
 | GET | `/api/categories/:id` | Hämta kategori |
 | PUT | `/api/categories/:id` | Uppdatera kategori |
 | DELETE | `/api/categories/:id` | Ta bort kategori |
-| GET | `/api/settings` | Hämta butiksinställningar |
+| GET | `/api/settings` | Hämta butiksinställningar (publik läsning för storefront + admin) |
 | PUT | `/api/settings` | Uppdatera butiksinställningar |
 | GET | `/api/content/home` | Hämta publicerat startsideinnehåll |
 | PUT | `/api/content/home` | Uppdatera startsideinnehåll (admin) |
@@ -115,9 +115,8 @@ Utan dessa variabler:
 
 ## Kvar före DNS/live (pre-launch gaps)
 
-1. **Shipping kopplat till checkout** – fraktkostnader finns i settings men räknas inte in i checkout-totalen ännu
-2. **Orderhantering** – ordrar sparas inte i databasen; admin kan inte se inkomna ordrar
-3. **Rikare homepage-CMS** – denna PR gör hero/highlight/rubriker/CTA dynamiska, men fler block/ordning/fler homepage-bilder kan fortfarande byggas ut senare
+1. **Orderhantering** – ordrar sparas fortfarande inte i databasen; admin kan ännu inte se inkomna ordrar
+2. **Rikare homepage-CMS** – hero/highlight/rubriker/CTA är dynamiska, men fler block/ordning/fler homepage-bilder kan fortfarande byggas ut senare
 
 ## Homepage CMS (detta PR-steg)
 
@@ -146,8 +145,16 @@ Utan dessa variabler:
   - `GET/PUT/DELETE /api/products/:id`
   - `POST /api/categories`
   - `GET/PUT/DELETE /api/categories/:id`
-  - `GET/PUT /api/settings`
+  - `PUT /api/settings`
   - `PUT /api/content/home`
+
+## Shipping i checkout (detta PR-steg)
+
+- Checkout använder nu sparade `shippingRate` och `freeShippingThreshold` från `/api/settings` som source of truth.
+- Kund ser tydlig summering med **subtotal**, **frakt** och **totalt** i checkout.
+- Fri-frakt-regeln appliceras automatiskt när subtotal når tröskeln i settings.
+- Vid settings-fel används säkra fallback-värden så checkout fortsätter fungera.
+- Nästa commerce-steg för MVP är order persistence + admin order management.
 
 ## Migration från Phase 1
 

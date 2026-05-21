@@ -4,6 +4,14 @@ import { DEFAULT_HOME_CONTENT, mergeHomeContent } from '../data/home-content.js'
 const MOCK_SESSION_KEY = 'jokerfashion-auth-session';
 const CART_STORAGE_KEY = 'jokerfashion-cart';
 const CHECKOUT_DRAFT_KEY = 'jokerfashion-checkout-draft';
+export const DEFAULT_SHOP_SETTINGS = {
+  shippingRate: 49,
+  freeShippingThreshold: 799,
+  taxRate: 25,
+  currency: 'SEK',
+  shopEmail: '',
+  shopName: 'JokerFashion',
+};
 
 // ── localStorage helpers (cart / checkout / session only) ────────────────────
 
@@ -201,7 +209,22 @@ export async function getCatalogProductById(productId) {
 // ── Shop settings (API-backed) ────────────────────────────────────────────────
 
 export async function getShopSettings() {
-  return apiFetch('/api/settings');
+  const settings = await apiFetch('/api/settings', {
+    cache: 'no-store',
+  });
+
+  return {
+    ...DEFAULT_SHOP_SETTINGS,
+    ...settings,
+  };
+}
+
+export async function getStorefrontShopSettings() {
+  try {
+    return await getShopSettings();
+  } catch {
+    return { ...DEFAULT_SHOP_SETTINGS };
+  }
 }
 
 export async function setShopSettings(settings) {
@@ -227,9 +250,42 @@ export function getCartItems() {
 
 export function getCartSummary() {
   const items = getCartItems();
+  const subtotalPrice = items.reduce((sum, item) => sum + item.priceSek * item.quantity, 0);
   return {
     itemCount: items.reduce((sum, item) => sum + item.quantity, 0),
-    totalPrice: items.reduce((sum, item) => sum + item.priceSek * item.quantity, 0),
+    subtotalPrice,
+    totalPrice: subtotalPrice,
+  };
+}
+
+export function getCheckoutTotals(cartItems, settingsInput = DEFAULT_SHOP_SETTINGS) {
+  const items = Array.isArray(cartItems) ? cartItems : [];
+  const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
+  const subtotalPrice = items.reduce((sum, item) => sum + item.priceSek * item.quantity, 0);
+  const shippingRate = Number(settingsInput.shippingRate);
+  const freeShippingThreshold = Number(settingsInput.freeShippingThreshold);
+
+  const normalizedShippingRate = Number.isFinite(shippingRate) ? Math.max(0, shippingRate) : 0;
+  const normalizedFreeShippingThreshold = Number.isFinite(freeShippingThreshold)
+    ? Math.max(0, freeShippingThreshold)
+    : Number.POSITIVE_INFINITY;
+
+  const freeShippingApplied =
+    normalizedShippingRate > 0 &&
+    Number.isFinite(normalizedFreeShippingThreshold) &&
+    subtotalPrice >= normalizedFreeShippingThreshold;
+
+  const shippingPrice = itemCount === 0 ? 0 : freeShippingApplied ? 0 : normalizedShippingRate;
+  const totalPrice = subtotalPrice + shippingPrice;
+
+  return {
+    itemCount,
+    subtotalPrice,
+    shippingPrice,
+    totalPrice,
+    shippingRate: normalizedShippingRate,
+    freeShippingThreshold: normalizedFreeShippingThreshold,
+    freeShippingApplied,
   };
 }
 

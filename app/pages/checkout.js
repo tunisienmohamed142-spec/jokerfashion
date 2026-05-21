@@ -6,15 +6,16 @@ import {
 import {
   clearCart,
   clearCheckoutDraft,
+  getCheckoutTotals,
   getCartItems,
-  getCartSummary,
   getCheckoutDraft,
+  getStorefrontShopSettings,
   removeCartItem,
   setCheckoutDraft,
   updateCartItemQuantity,
 } from '../state/store.js';
 
-function getOrderPayload(form) {
+function getOrderPayload(form, orderSummary) {
   const formData = new FormData(form);
   const cartItems = getCartItems();
 
@@ -33,7 +34,11 @@ function getOrderPayload(form) {
       ...item,
       subtotal: item.priceSek * item.quantity,
     })),
-    totalPrice: cartItems.reduce((sum, item) => sum + item.priceSek * item.quantity, 0),
+    subtotalPrice: orderSummary.subtotalPrice,
+    shippingPrice: orderSummary.shippingPrice,
+    totalPrice: orderSummary.totalPrice,
+    shippingRate: orderSummary.shippingRate,
+    freeShippingThreshold: orderSummary.freeShippingThreshold,
   };
 }
 
@@ -139,13 +144,13 @@ function showOrderSuccess(orderData) {
   if (itemSummary && orderData) {
     const itemCount = orderData.items.reduce((sum, item) => sum + item.quantity, 0);
     const itemLabel = itemCount === 1 ? 'produkt' : 'produkter';
-    itemSummary.textContent = `${itemCount} ${itemLabel} för totalt ${formatPrice(orderData.totalPrice)} är nu på väg till oss.`;
+    itemSummary.textContent = `${itemCount} ${itemLabel}: subtotal ${formatPrice(orderData.subtotalPrice)}, frakt ${formatPrice(orderData.shippingPrice)}, totalt ${formatPrice(orderData.totalPrice)}.`;
   }
 
   setCheckoutStep(3);
 }
 
-export function initCheckoutPage() {
+export async function initCheckoutPage() {
   const cartContainer = document.querySelector('[data-checkout-cart]');
   const summaryContainer = document.querySelector('[data-checkout-summary]');
   const form = document.querySelector('[data-checkout-form]');
@@ -153,13 +158,37 @@ export function initCheckoutPage() {
   const totalElement = document.querySelector('[data-checkout-total]');
   const clearButton = document.querySelector('[data-clear-cart]');
   const submitButton = form?.querySelector('[type="submit"]');
+  const freeShippingText = document.querySelector('[data-checkout-free-shipping]');
+  const footerShippingText = document.querySelector('[data-checkout-footer-shipping]');
+  const settings = await getStorefrontShopSettings();
+  const thresholdPreview = getCheckoutTotals([], settings);
 
-  function renderCheckoutState(helperText = 'Granska din varukorg och fyll i leveransuppgifterna för att slutföra ordern.') {
+  function getShippingHelperText(summary) {
+    if (summary.itemCount === 0) {
+      return 'Granska din varukorg och fyll i leveransuppgifterna för att slutföra ordern.';
+    }
+
+    if (summary.freeShippingApplied) {
+      return `Fri frakt aktiverad över ${formatPrice(summary.freeShippingThreshold)}.`;
+    }
+
+    if (!Number.isFinite(summary.freeShippingThreshold)) {
+      return `Fast frakt ${formatPrice(summary.shippingPrice)} appliceras på ordern.`;
+    }
+
+    const remainingForFreeShipping = Math.max(0, summary.freeShippingThreshold - summary.subtotalPrice);
+    return remainingForFreeShipping > 0
+      ? `Lägg till för ${formatPrice(remainingForFreeShipping)} för fri frakt.`
+      : `Frakt ${formatPrice(summary.shippingPrice)} appliceras på ordern.`;
+  }
+
+  function renderCheckoutState(helperText) {
     const cartItems = getCartItems();
-    const summary = getCartSummary();
+    const summary = getCheckoutTotals(cartItems, settings);
+    const computedHelperText = helperText || getShippingHelperText(summary);
 
     renderCheckoutCart(cartContainer, cartItems);
-    renderCartSummary(summaryContainer, summary, { helperText });
+    renderCartSummary(summaryContainer, summary, { helperText: computedHelperText });
 
     if (totalElement) {
       totalElement.textContent = formatPrice(summary.totalPrice);
@@ -174,7 +203,7 @@ export function initCheckoutPage() {
         const index = Number(event.currentTarget.dataset.cartQuantity);
         const quantity = Number(event.currentTarget.value);
         updateCartItemQuantity(index, quantity);
-        renderCheckoutState('Varukorgen uppdaterades.');
+        renderCheckoutState();
       });
     });
 
@@ -182,9 +211,21 @@ export function initCheckoutPage() {
       button.addEventListener('click', () => {
         const index = Number(button.dataset.removeCartItem);
         removeCartItem(index);
-        renderCheckoutState('Produkten togs bort från varukorgen.');
+        renderCheckoutState();
       });
     });
+  }
+
+  if (freeShippingText) {
+    freeShippingText.textContent = Number.isFinite(thresholdPreview.freeShippingThreshold)
+      ? `Fri frakt över ${formatPrice(thresholdPreview.freeShippingThreshold)}`
+      : 'Fast frakt på alla ordrar';
+  }
+
+  if (footerShippingText) {
+    footerShippingText.textContent = Number.isFinite(thresholdPreview.freeShippingThreshold)
+      ? `Fri frakt över ${formatPrice(thresholdPreview.freeShippingThreshold)}`
+      : 'Fast frakt på alla ordrar';
   }
 
   renderCheckoutState();
@@ -193,7 +234,7 @@ export function initCheckoutPage() {
 
   clearButton?.addEventListener('click', () => {
     clearCart();
-    renderCheckoutState('Varukorgen tömdes.');
+    renderCheckoutState();
     if (feedback) {
       feedback.textContent = 'Varukorgen tömdes. Lägg till nya produkter från katalogen när du vill fortsätta.';
     }
@@ -206,7 +247,8 @@ export function initCheckoutPage() {
   form?.addEventListener('submit', async (event) => {
     event.preventDefault();
 
-    const orderData = getOrderPayload(form);
+    const orderSummary = getCheckoutTotals(getCartItems(), settings);
+    const orderData = getOrderPayload(form, orderSummary);
     const errors = validateOrderPayload(orderData);
 
     if (errors.length > 0) {
@@ -242,4 +284,3 @@ export function initCheckoutPage() {
     }
   });
 }
-
