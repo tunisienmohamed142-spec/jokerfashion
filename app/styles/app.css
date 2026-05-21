@@ -336,6 +336,30 @@ main {
   font-size: 0.75rem;
 }
 
+.product-badge--sale {
+  background: rgba(255, 63, 127, 0.88);
+  border-color: rgba(255, 63, 127, 0.5);
+  color: #fff;
+}
+
+.product-badge--new {
+  background: rgba(57, 255, 136, 0.88);
+  border-color: rgba(57, 255, 136, 0.5);
+  color: #0e0b14;
+}
+
+.product-badge--featured {
+  background: rgba(159, 59, 255, 0.88);
+  border-color: rgba(159, 59, 255, 0.5);
+  color: #fff;
+}
+
+.product-badge--bestseller {
+  background: rgba(201, 169, 110, 0.88);
+  border-color: rgba(201, 169, 110, 0.5);
+  color: #0e0b14;
+}
+
 .product-copy {
   padding: 0.8rem 0.9rem 1rem;
 }
@@ -598,6 +622,24 @@ textarea {
   font-size: 2rem;
   font-weight: 700;
   color: var(--text);
+}
+
+.product-detail-price-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.product-detail-price-row .price-sale {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.product-detail-price-compare {
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: var(--text-muted);
 }
 
 .product-detail-highlights {
@@ -1075,13 +1117,14 @@ textarea {
 
 .price-sale {
   color: var(--accent-alt);
+  font-weight: 700;
 }
 
 .price-original {
   color: var(--text-muted);
   font-weight: 400;
   font-size: 0.84em;
-  margin-left: 0.3rem;
+  margin-left: 0.25rem;
 }
 
 .table-img {
@@ -1231,6 +1274,38 @@ textarea {
   gap: 0.65rem;
   flex-wrap: wrap;
   align-items: center;
+}
+
+/* ── Merchandising flag checkboxes ──────────────────────── */
+.flag-group {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.65rem 0.85rem 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin: 0;
+}
+
+.flag-group legend {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  padding: 0 0.35rem;
+}
+
+.flag-option {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.flag-option input[type="checkbox"] {
+  accent-color: var(--accent);
+  width: 1rem;
+  height: 1rem;
 }
 
 /* ── Admin info panel ───────────────────────────────────── */

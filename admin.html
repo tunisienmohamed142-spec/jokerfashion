@@ -132,6 +132,33 @@
                   <label for="admin-description">Produktbeskrivning</label>
                   <input id="admin-description" name="description" placeholder="Kort beskrivning av produkten" />
                 </div>
+                <div>
+                  <label for="admin-badge">Kampanjbadge</label>
+                  <select id="admin-badge" name="badge">
+                    <option value="">Ingen badge</option>
+                    <option value="REA">REA</option>
+                    <option value="Nyhet">Nyhet</option>
+                    <option value="Populär">Populär</option>
+                    <option value="Utvald">Utvald</option>
+                  </select>
+                </div>
+                <div class="full">
+                  <fieldset class="flag-group">
+                    <legend>Produktflaggor</legend>
+                    <label class="flag-option">
+                      <input type="checkbox" name="isNew" value="1" />
+                      Nyhet
+                    </label>
+                    <label class="flag-option">
+                      <input type="checkbox" name="featured" value="1" />
+                      Utvald
+                    </label>
+                    <label class="flag-option">
+                      <input type="checkbox" name="isBestseller" value="1" />
+                      Populär / Bestseller
+                    </label>
+                  </fieldset>
+                </div>
                 <div class="full admin-form-actions">
                   <button class="button primary" type="submit">
                     <span data-submit-label>Lägg till produkt</span>

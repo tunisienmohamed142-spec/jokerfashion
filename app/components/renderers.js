@@ -18,6 +18,30 @@ function sanitizeImageUrl(url) {
   }
 }
 
+function getBadgeVariantClass(badge) {
+  const b = String(badge || '').toLowerCase().trim();
+  if (b === 'rea' || b === 'sale') return 'product-badge--sale';
+  if (b === 'nyhet' || b === 'new') return 'product-badge--new';
+  if (b === 'utvald' || b === 'featured') return 'product-badge--featured';
+  if (b === 'populär' || b === 'popular' || b === 'bestseller') return 'product-badge--bestseller';
+  return '';
+}
+
+function resolveBadgeText(product) {
+  if (product.badge) return product.badge;
+  if (product.isNew) return 'Nyhet';
+  if (product.featured) return 'Utvald';
+  if (product.isBestseller) return 'Populär';
+  return '';
+}
+
+function renderPriceHtml(priceSek, salePriceSek) {
+  if (salePriceSek && salePriceSek < priceSek) {
+    return `<span class="price-sale">${formatPrice(salePriceSek)}</span><s class="price-original">${formatPrice(priceSek)}</s>`;
+  }
+  return escapeHtml(formatPrice(priceSek));
+}
+
 export function formatPrice(priceSek) {
   return `${new Intl.NumberFormat('sv-SE').format(priceSek)} kr`;
 }
@@ -57,18 +81,20 @@ export function renderProductGrid(container, products, options = {}) {
       const imageUrl = sanitizeImageUrl(product.image);
       const isActive = product.id === options.activeProductId;
       const quickAddLabel = options.quickAddLabel || 'Lägg i varukorg';
+      const badgeText = resolveBadgeText(product);
+      const badgeVariantClass = getBadgeVariantClass(badgeText);
 
       return `
         <article class="product-card ${isActive ? 'is-active' : ''}">
           <div class="product-image-wrap">
             <img src="${imageUrl}" alt="${escapeHtml(product.name)}" loading="lazy" />
-            <span class="product-badge">${escapeHtml(product.badge || 'Shop')}</span>
+            ${badgeText ? `<span class="product-badge ${badgeVariantClass}">${escapeHtml(badgeText)}</span>` : ''}
           </div>
           <div class="product-copy">
             <p class="meta">${escapeHtml(categoryName)}</p>
             <h3>${escapeHtml(product.name)}</h3>
             <p class="product-description">${escapeHtml(description)}</p>
-            <p class="price">${formatPrice(product.priceSek)}</p>
+            <p class="price">${renderPriceHtml(product.priceSek, product.salePriceSek)}</p>
             <div class="product-card-actions">
               ${options.enableQuickAdd ? `<button class="button primary" type="button" data-add-to-cart="${escapeHtml(product.id)}">${escapeHtml(quickAddLabel)}</button>` : ''}
               <a class="button secondary" href="${detailUrl}">${isActive ? 'Aktiv produkt' : 'Se detaljer'}</a>
@@ -99,18 +125,20 @@ export function renderProductSpotlight(container, product) {
   const highlights = (product.highlights || [])
     .map((highlight) => `<li>${escapeHtml(highlight)}</li>`)
     .join('');
+  const badgeText = resolveBadgeText(product);
+  const badgeVariantClass = getBadgeVariantClass(badgeText);
 
   container.innerHTML = `
     <div class="spotlight-media">
       <img src="${imageUrl}" alt="${escapeHtml(product.name)}" loading="lazy" />
     </div>
     <div class="spotlight-copy">
-      <p class="eyebrow">${escapeHtml(categoryName)} • ${escapeHtml(product.badge || 'Shop')}</p>
+      <p class="eyebrow">${escapeHtml(categoryName)}${badgeText ? ` • <span class="product-badge ${badgeVariantClass}" style="position:static;display:inline-block;vertical-align:middle;">${escapeHtml(badgeText)}</span>` : ''}</p>
       <h2>${escapeHtml(product.name)}</h2>
       <p class="spotlight-story">${escapeHtml(product.story || product.description || '')}</p>
       <p>${escapeHtml(product.description || '')}</p>
       <ul class="spotlight-list">${highlights}</ul>
-      <p class="price spotlight-price">${formatPrice(product.priceSek)}</p>
+      <p class="price spotlight-price">${renderPriceHtml(product.priceSek, product.salePriceSek)}</p>
       <form class="spotlight-form" data-product-form>
         <div>
           <label for="product-size">Storlek</label>
@@ -198,7 +226,7 @@ export function renderCheckoutCart(container, cartItems) {
               <button class="button secondary" type="button" data-remove-cart-item="${index}">Ta bort</button>
             </div>
           </div>
-          <p class="price">${formatPrice(item.priceSek * item.quantity)}</p>
+          <p class="price">${item.compareAtPriceSek ? `<span class="price-sale">${formatPrice(item.priceSek * item.quantity)}</span><s class="price-original">${formatPrice(item.compareAtPriceSek * item.quantity)}</s>` : formatPrice(item.priceSek * item.quantity)}</p>
         </article>
       `
     )

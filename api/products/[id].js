@@ -79,6 +79,10 @@ export default async function handler(req, res) {
             : existing.sizes,
         image:
           body.image !== undefined ? sanitizeRemoteImageUrl(body.image, existing.image) : existing.image,
+        badge: body.badge !== undefined ? String(body.badge).trim() : (existing.badge || ''),
+        isNew: body.isNew !== undefined ? Boolean(body.isNew) : Boolean(existing.isNew),
+        featured: body.featured !== undefined ? Boolean(body.featured) : Boolean(existing.featured),
+        isBestseller: body.isBestseller !== undefined ? Boolean(body.isBestseller) : Boolean(existing.isBestseller),
       };
 
       if (updated.salePriceSek !== null && updated.salePriceSek >= updated.priceSek) {
