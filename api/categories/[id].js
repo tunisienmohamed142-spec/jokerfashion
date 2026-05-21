@@ -1,5 +1,6 @@
 import { isKvAvailable, kvGet, kvSet } from '../_kv.js';
 import { requireAdminSession } from '../_auth.js';
+import { sanitizeRemoteImageUrl } from '../_media.js';
 
 const KV_KEY = 'jf:categories';
 
@@ -59,6 +60,10 @@ export default async function handler(req, res) {
             ? String(body.description).trim()
             : existing.description,
         icon: body.icon !== undefined ? String(body.icon).trim() : existing.icon,
+        image:
+          body.image !== undefined
+            ? sanitizeRemoteImageUrl(body.image, existing.image || '')
+            : existing.image,
       };
 
       categories[index] = updated;

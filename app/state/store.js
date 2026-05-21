@@ -70,6 +70,17 @@ export async function logoutAdmin() {
   });
 }
 
+export async function uploadAdminMedia({ dataUrl, usage, fileName }) {
+  return apiFetch('/api/admin/media-upload', {
+    method: 'POST',
+    body: JSON.stringify({
+      dataUrl: String(dataUrl || ''),
+      usage: String(usage || ''),
+      fileName: String(fileName || ''),
+    }),
+  });
+}
+
 // ── Admin products (API-backed) ───────────────────────────────────────────────
 
 export async function getAdminProducts() {
@@ -118,6 +129,7 @@ export async function createAdminCategory(input) {
       name: String(input.name || '').trim(),
       description: String(input.description || '').trim(),
       icon: String(input.icon || '🏷️').trim(),
+      image: String(input.image || '').trim(),
     }),
   });
 }

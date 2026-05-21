@@ -13,6 +13,7 @@ import {
   getAdminSession,
   logoutAdmin,
   setShopSettings,
+  uploadAdminMedia,
 } from '../state/store.js';
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -50,6 +51,89 @@ function showFeedback(element, message, isError = false) {
 function getSafeLoginRedirect() {
   const next = encodeURIComponent('admin.html');
   return `admin-login.html?next=${next}`;
+}
+
+function sanitizeImageUrl(value) {
+  try {
+    const parsed = new URL(String(value || '').trim());
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:' ? parsed.href : '';
+  } catch {
+    return '';
+  }
+}
+
+function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ''));
+    reader.onerror = () => reject(new Error('Kunde inte läsa bildfilen.'));
+    reader.readAsDataURL(file);
+  });
+}
+
+function setImagePreview(target, imageUrl) {
+  const preview = document.querySelector(`[data-admin-image-preview="${target}"]`);
+  if (!preview) {
+    return;
+  }
+  const safeUrl = sanitizeImageUrl(imageUrl);
+  if (safeUrl) {
+    preview.src = safeUrl;
+    preview.hidden = false;
+  } else {
+    preview.removeAttribute('src');
+    preview.hidden = true;
+  }
+}
+
+function bindImageUrlPreview(target) {
+  const urlInput = document.querySelector(`[data-admin-image-url="${target}"]`);
+  if (!urlInput) {
+    return;
+  }
+  const updatePreview = () => setImagePreview(target, urlInput.value);
+  urlInput.addEventListener('input', updatePreview);
+  urlInput.addEventListener('change', updatePreview);
+  updatePreview();
+}
+
+function setupImageUpload({ target, usage, feedbackElement }) {
+  const uploadInput = document.querySelector(`[data-admin-image-upload="${target}"]`);
+  const urlInput = document.querySelector(`[data-admin-image-url="${target}"]`);
+  if (!uploadInput || !urlInput) {
+    return;
+  }
+
+  uploadInput.addEventListener('change', async () => {
+    const file = uploadInput.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    if (!['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.type)) {
+      showFeedback(feedbackElement, 'Ogiltig filtyp. Använd JPG, PNG, WEBP eller GIF.', true);
+      uploadInput.value = '';
+      return;
+    }
+    if (file.size > 3 * 1024 * 1024) {
+      showFeedback(feedbackElement, 'Bilden är för stor. Maxstorlek är 3 MB.', true);
+      uploadInput.value = '';
+      return;
+    }
+
+    try {
+      showFeedback(feedbackElement, 'Laddar upp bild…');
+      const dataUrl = await readFileAsDataUrl(file);
+      const uploaded = await uploadAdminMedia({ dataUrl, usage, fileName: file.name });
+      urlInput.value = uploaded.url;
+      setImagePreview(target, uploaded.url);
+      showFeedback(feedbackElement, 'Bild uppladdad och klar att spara.');
+    } catch (err) {
+      showFeedback(feedbackElement, err.message || 'Bilduppladdning misslyckades.', true);
+    } finally {
+      uploadInput.value = '';
+    }
+  });
 }
 
 // ── Tab switching ─────────────────────────────────────────────────────────────
@@ -149,6 +233,7 @@ function populateProductEditForm(product) {
   form.querySelector('[name="salePriceSek"]').value = product.salePriceSek || '';
   form.querySelector('[name="inventory"]').value = product.inventory;
   form.querySelector('[name="image"]').value = product.image || '';
+  setImagePreview('product', product.image || '');
   form.querySelector('[name="description"]').value = product.description || '';
   form.querySelector('[name="sizes"]').value = product.sizes.join(', ');
   const catSelect = form.querySelector('[data-admin-category]');
@@ -168,6 +253,7 @@ function resetProductForm() {
     return;
   }
   form.reset();
+  setImagePreview('product', '');
   delete form.dataset.editingId;
   form.querySelector('[data-form-title]').textContent = 'Lägg till produkt';
   form.querySelector('[data-submit-label]').textContent = 'Lägg till produkt';
@@ -180,6 +266,8 @@ async function initProductsTab() {
   const catSelect = form?.querySelector('[data-admin-category]');
 
   await Promise.all([renderCategoryOptions(catSelect), renderProductsTable()]);
+  bindImageUrlPreview('product');
+  setupImageUpload({ target: 'product', usage: 'products', feedbackElement: feedback });
 
   form?.querySelector('[data-cancel-edit]')?.addEventListener('click', () => {
     resetProductForm();
@@ -238,6 +326,11 @@ async function initProductsTab() {
       return;
     }
 
+    if (image && !sanitizeImageUrl(image)) {
+      showFeedback(feedback, 'Ogiltig bild-URL. Använd en fullständig http/https-länk.', true);
+      return;
+    }
+
     const editingId = form.dataset.editingId;
 
     try {
@@ -288,7 +381,7 @@ async function renderCategoriesTable() {
         .map(
           (c) => `
         <tr data-category-row="${escapeHtml(c.id)}">
-          <td>${escapeHtml(c.icon || '🏷️')}</td>
+          <td>${c.image ? `<img src="${escapeHtml(c.image)}" alt="" class="table-thumb" loading="lazy" />` : escapeHtml(c.icon || '🏷️')}</td>
           <td><strong>${escapeHtml(c.name)}</strong></td>
           <td>${escapeHtml(c.description || '–')}</td>
           <td><span class="inv-badge low">Admin</span></td>
@@ -321,6 +414,8 @@ function populateCategoryEditForm(category) {
   form.querySelector('[name="catName"]').value = category.name;
   form.querySelector('[name="catDescription"]').value = category.description || '';
   form.querySelector('[name="catIcon"]').value = category.icon || '';
+  form.querySelector('[name="catImage"]').value = category.image || '';
+  setImagePreview('category', category.image || '');
   form.dataset.editingId = category.id;
   form.querySelector('[data-cat-form-title]').textContent = 'Redigera kategori';
   form.querySelector('[data-cat-submit-label]').textContent = 'Spara ändringar';
@@ -334,6 +429,7 @@ function resetCategoryForm() {
     return;
   }
   form.reset();
+  setImagePreview('category', '');
   delete form.dataset.editingId;
   form.querySelector('[data-cat-form-title]').textContent = 'Skapa kategori';
   form.querySelector('[data-cat-submit-label]').textContent = 'Skapa kategori';
@@ -345,6 +441,8 @@ async function initCategoriesTab() {
   const feedback = document.querySelector('[data-category-feedback]');
 
   await renderCategoriesTable();
+  bindImageUrlPreview('category');
+  setupImageUpload({ target: 'category', usage: 'categories', feedbackElement: feedback });
 
   form?.querySelector('[data-cancel-cat-edit]')?.addEventListener('click', () => {
     resetCategoryForm();
@@ -388,9 +486,15 @@ async function initCategoriesTab() {
     const name = String(data.get('catName') || '').trim();
     const description = String(data.get('catDescription') || '').trim();
     const icon = String(data.get('catIcon') || '').trim() || '🏷️';
+    const image = String(data.get('catImage') || '').trim();
 
     if (!name) {
       showFeedback(feedback, 'Fyll i ett kategorinamn.', true);
+      return;
+    }
+
+    if (image && !sanitizeImageUrl(image)) {
+      showFeedback(feedback, 'Ogiltig bild-URL. Använd en fullständig http/https-länk.', true);
       return;
     }
 
@@ -398,10 +502,10 @@ async function initCategoriesTab() {
 
     try {
       if (editingId) {
-        await updateAdminCategory(editingId, { name, description, icon });
+        await updateAdminCategory(editingId, { name, description, icon, image });
         showFeedback(feedback, `"${name}" har uppdaterats.`);
       } else {
-        await createAdminCategory({ name, description, icon });
+        await createAdminCategory({ name, description, icon, image });
         showFeedback(feedback, `"${name}" har skapats.`);
       }
 

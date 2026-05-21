@@ -115,8 +115,16 @@
                   <input id="admin-sizes" name="sizes" placeholder="XS, S, M, L, XL" />
                 </div>
                 <div class="full">
+                  <label for="admin-product-image-upload">Produktbild</label>
+                  <input id="admin-product-image-upload" type="file" accept="image/png,image/jpeg,image/webp,image/gif" data-admin-image-upload="product" />
+                  <p class="small-note">Ladda upp JPG, PNG, WEBP eller GIF (max 3 MB). URL-fältet finns kvar för befintliga länkar.</p>
+                </div>
+                <div class="full">
                   <label for="admin-image">Bild-URL</label>
-                  <input id="admin-image" name="image" type="url" placeholder="https://…" />
+                  <input id="admin-image" name="image" type="url" placeholder="https://…" data-admin-image-url="product" />
+                  <div class="admin-media-preview-wrap">
+                    <img class="admin-media-preview" data-admin-image-preview="product" alt="Förhandsvisning av produktbild" hidden />
+                  </div>
                 </div>
                 <div class="full">
                   <label for="admin-description">Produktbeskrivning</label>
@@ -152,7 +160,7 @@
               <table class="admin-table">
                 <thead>
                   <tr>
-                    <th>Ikon</th>
+                    <th>Bild / ikon</th>
                     <th>Namn</th>
                     <th>Beskrivning</th>
                     <th>Typ</th>
@@ -177,6 +185,18 @@
                 <div>
                   <label for="cat-icon">Ikon (emoji)</label>
                   <input id="cat-icon" name="catIcon" placeholder="🏷️" maxlength="4" />
+                </div>
+                <div class="full">
+                  <label for="admin-category-image-upload">Kategoribild</label>
+                  <input id="admin-category-image-upload" type="file" accept="image/png,image/jpeg,image/webp,image/gif" data-admin-image-upload="category" />
+                  <p class="small-note">Valfritt. Ladda upp kategori-/bannerbild (max 3 MB).</p>
+                </div>
+                <div class="full">
+                  <label for="cat-image">Bild-URL</label>
+                  <input id="cat-image" name="catImage" type="url" placeholder="https://…" data-admin-image-url="category" />
+                  <div class="admin-media-preview-wrap">
+                    <img class="admin-media-preview" data-admin-image-preview="category" alt="Förhandsvisning av kategoribild" hidden />
+                  </div>
                 </div>
                 <div class="full">
                   <label for="cat-description">Beskrivning</label>
