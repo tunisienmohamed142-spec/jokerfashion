@@ -12,6 +12,8 @@ JokerFashion är i **Rebuild Phase 2**: backend/API-lager för riktig datalagrin
 
 ## API-endpoints
 
+> **Vercel Hobby plan**: Deployed serverless function count = **11** (≤ 12 limit ✓)
+
 | Metod | Endpoint | Funktion |
 |-------|----------|----------|
 | GET | `/api/products` | Lista adminprodukter |
@@ -28,11 +30,18 @@ JokerFashion är i **Rebuild Phase 2**: backend/API-lager för riktig datalagrin
 | PUT | `/api/settings` | Uppdatera butiksinställningar |
 | GET | `/api/content/home` | Hämta publicerat startsideinnehåll |
 | PUT | `/api/content/home` | Uppdatera startsideinnehåll (admin) |
-| POST | `/api/admin/login` | Admin-inloggning (sätter sessionscookie) |
-| POST | `/api/admin/logout` | Admin-utloggning (raderar sessionscookie) |
-| GET | `/api/admin/session` | Validera aktuell admin-session |
+| GET | `/api/admin/auth` | Validera aktuell admin-session |
+| POST | `/api/admin/auth` `{ action: "login" }` | Admin-inloggning (sätter sessionscookie) |
+| POST | `/api/admin/auth` `{ action: "logout" }` | Admin-utloggning (raderar sessionscookie) |
 | POST | `/api/admin/media-upload` | Skyddad bilduppladdning (Cloudinary) |
+| GET | `/api/admin/orders` | Lista persisterade ordrar (admin) |
+| GET | `/api/admin/orders/:id` | Hämta orderdetaljer (admin) |
+| PATCH | `/api/admin/orders/:id` | Uppdatera orderstatus (admin) |
 | POST | `/api/send-order` | Skapa och persistera order + försöker skicka ordermail |
+
+### Konsolidering (Vercel Hobby-plan)
+
+`/api/admin/login`, `/api/admin/logout` och `/api/admin/session` har slagits samman till ett enda endpoint `/api/admin/auth` för att hålla serverless-function-antalet under Vercel Hobby-planens gräns på 12.
 
 ## Appstruktur (Phase 2)
 
@@ -58,9 +67,10 @@ JokerFashion är i **Rebuild Phase 2**: backend/API-lager för riktig datalagrin
 - `api/settings.js` – butiksinställningar get + update
 - `api/content/home.js` – publikt homepage-CMS get + adminskyddad update
 - `api/_auth.js` – server-side admin-auth helper (credentials + sessionscookie)
-- `api/admin/login.js` – admin login endpoint
-- `api/admin/logout.js` – admin logout endpoint
-- `api/admin/session.js` – admin session validation endpoint
+- `api/admin/auth.js` – konsoliderat admin-auth endpoint (session/login/logout)
+- `api/admin/media-upload.js` – skyddad bilduppladdning via Cloudinary
+- `api/admin/orders.js` – admin orderlistning (autentiserad)
+- `api/admin/orders/[id].js` – admin orderdetalj + statusuppdatering
 
 ## Persistence-arkitektur
 
@@ -139,7 +149,7 @@ Utan dessa variabler:
 
 ## Admin-auth och accesskontroll
 
-- `admin.html` är nu gated via server-validerad admin-session (`/api/admin/session`)
+- `admin.html` är nu gated via server-validerad admin-session (`/api/admin/auth`)
 - Obehöriga användare omdirigeras till `admin-login.html`
 - Följande admin-endpoints kräver autentiserad adminsessionscookie:
   - `POST /api/products`

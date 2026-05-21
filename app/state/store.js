@@ -57,15 +57,16 @@ async function apiFetch(path, options = {}) {
 // ── Admin auth (API-backed) ───────────────────────────────────────────────────
 
 export async function getAdminSession() {
-  return apiFetch('/api/admin/session', {
+  return apiFetch('/api/admin/auth', {
     cache: 'no-store',
   });
 }
 
 export async function loginAdmin({ username, password }) {
-  return apiFetch('/api/admin/login', {
+  return apiFetch('/api/admin/auth', {
     method: 'POST',
     body: JSON.stringify({
+      action: 'login',
       username: String(username || '').trim(),
       password: String(password || ''),
     }),
@@ -73,9 +74,9 @@ export async function loginAdmin({ username, password }) {
 }
 
 export async function logoutAdmin() {
-  return apiFetch('/api/admin/logout', {
+  return apiFetch('/api/admin/auth', {
     method: 'POST',
-    body: JSON.stringify({}),
+    body: JSON.stringify({ action: 'logout' }),
   });
 }
 
@@ -174,6 +175,30 @@ export async function updateAdminCategory(categoryId, updates) {
 export async function deleteAdminCategory(categoryId) {
   return apiFetch(`/api/categories/${encodeURIComponent(categoryId)}`, {
     method: 'DELETE',
+  });
+}
+
+// ── Admin orders (API-backed) ─────────────────────────────────────────────────
+
+export async function getAdminOrders(status = 'all') {
+  const query = status && status !== 'all' ? `?status=${encodeURIComponent(status)}` : '';
+  return apiFetch(`/api/admin/orders${query}`, {
+    cache: 'no-store',
+  });
+}
+
+export async function getAdminOrderById(orderId) {
+  return apiFetch(`/api/admin/orders/${encodeURIComponent(orderId)}`, {
+    cache: 'no-store',
+  });
+}
+
+export async function updateAdminOrderStatus(orderId, status) {
+  return apiFetch(`/api/admin/orders/${encodeURIComponent(orderId)}`, {
+    method: 'PATCH',
+    body: JSON.stringify({
+      status: String(status || '').trim(),
+    }),
   });
 }
 

@@ -5,6 +5,8 @@ import {
   createAdminCategory,
   updateAdminCategory,
   deleteAdminCategory,
+  getAdminOrderById,
+  getAdminOrders,
   getAdminProducts,
   createAdminProduct,
   updateAdminProduct,
@@ -14,6 +16,7 @@ import {
   getHomepageContent,
   logoutAdmin,
   setShopSettings,
+  updateAdminOrderStatus,
   updateHomepageContent,
   uploadAdminMedia,
 } from '../state/store.js';
@@ -36,6 +39,40 @@ function inventoryBadge(qty) {
     return `<span class="inv-badge low">${qty} st</span>`;
   }
   return `<span class="inv-badge ok">${qty} st</span>`;
+}
+
+const ORDER_STATUS_LABELS = {
+  pending: 'Pending',
+  paid: 'Paid',
+  fulfilled: 'Fulfilled',
+  cancelled: 'Cancelled',
+};
+
+let selectedOrderId = '';
+
+function getOrderStatusLabel(status) {
+  return ORDER_STATUS_LABELS[String(status || '').toLowerCase()] || 'Pending';
+}
+
+function orderStatusBadge(status) {
+  const normalizedStatus = String(status || '').toLowerCase();
+  const badgeVariant =
+    normalizedStatus === 'fulfilled' ? 'ok' : normalizedStatus === 'cancelled' ? 'out' : 'low';
+  return `<span class="inv-badge ${badgeVariant}">${escapeHtml(getOrderStatusLabel(normalizedStatus))}</span>`;
+}
+
+function formatAdminDateTime(value) {
+  if (!value) {
+    return '–';
+  }
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return '–';
+  }
+  return parsed.toLocaleString('sv-SE', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
+  });
 }
 
 function showFeedback(element, message, isError = false) {
@@ -658,6 +695,229 @@ async function initContentTab() {
   });
 }
 
+// ── Orders tab ─────────────────────────────────────────────────────────────────
+
+function renderOrderDetail(order) {
+  const detailHost = document.querySelector('[data-order-detail-content]');
+  if (!detailHost) {
+    return;
+  }
+
+  if (!order) {
+    detailHost.innerHTML =
+      '<p class="small-note">Ingen order vald ännu. Klicka på "Visa" i orderlistan.</p>';
+    return;
+  }
+
+  const customer = order.customer || {};
+  const shipping = order.shippingAddress || {};
+  const totals = order.totals || {};
+  const items = Array.isArray(order.items) ? order.items : [];
+
+  const customerName = `${String(customer.firstName || '').trim()} ${String(customer.lastName || '').trim()}`.trim();
+  const shippingAddress = [shipping.address, `${shipping.postalCode || ''} ${shipping.city || ''}`.trim()]
+    .filter(Boolean)
+    .join(', ');
+
+  const normalizedStatus = String(order.status || '').toLowerCase();
+
+  detailHost.innerHTML = `
+    <div class="admin-order-detail-grid">
+      <div>
+        <p><strong>Orderreferens:</strong> ${escapeHtml(order.orderReference || order.id || '–')}</p>
+        <p><strong>Status:</strong> ${orderStatusBadge(order.status)}</p>
+        <p><strong>Skapad:</strong> ${escapeHtml(formatAdminDateTime(order.createdAt))}</p>
+        <p><strong>Uppdaterad:</strong> ${escapeHtml(formatAdminDateTime(order.updatedAt))}</p>
+      </div>
+      <div>
+        <p><strong>Kund:</strong> ${escapeHtml(customerName || '–')}</p>
+        <p><strong>E-post:</strong> ${escapeHtml(customer.email || '–')}</p>
+        <p><strong>Telefon:</strong> ${escapeHtml(customer.phone || '–')}</p>
+        <p><strong>Leveransadress:</strong> ${escapeHtml(shippingAddress || '–')}</p>
+      </div>
+    </div>
+    <div class="admin-table-wrap">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>Produkt</th>
+            <th>Storlek</th>
+            <th>Antal</th>
+            <th>Radtotal</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${
+            items.length > 0
+              ? items
+                  .map(
+                    (item) => `
+                      <tr>
+                        <td>
+                          <div class="table-product-name">${escapeHtml(item.name || 'Produkt')}</div>
+                          <div class="table-sub">${escapeHtml(item.category || '')}</div>
+                        </td>
+                        <td>${escapeHtml(item.size || '–')}</td>
+                        <td>${escapeHtml(String(item.quantity ?? 0))}</td>
+                        <td class="table-price">${formatPrice(item.subtotal ?? 0)}</td>
+                      </tr>
+                    `
+                  )
+                  .join('')
+              : '<tr><td colspan="4" class="table-empty">Ordern har inga orderrader.</td></tr>'
+          }
+        </tbody>
+      </table>
+    </div>
+    <div class="admin-order-totals">
+      <p><strong>Subtotal:</strong> ${formatPrice(totals.subtotalPrice ?? 0)}</p>
+      <p><strong>Frakt:</strong> ${formatPrice(totals.shippingPrice ?? 0)}</p>
+      <p><strong>Totalt:</strong> ${formatPrice(totals.totalPrice ?? 0)}</p>
+    </div>
+    <form class="admin-order-status-form" data-order-status-form data-order-id="${escapeHtml(order.id || '')}">
+      <label for="admin-order-status">Uppdatera status</label>
+      <div class="admin-form-actions">
+        <select id="admin-order-status" name="status">
+          ${Object.entries(ORDER_STATUS_LABELS)
+            .map(
+              ([value, label]) =>
+                `<option value="${escapeHtml(value)}"${value === normalizedStatus ? ' selected' : ''}>${escapeHtml(label)}</option>`
+            )
+            .join('')}
+        </select>
+        <button class="button primary btn-sm" type="submit">Spara status</button>
+      </div>
+    </form>
+  `;
+}
+
+async function renderOrdersTable() {
+  const tbody = document.querySelector('[data-orders-tbody]');
+  const statusFilter = document.querySelector('[data-order-filter-status]');
+  if (!tbody || !statusFilter) {
+    return;
+  }
+
+  tbody.innerHTML = '<tr><td colspan="6" class="table-empty">Laddar ordrar…</td></tr>';
+
+  try {
+    const orders = await getAdminOrders(statusFilter.value);
+    if (!orders.length) {
+      tbody.innerHTML =
+        '<tr><td colspan="6" class="table-empty">Inga ordrar ännu. Nya checkouter visas här när de sparas.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = orders
+      .map((order) => {
+        const customer = order.customer || {};
+        const customerName =
+          `${String(customer.firstName || '').trim()} ${String(customer.lastName || '').trim()}`.trim() ||
+          customer.email ||
+          'Okänd kund';
+        const orderRef = order.orderReference || order.id || '–';
+        const rowClass = order.id && order.id === selectedOrderId ? ' class="admin-table-row-active"' : '';
+        return `
+          <tr data-order-row="${escapeHtml(order.id || '')}"${rowClass}>
+            <td>
+              <div class="table-product-name">${escapeHtml(orderRef)}</div>
+              <div class="table-sub">${escapeHtml(order.id || '')}</div>
+            </td>
+            <td>${escapeHtml(customerName)}</td>
+            <td class="table-price">${formatPrice(order?.totals?.totalPrice ?? 0)}</td>
+            <td>${orderStatusBadge(order.status)}</td>
+            <td>${escapeHtml(formatAdminDateTime(order.createdAt))}</td>
+            <td>
+              <button class="button secondary btn-sm" data-view-order="${escapeHtml(order.id || '')}">Visa</button>
+            </td>
+          </tr>
+        `;
+      })
+      .join('');
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="6" class="table-empty notice-error">Kunde inte ladda ordrar: ${escapeHtml(err.message)}</td></tr>`;
+  }
+}
+
+async function initOrdersTab() {
+  const tbody = document.querySelector('[data-orders-tbody]');
+  const feedback = document.querySelector('[data-orders-feedback]');
+  const statusFilter = document.querySelector('[data-order-filter-status]');
+  const detailPanel = document.querySelector('[data-order-detail-panel]');
+  const refreshButton = document.querySelector('[data-orders-refresh]');
+
+  if (!tbody || !statusFilter || !detailPanel) {
+    return;
+  }
+
+  renderOrderDetail(null);
+  await renderOrdersTable();
+
+  statusFilter.addEventListener('change', async () => {
+    selectedOrderId = '';
+    renderOrderDetail(null);
+    await renderOrdersTable();
+  });
+
+  refreshButton?.addEventListener('click', async () => {
+    await renderOrdersTable();
+    if (selectedOrderId) {
+      try {
+        renderOrderDetail(await getAdminOrderById(selectedOrderId));
+      } catch {
+        // ignore refresh detail failures, table feedback covers loading issues
+      }
+    }
+  });
+
+  tbody.addEventListener('click', async (event) => {
+    const viewButton = event.target.closest('[data-view-order]');
+    if (!viewButton) {
+      return;
+    }
+
+    const orderId = viewButton.dataset.viewOrder;
+    if (!orderId) {
+      return;
+    }
+
+    selectedOrderId = orderId;
+    try {
+      const order = await getAdminOrderById(orderId);
+      renderOrderDetail(order);
+      await renderOrdersTable();
+    } catch (err) {
+      showFeedback(feedback, `Kunde inte ladda orderdetaljer: ${err.message}`, true);
+    }
+  });
+
+  detailPanel.addEventListener('submit', async (event) => {
+    const statusForm = event.target.closest('[data-order-status-form]');
+    if (!statusForm) {
+      return;
+    }
+
+    event.preventDefault();
+    const orderId = statusForm.dataset.orderId;
+    const status = String(new FormData(statusForm).get('status') || '').trim().toLowerCase();
+
+    if (!orderId || !status) {
+      showFeedback(feedback, 'Kunde inte uppdatera status: order-id eller status saknas.', true);
+      return;
+    }
+
+    try {
+      const updatedOrder = await updateAdminOrderStatus(orderId, status);
+      selectedOrderId = updatedOrder.id;
+      renderOrderDetail(updatedOrder);
+      await renderOrdersTable();
+      showFeedback(feedback, `Orderstatus uppdaterad till ${getOrderStatusLabel(updatedOrder.status)}.`);
+    } catch (err) {
+      showFeedback(feedback, err.message || 'Kunde inte uppdatera orderstatus.', true);
+    }
+  });
+}
+
 // ── Entry point ───────────────────────────────────────────────────────────────
 
 export async function initAdminPage() {
@@ -695,5 +955,6 @@ export async function initAdminPage() {
   await initProductsTab();
   await initCategoriesTab();
   await initSettingsTab();
+  await initOrdersTab();
   await initContentTab();
 }
