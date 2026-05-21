@@ -1,38 +1,37 @@
-// Vercel KV (Upstash Redis) REST API helper.
-// Uses the pipeline endpoint so any-length JSON values are safe in the request body.
-// Required environment variables (set via Vercel dashboard → Storage → KV → Connect):
-//   KV_REST_API_URL   – e.g. https://xxx.upstash.io
-//   KV_REST_API_TOKEN – read-write token
+import { createClient } from 'redis';
 
-const KV_REST_API_URL = process.env.KV_REST_API_URL;
-const KV_REST_API_TOKEN = process.env.KV_REST_API_TOKEN;
+const REDIS_URL = process.env.REDIS_URL;
 
-export const isKvAvailable = !!(KV_REST_API_URL && KV_REST_API_TOKEN);
+let redisClient = null;
+let redisClientPromise = null;
 
-async function pipeline(commands) {
-  const res = await fetch(`${KV_REST_API_URL}/pipeline`, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${KV_REST_API_TOKEN}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(commands),
-  });
+export const isKvAvailable = Boolean(REDIS_URL);
 
-  if (!res.ok) {
-    throw new Error(`KV pipeline error: ${res.status} ${res.statusText}`);
+async function getRedisClient() {
+  if (!REDIS_URL) {
+    throw new Error('Storage not configured. Set REDIS_URL in Vercel.');
   }
 
-  return res.json();
+  if (redisClient) {
+    return redisClient;
+  }
+
+  if (!redisClientPromise) {
+    redisClient = createClient({ url: REDIS_URL });
+    redisClient.on('error', (error) => {
+      console.error('Redis client error:', error);
+    });
+    redisClientPromise = redisClient.connect().then(() => redisClient);
+  }
+
+  return redisClientPromise;
 }
 
 export async function kvGet(key) {
   if (!isKvAvailable) return null;
 
-  const results = await pipeline([['GET', key]]);
-  if (!results || !results[0]) return null;
-
-  const raw = results[0].result;
+  const redis = await getRedisClient();
+  const raw = await redis.get(key);
   if (raw === null || raw === undefined) return null;
 
   try {
@@ -45,7 +44,8 @@ export async function kvGet(key) {
 export async function kvSet(key, value) {
   if (!isKvAvailable) return false;
 
+  const redis = await getRedisClient();
   const serialized = JSON.stringify(value);
-  const results = await pipeline([['SET', key, serialized]]);
-  return !!(results && results[0] && results[0].result === 'OK');
+  const result = await redis.set(key, serialized);
+  return result === 'OK';
 }
