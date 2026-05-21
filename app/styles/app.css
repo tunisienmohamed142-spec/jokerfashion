@@ -1396,10 +1396,503 @@ textarea {
   color: var(--danger);
 }
 
+/* ─────────────────────────────────────────────────────────
+   MEGA MENU — desktop nav + panels
+   ───────────────────────────────────────────────────────── */
+
+/* Keep header as positioning context for absolute panels */
+.site-header {
+  position: sticky; /* already set above, reinforce */
+}
+
+/* ── Mega nav bar ─────────────────────────────────────── */
+.mega-nav {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.mega-nav-divider {
+  width: 1px;
+  height: 1.1rem;
+  background: var(--border);
+  margin: 0 0.6rem;
+  flex-shrink: 0;
+}
+
+/* ── Target group triggers ────────────────────────────── */
+.mega-item {
+  position: relative;
+}
+
+.mega-trigger {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 0.85rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 0.93rem;
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+  transition: color 0.17s ease, border-color 0.17s ease;
+  white-space: nowrap;
+}
+
+.mega-trigger:hover,
+.mega-item.is-open .mega-trigger {
+  color: var(--text);
+  border-bottom-color: var(--accent);
+}
+
+.mega-trigger.is-active {
+  color: var(--text);
+  border-bottom-color: var(--accent-alt);
+}
+
+/* ── Utility links (Varukorg, Konto, Admin) ───────────── */
+.mega-nav-util {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.4rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  font-size: 0.86rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.17s ease, background 0.17s ease, border-color 0.17s ease;
+  white-space: nowrap;
+}
+
+.mega-nav-util:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--border);
+}
+
+.mega-nav-util--admin {
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+/* ── Hamburger (mobile only, hidden on desktop) ───────── */
+.mega-hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 1.7rem;
+  height: 1.2rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.mega-hamburger span {
+  display: block;
+  height: 2px;
+  background: var(--text);
+  border-radius: 2px;
+  transition: transform 0.22s ease, opacity 0.22s ease;
+  transform-origin: center;
+}
+
+.mega-hamburger[aria-expanded='true'] span:nth-child(1) {
+  transform: translateY(0.5rem) rotate(45deg);
+}
+
+.mega-hamburger[aria-expanded='true'] span:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0);
+}
+
+.mega-hamburger[aria-expanded='true'] span:nth-child(3) {
+  transform: translateY(-0.5rem) rotate(-45deg);
+}
+
+/* ── Mega panels ──────────────────────────────────────── */
+.mega-panel {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--surface);
+  border-top: 1px solid rgba(159, 59, 255, 0.25);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 16px 40px rgba(8, 6, 10, 0.55);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: opacity 0.18s ease, transform 0.18s ease, visibility 0s linear 0.18s;
+  z-index: 100;
+  visibility: hidden;
+}
+
+.mega-panel.is-open {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+  visibility: visible;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+/* ── Panel inner layout ───────────────────────────────── */
+.mega-panel-inner {
+  display: flex;
+  gap: 0;
+  padding: 1.5rem 0 1.75rem;
+}
+
+/* ── Category column (left) ───────────────────────────── */
+.mega-cats-col {
+  flex-shrink: 0;
+  width: 180px;
+  border-right: 1px solid var(--border);
+  padding-right: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.mega-cats-shopall {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--accent-alt);
+  text-decoration: none;
+  padding: 0.4rem 0.7rem;
+  margin-bottom: 0.35rem;
+  transition: color 0.15s ease;
+}
+
+.mega-cats-shopall:hover {
+  color: var(--text);
+}
+
+.mega-cats-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.mega-cat-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.55rem 0.7rem;
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.14s ease, color 0.14s ease;
+}
+
+.mega-cat-btn::after {
+  content: '›';
+  font-size: 1.1rem;
+  opacity: 0;
+  transition: opacity 0.14s ease;
+}
+
+.mega-cat-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+}
+
+.mega-cat-btn:hover::after,
+.mega-cat-btn.is-active::after {
+  opacity: 1;
+}
+
+.mega-cat-btn.is-active {
+  background: rgba(159, 59, 255, 0.16);
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* ── Subcategory column (right) ───────────────────────── */
+.mega-subcats-col {
+  flex: 1;
+  padding-left: 1.75rem;
+  min-height: 180px;
+  position: relative;
+}
+
+.mega-subcat-panel {
+  display: none;
+  flex-wrap: wrap;
+  gap: 0.3rem 0;
+  align-content: flex-start;
+}
+
+.mega-subcat-panel.is-active {
+  display: flex;
+}
+
+.mega-subcat-link {
+  display: block;
+  width: 50%;
+  padding: 0.4rem 0.6rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.9rem;
+  border-radius: var(--radius-sm);
+  transition: color 0.14s ease, background 0.14s ease;
+  white-space: nowrap;
+}
+
+.mega-subcat-link:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* ─────────────────────────────────────────────────────────
+   MOBILE DRAWER
+   ───────────────────────────────────────────────────────── */
+
+.mega-mobile-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: min(320px, 88vw);
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  box-shadow: 4px 0 30px rgba(8, 6, 10, 0.6);
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(-100%);
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.mega-mobile-drawer.is-open {
+  transform: translateX(0);
+}
+
+.mega-mobile-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.1rem;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.mega-mobile-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 0.25rem 0.4rem;
+  border-radius: 6px;
+  transition: color 0.15s ease, background 0.15s ease;
+  line-height: 1;
+}
+
+.mega-mobile-close:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.mega-mobile-body {
+  flex: 1;
+  padding: 0.75rem 0;
+  overflow-y: auto;
+}
+
+/* ── Mobile group accordion ───────────────────────────── */
+.mega-mob-group {
+  border-bottom: 1px solid var(--border);
+}
+
+.mega-mob-group-toggle,
+.mega-mob-cat-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.85rem 1.1rem;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.14s ease;
+}
+
+.mega-mob-group-toggle:hover,
+.mega-mob-cat-toggle:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.mega-mob-chevron {
+  width: 10px;
+  height: 6px;
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+  color: var(--text-muted);
+}
+
+.mega-mob-group-toggle[aria-expanded='true'] .mega-mob-chevron,
+.mega-mob-cat-toggle[aria-expanded='true'] .mega-mob-chevron {
+  transform: rotate(180deg);
+}
+
+.mega-mob-group-body,
+.mega-mob-cat-body {
+  display: none;
+  padding-bottom: 0.5rem;
+}
+
+.mega-mob-group-body.is-open,
+.mega-mob-cat-body.is-open {
+  display: block;
+}
+
+.mega-mob-shopall {
+  display: block;
+  padding: 0.55rem 1.1rem 0.55rem 1.5rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--accent-alt);
+  text-decoration: none;
+  transition: color 0.14s ease;
+}
+
+.mega-mob-shopall:hover {
+  color: var(--text);
+}
+
+/* ── Mobile sub-categories ────────────────────────────── */
+.mega-mob-cat {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.mega-mob-cat-toggle {
+  padding-left: 1.5rem;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.mega-mob-sublink {
+  display: block;
+  padding: 0.45rem 1.1rem 0.45rem 2.1rem;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.875rem;
+  transition: color 0.14s ease, background 0.14s ease;
+}
+
+.mega-mob-sublink:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.mega-mob-sublink--all {
+  font-weight: 600;
+  color: var(--text-muted);
+  padding-left: 1.8rem;
+}
+
+/* ── Mobile utils (Varukorg, Konto, Admin) ────────────── */
+.mega-mob-utils {
+  padding: 1rem 0.75rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  border-top: 1px solid var(--border);
+  margin-top: 0.5rem;
+}
+
+.mega-mob-util-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.4rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+  transition: color 0.14s ease, background 0.14s ease;
+}
+
+.mega-mob-util-link:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* ── Mobile backdrop ──────────────────────────────────── */
+.mega-mobile-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 6, 10, 0.6);
+  z-index: 199;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.28s ease;
+  backdrop-filter: blur(2px);
+}
+
+.mega-mobile-backdrop.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Prevent body scroll when mobile menu is open */
+body.mega-menu-open {
+  overflow: hidden;
+}
+
+/* ─────────────────────────────────────────────────────────
+   RESPONSIVE — switch to hamburger below 860px
+   ───────────────────────────────────────────────────────── */
+@media (max-width: 860px) {
+  .mega-nav .mega-item,
+  .mega-nav-divider,
+  .mega-nav-util {
+    display: none;
+  }
+
+  .mega-hamburger {
+    display: flex;
+  }
+
+  /* Panels are irrelevant on mobile — ensure they stay hidden */
+  .mega-panel {
+    display: none !important;
+  }
+}
+
+@media (min-width: 861px) {
+  .mega-mobile-drawer,
+  .mega-mobile-backdrop {
+    display: none;
+  }
+}
+
 @media (max-width: 720px) {
+  /* Keep nav-row as a row so brand + hamburger stay on same line */
   .nav-row {
-    flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
   }
 
   .main-nav {

@@ -7,6 +7,7 @@ import { initAdminLoginPage } from './pages/admin-login.js';
 import { initProductPage } from './pages/product.js';
 import { getCartSummary } from './state/store.js';
 import { syncCartCountBadges } from './components/renderers.js';
+import { initMegaMenu } from './components/mega-menu.js';
 
 const initializers = {
   home: initHomePage,
@@ -20,6 +21,9 @@ const initializers = {
 
 const pageKey = document.body.dataset.page;
 const initPage = initializers[pageKey];
+
+// Mega menu runs on every page
+initMegaMenu();
 
 if (typeof initPage === 'function') {
   Promise.resolve(initPage()).catch((err) => {
