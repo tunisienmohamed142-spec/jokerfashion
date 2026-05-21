@@ -5,7 +5,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { customer, items, totalPrice } = req.body || {};
+    const { customer, items, subtotalPrice, shippingPrice, totalPrice, currency = 'SEK' } = req.body || {};
 
     if (!customer || !items || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ message: 'Missing order data.' });
@@ -29,7 +29,9 @@ export default async function handler(req, res) {
       'Produkter:',
       lines,
       '',
-      `Totalt: ${totalPrice} kr`,
+      `Delsumma: ${subtotalPrice ?? totalPrice} ${currency}`,
+      `Frakt: ${shippingPrice ?? 0} ${currency}`,
+      `Totalt: ${totalPrice} ${currency}`,
     ].join('\n');
 
     const payload = {

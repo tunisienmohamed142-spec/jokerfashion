@@ -4,17 +4,20 @@ import {
   renderCheckoutCart,
 } from '../components/renderers.js';
 import {
+  DEFAULT_SHOP_SETTINGS,
+  calculateCartTotals,
   clearCart,
   clearCheckoutDraft,
   getCartItems,
-  getCartSummary,
   getCheckoutDraft,
+  getShopSettings,
+  normalizeShopSettings,
   removeCartItem,
   setCheckoutDraft,
   updateCartItemQuantity,
 } from '../state/store.js';
 
-function getOrderPayload(form) {
+function getOrderPayload(form, pricing, settings) {
   const formData = new FormData(form);
   const cartItems = getCartItems();
 
@@ -33,7 +36,16 @@ function getOrderPayload(form) {
       ...item,
       subtotal: item.priceSek * item.quantity,
     })),
-    totalPrice: cartItems.reduce((sum, item) => sum + item.priceSek * item.quantity, 0),
+    subtotalPrice: pricing.subtotalPrice,
+    shippingPrice: pricing.shippingPrice,
+    totalPrice: pricing.totalPrice,
+    currency: pricing.currency,
+    shopSettings: {
+      shippingRate: settings.shippingRate,
+      freeShippingThreshold: settings.freeShippingThreshold,
+      taxRate: settings.taxRate,
+      currency: settings.currency,
+    },
   };
 }
 
@@ -139,7 +151,7 @@ function showOrderSuccess(orderData) {
   if (itemSummary && orderData) {
     const itemCount = orderData.items.reduce((sum, item) => sum + item.quantity, 0);
     const itemLabel = itemCount === 1 ? 'produkt' : 'produkter';
-    itemSummary.textContent = `${itemCount} ${itemLabel} för totalt ${formatPrice(orderData.totalPrice)} är nu på väg till oss.`;
+    itemSummary.textContent = `${itemCount} ${itemLabel} för totalt ${formatPrice(orderData.totalPrice, orderData.currency)} är nu på väg till oss.`;
   }
 
   setCheckoutStep(3);
@@ -151,19 +163,50 @@ export function initCheckoutPage() {
   const form = document.querySelector('[data-checkout-form]');
   const feedback = document.querySelector('[data-checkout-feedback]');
   const totalElement = document.querySelector('[data-checkout-total]');
+  const shippingStripElement = document.querySelector('[data-checkout-shipping-message]');
+  const shippingFooterElement = document.querySelector('[data-checkout-footer-shipping]');
   const clearButton = document.querySelector('[data-clear-cart]');
   const submitButton = form?.querySelector('[type="submit"]');
+  let shopSettings = normalizeShopSettings(DEFAULT_SHOP_SETTINGS);
+
+  function updateShippingMessaging(pricing) {
+    const freeShippingLabel = pricing.freeShippingThreshold
+      ? `Fri frakt över ${formatPrice(pricing.freeShippingThreshold, pricing.currency)}`
+      : 'Fri frakt ej tillgänglig';
+    const standardShippingLabel = pricing.shippingRate > 0
+      ? `Standardfrakt ${formatPrice(pricing.shippingRate, pricing.currency)}`
+      : 'Standardfrakt 0 kr';
+
+    if (shippingStripElement) {
+      shippingStripElement.innerHTML = `<strong>${freeShippingLabel}</strong> • ${standardShippingLabel}`;
+    }
+
+    if (shippingFooterElement) {
+      shippingFooterElement.textContent = freeShippingLabel;
+    }
+  }
 
   function renderCheckoutState(helperText = 'Granska din varukorg och fyll i leveransuppgifterna för att slutföra ordern.') {
     const cartItems = getCartItems();
-    const summary = getCartSummary();
+    const pricing = calculateCartTotals(cartItems, shopSettings);
+    const summary = {
+      itemCount: pricing.itemCount,
+      totalPrice: pricing.totalPrice,
+    };
+    const shippingHelper = pricing.shippingPrice === 0 && pricing.itemCount > 0
+      ? 'Frakten är gratis för din order.'
+      : `Fraktkostnad ${formatPrice(pricing.shippingPrice, pricing.currency)} läggs till i totalen.`;
 
     renderCheckoutCart(cartContainer, cartItems);
-    renderCartSummary(summaryContainer, summary, { helperText });
+    renderCartSummary(summaryContainer, summary, {
+      helperText: `${helperText} ${shippingHelper}`,
+      pricing,
+    });
 
     if (totalElement) {
-      totalElement.textContent = formatPrice(summary.totalPrice);
+      totalElement.textContent = formatPrice(pricing.totalPrice, pricing.currency);
     }
+    updateShippingMessaging(pricing);
 
     if (submitButton) {
       submitButton.disabled = cartItems.length === 0;
@@ -187,7 +230,21 @@ export function initCheckoutPage() {
     });
   }
 
+  const settingsPromise = getShopSettings()
+    .then((settings) => {
+      shopSettings = normalizeShopSettings(settings);
+    })
+    .catch(() => {
+      shopSettings = normalizeShopSettings(DEFAULT_SHOP_SETTINGS);
+      if (feedback) {
+        feedback.textContent = 'Kunde inte läsa butiksinställningar just nu. Standardfrakt används tillfälligt.';
+      }
+    });
+
   renderCheckoutState();
+  settingsPromise.finally(() => {
+    renderCheckoutState('Varukorg och frakt uppdaterade med aktuella butiksinställningar.');
+  });
 
   fillCheckoutDraft(form);
 
@@ -206,7 +263,8 @@ export function initCheckoutPage() {
   form?.addEventListener('submit', async (event) => {
     event.preventDefault();
 
-    const orderData = getOrderPayload(form);
+    const pricing = calculateCartTotals(getCartItems(), shopSettings);
+    const orderData = getOrderPayload(form, pricing, shopSettings);
     const errors = validateOrderPayload(orderData);
 
     if (errors.length > 0) {
@@ -242,4 +300,3 @@ export function initCheckoutPage() {
     }
   });
 }
-

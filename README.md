@@ -115,9 +115,8 @@ Utan dessa variabler:
 
 ## Kvar före DNS/live (pre-launch gaps)
 
-1. **Shipping kopplat till checkout** – fraktkostnader finns i settings men räknas inte in i checkout-totalen ännu
-2. **Orderhantering** – ordrar sparas inte i databasen; admin kan inte se inkomna ordrar
-3. **Rikare homepage-CMS** – denna PR gör hero/highlight/rubriker/CTA dynamiska, men fler block/ordning/fler homepage-bilder kan fortfarande byggas ut senare
+1. **Orderhantering** – ordrar sparas inte i databasen; admin kan inte se inkomna ordrar
+2. **Rikare homepage-CMS** – hero/highlight/rubriker/CTA är dynamiska, men fler block/ordning/fler homepage-bilder kan fortfarande byggas ut senare
 
 ## Homepage CMS (detta PR-steg)
 
@@ -129,6 +128,13 @@ Utan dessa variabler:
   - footerns sammanfattande marketingrad
 - `index.html` läser detta dynamiskt via `/api/content/home` och faller tillbaka till säkra defaultvärden om inget är sparat eller API:t inte svarar.
 - Kategorikortens bilder fortsätter styras via kategori-adminen och produktgriderna fortsätter läsa riktiga katalog-/adminprodukter.
+
+## Checkout + fraktinställningar (detta PR-steg)
+
+- Checkout hämtar nu butikens persistenta settings via `GET /api/settings`.
+- Delsumma, frakt och total räknas och visas konsekvent i checkout-sammanfattningen.
+- Fri-fraktgräns och standardfrakt i storefront uppdateras från sparade adminvärden.
+- Orderpayload till `/api/send-order` inkluderar nu `subtotalPrice`, `shippingPrice`, `totalPrice` och `currency` för stabil grund inför nästa steg med order-persistence.
 
 ## Mediahantering i admin (detta PR-steg)
 
@@ -146,8 +152,11 @@ Utan dessa variabler:
   - `GET/PUT/DELETE /api/products/:id`
   - `POST /api/categories`
   - `GET/PUT/DELETE /api/categories/:id`
-  - `GET/PUT /api/settings`
+  - `PUT /api/settings`
   - `PUT /api/content/home`
+
+Publika storefront-reads:
+- `GET /api/settings` (returnerar persistenta shop-/fraktinställningar med säkra defaults)
 
 ## Migration från Phase 1
 

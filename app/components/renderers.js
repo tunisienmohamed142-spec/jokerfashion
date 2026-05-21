@@ -18,8 +18,12 @@ function sanitizeImageUrl(url) {
   }
 }
 
-export function formatPrice(priceSek) {
-  return `${new Intl.NumberFormat('sv-SE').format(priceSek)} kr`;
+export function formatPrice(priceSek, currency = 'SEK') {
+  const amount = Number.isFinite(Number(priceSek)) ? Number(priceSek) : 0;
+  const formattedNumber = new Intl.NumberFormat('sv-SE').format(Math.round(amount));
+  return String(currency).toUpperCase() === 'SEK'
+    ? `${formattedNumber} kr`
+    : `${formattedNumber} ${escapeHtml(currency)}`;
 }
 
 export function renderCategoryPills(container, categories, activeCategoryId) {
@@ -136,11 +140,34 @@ export function renderCartSummary(container, summary, options = {}) {
 
   const itemLabel = summary.itemCount === 1 ? 'produkt' : 'produkter';
   const helperText = options.helperText || 'Fortsätt till checkout när du är redo att skicka ordern.';
+  const pricing = options.pricing || null;
+  const currency = pricing?.currency || options.currency || 'SEK';
+  const hasPricingBreakdown = Boolean(pricing);
+  const shippingText = pricing
+    ? pricing.shippingPrice === 0
+      ? 'Fri frakt'
+      : formatPrice(pricing.shippingPrice, currency)
+    : '';
+  const shippingNote = pricing?.freeShippingThreshold
+    ? pricing.qualifiesForFreeShipping
+      ? `Fri frakt över ${formatPrice(pricing.freeShippingThreshold, currency)} aktiverad.`
+      : `Fri frakt från ${formatPrice(pricing.freeShippingThreshold, currency)}.`
+    : '';
+  const summaryPriceMarkup = hasPricingBreakdown
+    ? `
+      <div class="summary-breakdown">
+        <p><span>Delsumma</span><strong>${formatPrice(pricing.subtotalPrice, currency)}</strong></p>
+        <p><span>Frakt</span><strong>${shippingText}</strong></p>
+        <p class="summary-total"><span>Totalt</span><strong>${formatPrice(pricing.totalPrice, currency)}</strong></p>
+      </div>
+    `
+    : `<p class="price">${formatPrice(summary.totalPrice, currency)}</p>`;
 
   container.innerHTML = `
     <p class="eyebrow">Varukorg</p>
     <h2>${summary.itemCount} ${itemLabel}</h2>
-    <p class="price">${formatPrice(summary.totalPrice)}</p>
+    ${summaryPriceMarkup}
+    ${shippingNote ? `<p class="small-note">${escapeHtml(shippingNote)}</p>` : ''}
     <p>${escapeHtml(helperText)}</p>
     <div class="panel-actions">
       <a class="button primary" href="checkout.html">Öppna checkout</a>
