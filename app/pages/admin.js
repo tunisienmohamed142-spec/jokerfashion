@@ -67,57 +67,68 @@ function initTabs() {
 
 // ── Products tab ─────────────────────────────────────────────────────────────
 
-function renderCategoryOptions(selectElement) {
+async function renderCategoryOptions(selectElement) {
   if (!selectElement) {
     return;
   }
-  const cats = getCatalogCategories();
-  selectElement.innerHTML = cats
-    .map((c) => `<option value="${escapeHtml(c.id)}">${escapeHtml(c.name)}</option>`)
-    .join('');
+  try {
+    const cats = await getCatalogCategories();
+    selectElement.innerHTML = cats
+      .map((c) => `<option value="${escapeHtml(c.id)}">${escapeHtml(c.name)}</option>`)
+      .join('');
+  } catch {
+    // keep whatever is currently rendered
+  }
 }
 
-function renderProductsTable() {
+async function renderProductsTable() {
   const tbody = document.querySelector('[data-products-tbody]');
   if (!tbody) {
     return;
   }
 
-  const products = getAdminProducts();
-  if (products.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" class="table-empty">Inga adminprodukter ännu. Lägg till en produkt nedan.</td></tr>`;
-    return;
+  tbody.innerHTML = `<tr><td colspan="7" class="table-empty">Laddar produkter…</td></tr>`;
+
+  try {
+    const products = await getAdminProducts();
+
+    if (products.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="7" class="table-empty">Inga adminprodukter ännu. Lägg till en produkt nedan.</td></tr>`;
+      return;
+    }
+
+    const cats = await getCatalogCategories();
+    const catMap = Object.fromEntries(cats.map((c) => [c.id, c.name]));
+
+    tbody.innerHTML = products
+      .map((p) => {
+        const displayPrice = p.salePriceSek
+          ? `<span class="price-sale">${formatPrice(p.salePriceSek)}</span> <s class="price-original">${formatPrice(p.priceSek)}</s>`
+          : formatPrice(p.priceSek);
+        return `
+        <tr data-product-row="${escapeHtml(p.id)}">
+          <td>
+            <div class="table-product-name">${escapeHtml(p.name)}</div>
+            <div class="table-sub">${escapeHtml(p.sizes.join(', '))}</div>
+          </td>
+          <td>${escapeHtml(catMap[p.category] || p.category)}</td>
+          <td class="table-price">${displayPrice}</td>
+          <td>${inventoryBadge(p.inventory)}</td>
+          <td class="table-img">
+            ${p.image ? `<img src="${escapeHtml(p.image)}" alt="" class="table-thumb" loading="lazy" />` : '–'}
+          </td>
+          <td>
+            <div class="table-actions">
+              <button class="button secondary btn-sm" data-edit-product="${escapeHtml(p.id)}">Redigera</button>
+              <button class="button danger btn-sm" data-delete-product="${escapeHtml(p.id)}">Ta bort</button>
+            </div>
+          </td>
+        </tr>`;
+      })
+      .join('');
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="7" class="table-empty notice-error">Kunde inte ladda produkter: ${escapeHtml(err.message)}</td></tr>`;
   }
-
-  const cats = getCatalogCategories();
-  const catMap = Object.fromEntries(cats.map((c) => [c.id, c.name]));
-
-  tbody.innerHTML = products
-    .map((p) => {
-      const displayPrice = p.salePriceSek
-        ? `<span class="price-sale">${formatPrice(p.salePriceSek)}</span> <s class="price-original">${formatPrice(p.priceSek)}</s>`
-        : formatPrice(p.priceSek);
-      return `
-      <tr data-product-row="${escapeHtml(p.id)}">
-        <td>
-          <div class="table-product-name">${escapeHtml(p.name)}</div>
-          <div class="table-sub">${escapeHtml(p.sizes.join(', '))}</div>
-        </td>
-        <td>${escapeHtml(catMap[p.category] || p.category)}</td>
-        <td class="table-price">${displayPrice}</td>
-        <td>${inventoryBadge(p.inventory)}</td>
-        <td class="table-img">
-          ${p.image ? `<img src="${escapeHtml(p.image)}" alt="" class="table-thumb" loading="lazy" />` : '–'}
-        </td>
-        <td>
-          <div class="table-actions">
-            <button class="button secondary btn-sm" data-edit-product="${escapeHtml(p.id)}">Redigera</button>
-            <button class="button danger btn-sm" data-delete-product="${escapeHtml(p.id)}">Ta bort</button>
-          </div>
-        </td>
-      </tr>`;
-    })
-    .join('');
 }
 
 function populateProductEditForm(product) {
@@ -156,42 +167,49 @@ function resetProductForm() {
   form.querySelector('[data-cancel-edit]').hidden = true;
 }
 
-function initProductsTab() {
+async function initProductsTab() {
   const form = document.querySelector('[data-admin-product-form]');
   const feedback = document.querySelector('[data-product-feedback]');
   const catSelect = form?.querySelector('[data-admin-category]');
 
-  renderCategoryOptions(catSelect);
-  renderProductsTable();
+  await Promise.all([renderCategoryOptions(catSelect), renderProductsTable()]);
 
   form?.querySelector('[data-cancel-edit]')?.addEventListener('click', () => {
     resetProductForm();
   });
 
-  document.querySelector('[data-products-tbody]')?.addEventListener('click', (event) => {
+  document.querySelector('[data-products-tbody]')?.addEventListener('click', async (event) => {
     const editBtn = event.target.closest('[data-edit-product]');
     const deleteBtn = event.target.closest('[data-delete-product]');
 
     if (editBtn) {
       const productId = editBtn.dataset.editProduct;
-      const products = getAdminProducts();
-      const product = products.find((p) => p.id === productId);
-      if (product) {
-        populateProductEditForm(product);
+      try {
+        const products = await getAdminProducts();
+        const product = products.find((p) => p.id === productId);
+        if (product) {
+          populateProductEditForm(product);
+        }
+      } catch (err) {
+        showFeedback(feedback, `Kunde inte hämta produkten: ${err.message}`, true);
       }
     }
 
     if (deleteBtn) {
       const productId = deleteBtn.dataset.deleteProduct;
       if (confirm('Ta bort produkten? Detta kan inte ångras.')) {
-        deleteAdminProduct(productId);
-        renderProductsTable();
-        showFeedback(feedback, 'Produkten har tagits bort.');
+        try {
+          await deleteAdminProduct(productId);
+          await renderProductsTable();
+          showFeedback(feedback, 'Produkten har tagits bort.');
+        } catch (err) {
+          showFeedback(feedback, `Kunde inte ta bort produkten: ${err.message}`, true);
+        }
       }
     }
   });
 
-  form?.addEventListener('submit', (event) => {
+  form?.addEventListener('submit', async (event) => {
     event.preventDefault();
     const data = new FormData(form);
     const name = String(data.get('name') || '').trim();
@@ -215,69 +233,77 @@ function initProductsTab() {
 
     const editingId = form.dataset.editingId;
 
-    if (editingId) {
-      updateAdminProduct(editingId, { name, category, priceSek, salePriceSek, inventory, image, description, sizes });
-      showFeedback(feedback, `"${name}" har uppdaterats.`);
-    } else {
-      createAdminProduct({ name, category, priceSek, salePriceSek, inventory, image, description, sizes });
-      showFeedback(feedback, `"${name}" har lagts till.`);
-    }
+    try {
+      if (editingId) {
+        await updateAdminProduct(editingId, { name, category, priceSek, salePriceSek, inventory, image, description, sizes });
+        showFeedback(feedback, `"${name}" har uppdaterats.`);
+      } else {
+        await createAdminProduct({ name, category, priceSek, salePriceSek, inventory, image, description, sizes });
+        showFeedback(feedback, `"${name}" har lagts till.`);
+      }
 
-    resetProductForm();
-    renderCategoryOptions(catSelect);
-    renderProductsTable();
+      resetProductForm();
+      await Promise.all([renderCategoryOptions(catSelect), renderProductsTable()]);
+    } catch (err) {
+      showFeedback(feedback, err.message || 'Kunde inte spara produkten.', true);
+    }
   });
 }
 
 // ── Categories tab ─────────────────────────────────────────────────────────────
 
-function renderCategoriesTable() {
+async function renderCategoriesTable() {
   const tbody = document.querySelector('[data-categories-tbody]');
   if (!tbody) {
     return;
   }
 
-  const baseCats = getCatalogCategories().filter((c) => !c.isAdminCreated);
-  const adminCats = getAdminCategories();
+  try {
+    const allCats = await getCatalogCategories();
+    const baseCats = allCats.filter((c) => !c.isAdminCreated);
+    const adminCats = allCats.filter((c) => c.isAdminCreated);
 
-  let html = baseCats
-    .map(
-      (c) => `
-    <tr>
-      <td>${escapeHtml(c.icon || '📁')}</td>
-      <td><strong>${escapeHtml(c.name)}</strong></td>
-      <td>${escapeHtml(c.description || '–')}</td>
-      <td><span class="inv-badge ok">Inbyggd</span></td>
-      <td>–</td>
-    </tr>`
-    )
-    .join('');
-
-  if (adminCats.length > 0) {
-    html += adminCats
+    let html = baseCats
       .map(
         (c) => `
-      <tr data-category-row="${escapeHtml(c.id)}">
-        <td>${escapeHtml(c.icon || '🏷️')}</td>
+      <tr>
+        <td>${escapeHtml(c.icon || '📁')}</td>
         <td><strong>${escapeHtml(c.name)}</strong></td>
         <td>${escapeHtml(c.description || '–')}</td>
-        <td><span class="inv-badge low">Admin</span></td>
-        <td>
-          <div class="table-actions">
-            <button class="button secondary btn-sm" data-edit-category="${escapeHtml(c.id)}">Redigera</button>
-            <button class="button danger btn-sm" data-delete-category="${escapeHtml(c.id)}">Ta bort</button>
-          </div>
-        </td>
+        <td><span class="inv-badge ok">Inbyggd</span></td>
+        <td>–</td>
       </tr>`
       )
       .join('');
-  }
 
-  if (!html) {
-    html = `<tr><td colspan="5" class="table-empty">Inga kategorier ännu.</td></tr>`;
-  }
+    if (adminCats.length > 0) {
+      html += adminCats
+        .map(
+          (c) => `
+        <tr data-category-row="${escapeHtml(c.id)}">
+          <td>${escapeHtml(c.icon || '🏷️')}</td>
+          <td><strong>${escapeHtml(c.name)}</strong></td>
+          <td>${escapeHtml(c.description || '–')}</td>
+          <td><span class="inv-badge low">Admin</span></td>
+          <td>
+            <div class="table-actions">
+              <button class="button secondary btn-sm" data-edit-category="${escapeHtml(c.id)}">Redigera</button>
+              <button class="button danger btn-sm" data-delete-category="${escapeHtml(c.id)}">Ta bort</button>
+            </div>
+          </td>
+        </tr>`
+        )
+        .join('');
+    }
 
-  tbody.innerHTML = html;
+    if (!html) {
+      html = `<tr><td colspan="5" class="table-empty">Inga kategorier ännu.</td></tr>`;
+    }
+
+    tbody.innerHTML = html;
+  } catch (err) {
+    tbody.innerHTML = `<tr><td colspan="5" class="table-empty notice-error">Kunde inte ladda kategorier: ${escapeHtml(err.message)}</td></tr>`;
+  }
 }
 
 function populateCategoryEditForm(category) {
@@ -307,41 +333,49 @@ function resetCategoryForm() {
   form.querySelector('[data-cancel-cat-edit]').hidden = true;
 }
 
-function initCategoriesTab() {
+async function initCategoriesTab() {
   const form = document.querySelector('[data-admin-category-form]');
   const feedback = document.querySelector('[data-category-feedback]');
 
-  renderCategoriesTable();
+  await renderCategoriesTable();
 
   form?.querySelector('[data-cancel-cat-edit]')?.addEventListener('click', () => {
     resetCategoryForm();
   });
 
-  document.querySelector('[data-categories-tbody]')?.addEventListener('click', (event) => {
+  document.querySelector('[data-categories-tbody]')?.addEventListener('click', async (event) => {
     const editBtn = event.target.closest('[data-edit-category]');
     const deleteBtn = event.target.closest('[data-delete-category]');
 
     if (editBtn) {
       const catId = editBtn.dataset.editCategory;
-      const cats = getAdminCategories();
-      const cat = cats.find((c) => c.id === catId);
-      if (cat) {
-        populateCategoryEditForm(cat);
+      try {
+        const cats = await getAdminCategories();
+        const cat = cats.find((c) => c.id === catId);
+        if (cat) {
+          populateCategoryEditForm(cat);
+        }
+      } catch (err) {
+        showFeedback(feedback, `Kunde inte hämta kategorin: ${err.message}`, true);
       }
     }
 
     if (deleteBtn) {
       const catId = deleteBtn.dataset.deleteCategory;
       if (confirm('Ta bort kategorin? Produkter med denna kategori påverkas inte.')) {
-        deleteAdminCategory(catId);
-        renderCategoriesTable();
-        renderCategoryOptions(document.querySelector('[data-admin-category]'));
-        showFeedback(feedback, 'Kategorin har tagits bort.');
+        try {
+          await deleteAdminCategory(catId);
+          await renderCategoriesTable();
+          await renderCategoryOptions(document.querySelector('[data-admin-category]'));
+          showFeedback(feedback, 'Kategorin har tagits bort.');
+        } catch (err) {
+          showFeedback(feedback, `Kunde inte ta bort kategorin: ${err.message}`, true);
+        }
       }
     }
   });
 
-  form?.addEventListener('submit', (event) => {
+  form?.addEventListener('submit', async (event) => {
     event.preventDefault();
     const data = new FormData(form);
     const name = String(data.get('catName') || '').trim();
@@ -355,23 +389,27 @@ function initCategoriesTab() {
 
     const editingId = form.dataset.editingId;
 
-    if (editingId) {
-      updateAdminCategory(editingId, { name, description, icon });
-      showFeedback(feedback, `"${name}" har uppdaterats.`);
-    } else {
-      createAdminCategory({ name, description, icon });
-      showFeedback(feedback, `"${name}" har skapats.`);
-    }
+    try {
+      if (editingId) {
+        await updateAdminCategory(editingId, { name, description, icon });
+        showFeedback(feedback, `"${name}" har uppdaterats.`);
+      } else {
+        await createAdminCategory({ name, description, icon });
+        showFeedback(feedback, `"${name}" har skapats.`);
+      }
 
-    resetCategoryForm();
-    renderCategoriesTable();
-    renderCategoryOptions(document.querySelector('[data-admin-category]'));
+      resetCategoryForm();
+      await renderCategoriesTable();
+      await renderCategoryOptions(document.querySelector('[data-admin-category]'));
+    } catch (err) {
+      showFeedback(feedback, err.message || 'Kunde inte spara kategorin.', true);
+    }
   });
 }
 
 // ── Shipping & Settings tab ───────────────────────────────────────────────────
 
-function initSettingsTab() {
+async function initSettingsTab() {
   const form = document.querySelector('[data-admin-settings-form]');
   const feedback = document.querySelector('[data-settings-feedback]');
 
@@ -379,34 +417,42 @@ function initSettingsTab() {
     return;
   }
 
-  const settings = getShopSettings();
-  form.querySelector('[name="shippingRate"]').value = settings.shippingRate;
-  form.querySelector('[name="freeShippingThreshold"]').value = settings.freeShippingThreshold;
-  form.querySelector('[name="taxRate"]').value = settings.taxRate;
-  form.querySelector('[name="currency"]').value = settings.currency;
-  form.querySelector('[name="shopEmail"]').value = settings.shopEmail;
-  form.querySelector('[name="shopName"]').value = settings.shopName;
+  try {
+    const settings = await getShopSettings();
+    form.querySelector('[name="shippingRate"]').value = settings.shippingRate;
+    form.querySelector('[name="freeShippingThreshold"]').value = settings.freeShippingThreshold;
+    form.querySelector('[name="taxRate"]').value = settings.taxRate;
+    form.querySelector('[name="currency"]').value = settings.currency;
+    form.querySelector('[name="shopEmail"]').value = settings.shopEmail;
+    form.querySelector('[name="shopName"]').value = settings.shopName;
+  } catch (err) {
+    showFeedback(feedback, `Kunde inte ladda inställningar: ${err.message}`, true);
+  }
 
-  form.addEventListener('submit', (event) => {
+  form.addEventListener('submit', async (event) => {
     event.preventDefault();
     const data = new FormData(form);
-    const updated = setShopSettings({
-      shippingRate: data.get('shippingRate'),
-      freeShippingThreshold: data.get('freeShippingThreshold'),
-      taxRate: data.get('taxRate'),
-      currency: data.get('currency'),
-      shopEmail: data.get('shopEmail'),
-      shopName: data.get('shopName'),
-    });
-    showFeedback(feedback, `Inställningar sparade. Frakt: ${updated.shippingRate} ${updated.currency}, fri frakt från ${updated.freeShippingThreshold} ${updated.currency}.`);
+    try {
+      const updated = await setShopSettings({
+        shippingRate: data.get('shippingRate'),
+        freeShippingThreshold: data.get('freeShippingThreshold'),
+        taxRate: data.get('taxRate'),
+        currency: data.get('currency'),
+        shopEmail: data.get('shopEmail'),
+        shopName: data.get('shopName'),
+      });
+      showFeedback(feedback, `Inställningar sparade. Frakt: ${updated.shippingRate} ${updated.currency}, fri frakt från ${updated.freeShippingThreshold} ${updated.currency}.`);
+    } catch (err) {
+      showFeedback(feedback, err.message || 'Kunde inte spara inställningar.', true);
+    }
   });
 }
 
 // ── Entry point ───────────────────────────────────────────────────────────────
 
-export function initAdminPage() {
+export async function initAdminPage() {
   initTabs();
-  initProductsTab();
-  initCategoriesTab();
-  initSettingsTab();
+  await initProductsTab();
+  await initCategoriesTab();
+  await initSettingsTab();
 }
