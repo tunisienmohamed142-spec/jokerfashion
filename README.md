@@ -8,7 +8,6 @@ JokerFashion är en modern modebutik byggd som en statisk frontend med en server
 - separata kategorisidor för dam, herr och barn
 - varukorg med localStorage
 - orderformulär med fältvis validering
-- PDF-generering av beställning
 - serverless endpoint för mejlutskick via Resend
 
 ## Filer
@@ -18,7 +17,7 @@ JokerFashion är en modern modebutik byggd som en statisk frontend med en server
 - `herr.html` – kategori för herr
 - `barn.html` – kategori för barn
 - `style.css` – all styling
-- `script.js` – varukorg, formulär, validering och PDF
+- `script.js` – varukorg, formulär och validering
 - `api/send-order.js` – serverless funktion för att skicka beställning via Resend
 - `CNAME` – anpassad domän för publicering
 
@@ -30,10 +29,10 @@ Följande miljövariabler måste finnas i din deploymiljö (t.ex. Vercel):
 - `ORDER_FROM_EMAIL` – avsändaradress som är verifierad i Resend (t.ex. `orders@dindoman.se`)
 - `ORDER_TO_EMAIL` – mottagaradress dit beställningar ska skickas (t.ex. `info@jokerfashion.se`)
 
-## Ordermejl med PDF-bilaga
+## Ordermejl
 
-När en order skickas genererar frontend en PDF och skickar den base64-kodad till `api/send-order.js`.
-Serverless-funktionen skickar sedan mejlet via **Resend** med PDF-filen bifogad som en riktig `.pdf`-bilaga.
+När en order skickas skickar frontend orderinformationen till `api/send-order.js`.
+Serverless-funktionen skickar sedan ett vanligt ordermejl via **Resend**.
 
 Resend kräver att avsändaradressen (`ORDER_FROM_EMAIL`) är kopplad till en verifierad domän i Resend-dashboarden.
 Se [resend.com/docs](https://resend.com/docs) för hur du verifierar din domän.
@@ -48,5 +47,4 @@ För att `api/send-order.js` ska fungera behöver projektet deployas på en plat
 2. Ladda om sidan och kontrollera att varukorgen ligger kvar.
 3. Fyll i formuläret och kontrollera att uppgifter sparas lokalt.
 4. Testa ogiltig e-post, telefon och postnummer.
-5. Ladda ner PDF.
-6. Skicka beställningen live efter att miljövariablerna är satta.
+5. Skicka beställningen live efter att miljövariablerna är satta.
