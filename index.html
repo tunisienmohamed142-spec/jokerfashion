@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>JokerFashion | Modern mode för hela familjen</title>
+    <title>JokerFashion | Mode för dam, herr och barn</title>
     <meta
       name="description"
-      content="JokerFashion erbjuder modern stil för herr, dam och barn. Upptäck en ren, trendig och mobilanpassad modeupplevelse."
+      content="Upptäck JokerFashion – en modern modebutik med kategorier för dam, herr, barn, nyheter, accessoarer och sale."
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -18,104 +18,174 @@
   </head>
   <body>
     <header class="site-header">
-      <div class="container nav-wrap">
+      <div class="container nav-wrap nav-wrap-wide">
         <a class="brand" href="index.html">JokerFashion</a>
         <button class="menu-toggle" aria-label="Öppna meny">☰</button>
         <nav class="site-nav">
-          <a href="index.html">Start</a>
-          <a href="herr.html">Herr</a>
           <a href="dam.html">Dam</a>
+          <a href="herr.html">Herr</a>
           <a href="barn.html">Barn</a>
+          <a href="#nyheter">Nyheter</a>
+          <a href="#accessoarer">Accessoarer</a>
+          <a href="#sale">Sale</a>
           <a href="#kontakt">Kontakt</a>
         </nav>
       </div>
     </header>
 
     <main>
-      <section class="hero">
-        <div class="container hero-grid">
-          <div>
-            <p class="eyebrow">JokerFashion</p>
-            <h1>Modern mode för hela familjen.</h1>
+      <section class="hero hero-shop">
+        <div class="container hero-shop-grid">
+          <div class="hero-copy">
+            <p class="eyebrow">Ny säsong hos JokerFashion</p>
+            <h1>Utforska mode för dam, herr och barn.</h1>
             <p class="lead">
-              En stilren destination för herr, dam och barn. Byggd för att växa
-              tillsammans med ert varumärke.
+              En modern shoppingupplevelse med tydliga kategorier, utvalda
+              favoriter och en stilren känsla inspirerad av stora modebutiker.
             </p>
             <div class="hero-actions">
-              <a class="btn btn-primary" href="#kollektioner">Utforska kollektioner</a>
-              <a class="btn btn-secondary" href="#om-oss">Om oss</a>
+              <a class="btn btn-primary" href="#populara">Shoppa populärt</a>
+              <a class="btn btn-secondary" href="#kategorier">Se kategorier</a>
             </div>
           </div>
-          <div class="hero-card">
-            <div class="hero-badge">Ny säsong</div>
-            <h2>Skandinavisk känsla</h2>
-            <p>
-              Ren design, stark typografi och en modern känsla som passar
-              JokerFashion.
-            </p>
+          <div class="hero-panels">
+            <article class="hero-panel large-panel">
+              <span class="card-tag">Trendrapport</span>
+              <h2>Sommarens nyheter</h2>
+              <p>Starka siluetter, lätta material och moderna kombinationer.</p>
+            </article>
+            <div class="hero-panel-stack">
+              <article class="hero-panel small-panel">
+                <span class="card-tag">Accessoarer</span>
+                <h3>Lyft looken</h3>
+              </article>
+              <article class="hero-panel small-panel sale-panel">
+                <span class="card-tag">Sale</span>
+                <h3>Utvalda fynd</h3>
+              </article>
+            </div>
           </div>
         </div>
       </section>
 
-      <section id="kollektioner" class="section">
+      <section id="kategorier" class="section compact-section">
         <div class="container">
-          <div class="section-heading">
-            <p class="eyebrow">Kollektioner</p>
-            <h2>Handla efter kategori</h2>
+          <div class="section-heading section-heading-inline">
+            <div>
+              <p class="eyebrow">Kategorier</p>
+              <h2>Shoppa efter avdelning</h2>
+            </div>
+            <a class="text-link" href="#populara">Visa populära produkter</a>
           </div>
-          <div class="card-grid">
-            <a class="category-card" href="herr.html">
-              <span class="card-tag">Herr</span>
-              <h3>Stil för vardag och kväll</h3>
-              <p>Minimalistiska plagg med tydlig attityd.</p>
-            </a>
-            <a class="category-card" href="dam.html">
-              <span class="card-tag">Dam</span>
-              <h3>Elegans med modern edge</h3>
-              <p>Trendiga siluetter och noga utvalda detaljer.</p>
-            </a>
-            <a class="category-card" href="barn.html">
-              <span class="card-tag">Barn</span>
-              <h3>Bekvämt, lekfullt och snyggt</h3>
-              <p>Mode för små personligheter med stor stil.</p>
-            </a>
+          <div class="category-strip">
+            <a class="strip-card" href="dam.html"><span>Dam</span></a>
+            <a class="strip-card" href="herr.html"><span>Herr</span></a>
+            <a class="strip-card" href="barn.html"><span>Barn</span></a>
+            <a class="strip-card" href="#nyheter"><span>Nyheter</span></a>
+            <a class="strip-card" href="#accessoarer"><span>Accessoarer</span></a>
+            <a class="strip-card" href="#sale"><span>Sale</span></a>
           </div>
         </div>
       </section>
 
-      <section id="om-oss" class="section section-dark">
-        <div class="container split-grid">
-          <div>
-            <p class="eyebrow">Om JokerFashion</p>
-            <h2>Vi bygger ett modevarumärke med personlighet.</h2>
+      <section id="populara" class="section">
+        <div class="container">
+          <div class="section-heading section-heading-inline">
+            <div>
+              <p class="eyebrow">Populärt just nu</p>
+              <h2>Utvalda produkter</h2>
+            </div>
+            <span class="muted-label">6 produkter</span>
           </div>
-          <div>
-            <p>
-              JokerFashion är skapat för att samla mode för hela familjen på en
-              och samma plats. Den här första versionen är byggd för att ni ska
-              kunna fortsätta fylla på med bilder, texter och kollektioner.
-            </p>
-            <p>
-              Nästa steg kan vara att koppla adminfunktion, lägga till riktiga
-              produktbilder och länka vidare till butik eller checkout.
-            </p>
+          <div class="product-grid">
+            <article class="product-card">
+              <div class="product-image placeholder-tone-1"></div>
+              <div class="product-info">
+                <p class="product-category">Dam</p>
+                <h3>Beige oversized blazer</h3>
+                <p class="price">699 kr</p>
+              </div>
+            </article>
+            <article class="product-card">
+              <div class="product-image placeholder-tone-2"></div>
+              <div class="product-info">
+                <p class="product-category">Herr</p>
+                <h3>Svart premium skjorta</h3>
+                <p class="price">549 kr</p>
+              </div>
+            </article>
+            <article class="product-card">
+              <div class="product-image placeholder-tone-3"></div>
+              <div class="product-info">
+                <p class="product-category">Barn</p>
+                <h3>Set i mjuk bomull</h3>
+                <p class="price">349 kr</p>
+              </div>
+            </article>
+            <article class="product-card">
+              <div class="product-image placeholder-tone-4"></div>
+              <div class="product-info">
+                <p class="product-category">Accessoarer</p>
+                <h3>Axelväska i neutral ton</h3>
+                <p class="price">459 kr</p>
+              </div>
+            </article>
+            <article class="product-card">
+              <div class="product-image placeholder-tone-5"></div>
+              <div class="product-info">
+                <p class="product-category">Nyheter</p>
+                <h3>Vit klänning med struktur</h3>
+                <p class="price">799 kr</p>
+              </div>
+            </article>
+            <article class="product-card">
+              <div class="product-image placeholder-tone-6"></div>
+              <div class="product-info">
+                <p class="product-category">Sale</p>
+                <h3>Stickad tröja i jordton</h3>
+                <p class="price">299 kr</p>
+              </div>
+            </article>
           </div>
+        </div>
+      </section>
+
+      <section id="nyheter" class="section section-light">
+        <div class="container editorial-grid">
+          <article class="editorial-card wide-card">
+            <p class="eyebrow">Nyheter</p>
+            <h2>Nya plagg varje vecka</h2>
+            <p>
+              Skapa en levande butikskänsla med återkommande nyheter, säsongens
+              favoriter och starka kampanjer.
+            </p>
+          </article>
+          <article id="accessoarer" class="editorial-card">
+            <p class="eyebrow">Accessoarer</p>
+            <h3>Väskor, smycken och detaljer</h3>
+            <p>Komplettera varje outfit med noga utvalda accessoarer.</p>
+          </article>
+          <article id="sale" class="editorial-card sale-card">
+            <p class="eyebrow">Sale</p>
+            <h3>Utvalda erbjudanden</h3>
+            <p>Lyft fram rabatterade produkter i en tydlig kampanjsektion.</p>
+          </article>
         </div>
       </section>
 
       <section class="section">
-        <div class="container feature-grid">
+        <div class="container trust-grid">
           <article class="feature-card">
-            <h3>Mobilanpassad</h3>
-            <p>Designad för att se bra ut på mobil, surfplatta och dator.</p>
+            <h3>Tydliga kategorier</h3>
+            <p>En startsida som direkt leder besökaren till rätt avdelning.</p>
           </article>
           <article class="feature-card">
-            <h3>Enkel att bygga vidare på</h3>
-            <p>Perfekt grund för fler sidor, bilder och framtida adminstöd.</p>
+            <h3>Redo för varukorg</h3>
+            <p>Strukturen är förberedd för nästa steg med produkter och order.</p>
           </article>
           <article class="feature-card">
-            <h3>Redo för GitHub Pages</h3>
-            <p>Statisk struktur som passar enkel publicering och egen domän.</p>
+            <h3>Byggbar butik</h3>
+            <p>Vi kan fortsätta med varukorg, beställningsformulär och admin.</p>
           </article>
         </div>
       </section>
@@ -125,18 +195,19 @@
       <div class="container footer-grid">
         <div>
           <h3>JokerFashion</h3>
-          <p>Modern mode för herr, dam och barn.</p>
+          <p>Modebutik för dam, herr och barn.</p>
+        </div>
+        <div>
+          <h4>Kategorier</h4>
+          <a href="dam.html">Dam</a>
+          <a href="herr.html">Herr</a>
+          <a href="barn.html">Barn</a>
+          <a href="#nyheter">Nyheter</a>
         </div>
         <div>
           <h4>Kontakt</h4>
           <p>E-post: info@jokerfashion.shop</p>
           <p>Instagram: @jokerfashion</p>
-        </div>
-        <div>
-          <h4>Navigering</h4>
-          <a href="herr.html">Herr</a>
-          <a href="dam.html">Dam</a>
-          <a href="barn.html">Barn</a>
         </div>
       </div>
     </footer>
