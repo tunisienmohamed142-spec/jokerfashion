@@ -36,7 +36,7 @@
           <p class="eyebrow">Admin Studio</p>
           <h1>Hantera din butik</h1>
           <p>
-            Adminpanelen kräver inloggning. Produkter, kategorier och butiksinställningar hanteras via
+            Adminpanelen kräver inloggning. Produkter, kategorier, ordrar och butiksinställningar hanteras via
             skyddade API-endpoints.
           </p>
           <p class="notice" data-admin-session-meta></p>
@@ -54,6 +54,7 @@
           <button class="admin-tab" data-admin-tab="products">🛍 Produkter</button>
           <button class="admin-tab" data-admin-tab="categories">📂 Kategorier</button>
           <button class="admin-tab" data-admin-tab="settings">⚙️ Frakt &amp; inställningar</button>
+          <button class="admin-tab" data-admin-tab="orders">📦 Ordrar</button>
           <button class="admin-tab" data-admin-tab="content">🏠 Startsida / CMS</button>
         </nav>
 
@@ -277,6 +278,53 @@
             </div>
           </section>
         </div><!-- /settings panel -->
+
+        <!-- ── ORDERS PANEL ───────────────────────────────────── -->
+        <div data-admin-panel="orders" hidden>
+          <section class="page-section">
+            <div class="section-header">
+              <div>
+                <p class="eyebrow">Orderhantering</p>
+                <h2>Inkomna ordrar</h2>
+              </div>
+            </div>
+            <div class="admin-order-toolbar">
+              <label for="admin-order-filter-status">Status</label>
+              <select id="admin-order-filter-status" data-order-filter-status>
+                <option value="all">Alla</option>
+                <option value="pending">Pending</option>
+                <option value="paid">Paid</option>
+                <option value="fulfilled">Fulfilled</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+              <button class="button secondary btn-sm" type="button" data-orders-refresh>Uppdatera</button>
+            </div>
+            <div class="admin-table-wrap">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Order</th>
+                    <th>Kund</th>
+                    <th>Belopp</th>
+                    <th>Status</th>
+                    <th>Skapad</th>
+                    <th>Åtgärder</th>
+                  </tr>
+                </thead>
+                <tbody data-orders-tbody></tbody>
+              </table>
+            </div>
+            <p class="notice" data-orders-feedback></p>
+          </section>
+
+          <section class="page-section">
+            <article class="panel" data-order-detail-panel>
+              <h3>Orderdetaljer</h3>
+              <p class="small-note">Välj en order i listan för att se detaljer och uppdatera status.</p>
+              <div data-order-detail-content></div>
+            </article>
+          </section>
+        </div><!-- /orders panel -->
 
         <!-- ── HOMEPAGE CMS PANEL ─────────────────────────────── -->
         <div data-admin-panel="content" hidden>

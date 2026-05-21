@@ -90,6 +90,28 @@ export async function uploadAdminMedia({ dataUrl, usage, fileName }) {
   });
 }
 
+export async function getAdminOrders(status = 'all') {
+  const query = status && status !== 'all' ? `?status=${encodeURIComponent(status)}` : '';
+  return apiFetch(`/api/admin/orders${query}`, {
+    cache: 'no-store',
+  });
+}
+
+export async function getAdminOrderById(orderId) {
+  return apiFetch(`/api/admin/orders/${encodeURIComponent(orderId)}`, {
+    cache: 'no-store',
+  });
+}
+
+export async function updateAdminOrderStatus(orderId, status) {
+  return apiFetch(`/api/admin/orders/${encodeURIComponent(orderId)}`, {
+    method: 'PATCH',
+    body: JSON.stringify({
+      status: String(status || '').trim(),
+    }),
+  });
+}
+
 // ── Homepage CMS content (API-backed, graceful fallback) ──────────────────────
 
 export async function getHomepageContent() {
