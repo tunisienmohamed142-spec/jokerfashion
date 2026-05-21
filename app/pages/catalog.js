@@ -1,6 +1,6 @@
 import { renderCartSummary, renderCategoryPills, renderProductGrid, renderProductSpotlight, showCartToast } from '../components/renderers.js';
 import { getCategoryById } from '../data/catalog.js';
-import { addCartItem, getCartSummary, getCatalogCategories, getCatalogProductById, getCatalogProducts } from '../state/store.js';
+import { addCartItem, getCartSummary, getCatalogCategories, getCatalogProducts } from '../state/store.js';
 
 function getActiveCategoryId(categories) {
   const params = new URLSearchParams(window.location.search);
@@ -8,10 +8,10 @@ function getActiveCategoryId(categories) {
   return categories.some((category) => category.id === fromQuery) ? fromQuery : categories[0]?.id;
 }
 
-function getActiveProduct(products, activeCategoryId) {
+function getActiveProductFromList(products, activeCategoryId) {
   const params = new URLSearchParams(window.location.search);
   const productId = params.get('product');
-  const selectedProduct = productId ? getCatalogProductById(productId) : null;
+  const selectedProduct = productId ? products.find((p) => p.id === productId) : null;
 
   if (selectedProduct && selectedProduct.category === activeCategoryId) {
     return selectedProduct;
@@ -36,13 +36,14 @@ function sortProducts(products, sortValue) {
   return sorted;
 }
 
-export function initCatalogPage() {
-  const categories = getCatalogCategories();
+export async function initCatalogPage() {
+  const categories = await getCatalogCategories();
   const activeCategoryId = getActiveCategoryId(categories);
   const activeCategory = getCategoryById(activeCategoryId);
 
-  const allCategoryProducts = getCatalogProducts().filter((product) => product.category === activeCategoryId);
-  const activeProduct = getActiveProduct(allCategoryProducts, activeCategoryId);
+  const allProducts = await getCatalogProducts();
+  const allCategoryProducts = allProducts.filter((product) => product.category === activeCategoryId);
+  const activeProduct = getActiveProductFromList(allCategoryProducts, activeCategoryId);
 
   const heading = document.querySelector('[data-catalog-heading]');
   const intro = document.querySelector('[data-catalog-intro]');
@@ -94,7 +95,8 @@ export function initCatalogPage() {
       return;
     }
 
-    const product = getCatalogProductById(String(button.dataset.addToCart || ''));
+    const productId = String(button.dataset.addToCart || '');
+    const product = allProducts.find((p) => p.id === productId);
     if (!product) {
       return;
     }

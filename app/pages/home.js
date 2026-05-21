@@ -1,5 +1,5 @@
 import { renderCartSummary, renderCategoryPills, renderProductGrid, showCartToast } from '../components/renderers.js';
-import { addCartItem, getCartSummary, getCatalogCategories, getCatalogProductById, getCatalogProducts } from '../state/store.js';
+import { addCartItem, getCartSummary, getCatalogCategories, getCatalogProducts } from '../state/store.js';
 
 function escapeHtml(value) {
   return String(value)
@@ -39,13 +39,14 @@ function renderHomeCart(container, helperText = 'Din varukorg följer med dig he
   renderCartSummary(container, getCartSummary(), { helperText });
 }
 
-function handleAddToCart(event, feedbackEl, cartSummaryContainer) {
+function handleAddToCart(event, allProducts, feedbackEl, cartSummaryContainer) {
   const button = event.target.closest('[data-add-to-cart]');
   if (!button) {
     return;
   }
 
-  const product = getCatalogProductById(String(button.dataset.addToCart || ''));
+  const productId = String(button.dataset.addToCart || '');
+  const product = allProducts.find((p) => p.id === productId);
   if (!product) {
     return;
   }
@@ -69,9 +70,9 @@ function handleAddToCart(event, feedbackEl, cartSummaryContainer) {
   }
 }
 
-export function initHomePage() {
-  const categories = getCatalogCategories();
-  const allProducts = getCatalogProducts();
+export async function initHomePage() {
+  const categories = await getCatalogCategories();
+  const allProducts = await getCatalogProducts();
 
   const featuredProducts = allProducts.filter((p) => p.isFeatured).slice(0, 4);
   const displayProducts = featuredProducts.length > 0 ? featuredProducts : allProducts.slice(0, 4);
@@ -93,7 +94,7 @@ export function initHomePage() {
 
   renderHomeCart(cartSummaryContainer);
 
-  const addToCartHandler = (event) => handleAddToCart(event, feedback, cartSummaryContainer);
+  const addToCartHandler = (event) => handleAddToCart(event, allProducts, feedback, cartSummaryContainer);
   featuredGrid?.addEventListener('click', addToCartHandler);
   newArrivalsGrid?.addEventListener('click', addToCartHandler);
 }

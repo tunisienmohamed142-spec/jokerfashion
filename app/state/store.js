@@ -1,11 +1,10 @@
 import { baseProducts, categories } from '../data/catalog.js';
 
-const ADMIN_PRODUCTS_KEY = 'jokerfashion-admin-products';
-const ADMIN_CATEGORIES_KEY = 'jokerfashion-admin-categories';
-const ADMIN_SETTINGS_KEY = 'jokerfashion-admin-settings';
 const MOCK_SESSION_KEY = 'jokerfashion-auth-session';
 const CART_STORAGE_KEY = 'jokerfashion-cart';
 const CHECKOUT_DRAFT_KEY = 'jokerfashion-checkout-draft';
+
+// ── localStorage helpers (cart / checkout / session only) ────────────────────
 
 function parseStorageItem(storageKey, fallbackValue) {
   try {
@@ -16,64 +15,143 @@ function parseStorageItem(storageKey, fallbackValue) {
   }
 }
 
-export function getCatalogProducts() {
-  const adminProducts = parseStorageItem(ADMIN_PRODUCTS_KEY, []);
-  return [...adminProducts, ...baseProducts];
-}
-
-export function getAdminCategories() {
-  return parseStorageItem(ADMIN_CATEGORIES_KEY, []);
-}
-
-export function getCatalogCategories() {
-  const adminCategories = getAdminCategories();
-  return [...categories, ...adminCategories];
-}
-
-export function createAdminCategory(input) {
-  const existing = getAdminCategories();
-  const id = `cat-admin-${Date.now()}`;
-  const category = {
-    id,
-    name: String(input.name || '').trim(),
-    description: String(input.description || '').trim(),
-    icon: String(input.icon || '🏷️').trim(),
-    isAdminCreated: true,
-  };
-  saveStorageItem(ADMIN_CATEGORIES_KEY, [category, ...existing]);
-  return category;
-}
-
-export function updateAdminCategory(categoryId, updates) {
-  const existing = getAdminCategories();
-  const index = existing.findIndex((c) => c.id === categoryId);
-  if (index === -1) {
-    return null;
-  }
-  const updated = {
-    ...existing[index],
-    name: String(updates.name ?? existing[index].name).trim(),
-    description: String(updates.description ?? existing[index].description).trim(),
-    icon: String(updates.icon ?? existing[index].icon).trim(),
-  };
-  existing[index] = updated;
-  saveStorageItem(ADMIN_CATEGORIES_KEY, existing);
-  return updated;
-}
-
-export function deleteAdminCategory(categoryId) {
-  const existing = getAdminCategories();
-  const next = existing.filter((c) => c.id !== categoryId);
-  saveStorageItem(ADMIN_CATEGORIES_KEY, next);
-}
-
-export function getCatalogProductById(productId) {
-  return getCatalogProducts().find((product) => product.id === productId) || null;
-}
-
 function saveStorageItem(storageKey, value) {
   localStorage.setItem(storageKey, JSON.stringify(value));
 }
+
+// ── API fetch helper ──────────────────────────────────────────────────────────
+
+async function apiFetch(path, options = {}) {
+  const res = await fetch(path, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(options.headers || {}),
+    },
+  });
+
+  if (!res.ok) {
+    let errorMsg = `Request failed: ${res.status}`;
+    try {
+      const errData = await res.json();
+      errorMsg = errData.message || errorMsg;
+    } catch {
+      // ignore parse error
+    }
+    throw new Error(errorMsg);
+  }
+
+  return res.json();
+}
+
+// ── Admin products (API-backed) ───────────────────────────────────────────────
+
+export async function getAdminProducts() {
+  return apiFetch('/api/products');
+}
+
+export async function createAdminProduct(productInput) {
+  return apiFetch('/api/products', {
+    method: 'POST',
+    body: JSON.stringify({
+      name: String(productInput.name || '').trim(),
+      category: String(productInput.category || '').trim(),
+      priceSek: Number(productInput.priceSek),
+      salePriceSek: productInput.salePriceSek ? Number(productInput.salePriceSek) : null,
+      inventory: Number(productInput.inventory) || 0,
+      description: String(productInput.description || '').trim(),
+      sizes: productInput.sizes,
+      image: String(productInput.image || '').trim(),
+    }),
+  });
+}
+
+export async function updateAdminProduct(productId, updates) {
+  return apiFetch(`/api/products/${encodeURIComponent(productId)}`, {
+    method: 'PUT',
+    body: JSON.stringify(updates),
+  });
+}
+
+export async function deleteAdminProduct(productId) {
+  return apiFetch(`/api/products/${encodeURIComponent(productId)}`, {
+    method: 'DELETE',
+  });
+}
+
+// ── Admin categories (API-backed) ─────────────────────────────────────────────
+
+export async function getAdminCategories() {
+  return apiFetch('/api/categories');
+}
+
+export async function createAdminCategory(input) {
+  return apiFetch('/api/categories', {
+    method: 'POST',
+    body: JSON.stringify({
+      name: String(input.name || '').trim(),
+      description: String(input.description || '').trim(),
+      icon: String(input.icon || '🏷️').trim(),
+    }),
+  });
+}
+
+export async function updateAdminCategory(categoryId, updates) {
+  return apiFetch(`/api/categories/${encodeURIComponent(categoryId)}`, {
+    method: 'PUT',
+    body: JSON.stringify(updates),
+  });
+}
+
+export async function deleteAdminCategory(categoryId) {
+  return apiFetch(`/api/categories/${encodeURIComponent(categoryId)}`, {
+    method: 'DELETE',
+  });
+}
+
+// ── Catalog helpers (API-backed, graceful fallback to base data) ──────────────
+
+export async function getCatalogProducts() {
+  try {
+    const adminProducts = await getAdminProducts();
+    return [...adminProducts, ...baseProducts];
+  } catch {
+    return [...baseProducts];
+  }
+}
+
+export async function getCatalogCategories() {
+  try {
+    const adminCategories = await getAdminCategories();
+    return [...categories, ...adminCategories];
+  } catch {
+    return [...categories];
+  }
+}
+
+export async function getCatalogProductById(productId) {
+  try {
+    const allProducts = await getCatalogProducts();
+    return allProducts.find((product) => product.id === productId) || null;
+  } catch {
+    return null;
+  }
+}
+
+// ── Shop settings (API-backed) ────────────────────────────────────────────────
+
+export async function getShopSettings() {
+  return apiFetch('/api/settings');
+}
+
+export async function setShopSettings(settings) {
+  return apiFetch('/api/settings', {
+    method: 'PUT',
+    body: JSON.stringify(settings),
+  });
+}
+
+// ── Cart (localStorage-backed, synchronous) ───────────────────────────────────
 
 function notifyCartChange() {
   if (typeof window === 'undefined') {
@@ -81,67 +159,6 @@ function notifyCartChange() {
   }
 
   window.dispatchEvent(new CustomEvent('jokerfashion:cart-updated', { detail: getCartSummary() }));
-}
-
-export function getAdminProducts() {
-  return parseStorageItem(ADMIN_PRODUCTS_KEY, []);
-}
-
-export function createAdminProduct(productInput) {
-  const draftProducts = getAdminProducts();
-  const product = {
-    id: `jf-admin-${Date.now()}`,
-    name: String(productInput.name || '').trim(),
-    category: String(productInput.category || '').trim(),
-    priceSek: Number(productInput.priceSek),
-    salePriceSek: productInput.salePriceSek ? Number(productInput.salePriceSek) : null,
-    inventory: Number(productInput.inventory) || 0,
-    badge: 'Admin',
-    description: String(productInput.description || '').trim() || 'Produktbeskrivning saknas.',
-    story: 'Produkt tillagd via adminpanelen.',
-    highlights: ['Admin-skapad produkt'],
-    sizes: productInput.sizes ? String(productInput.sizes).split(',').map((s) => s.trim()).filter(Boolean) : ['One size'],
-    image: String(productInput.image || '').trim() ||
-      'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=900&q=80',
-    isAdminCreated: true,
-  };
-
-  const nextProducts = [product, ...draftProducts];
-  saveStorageItem(ADMIN_PRODUCTS_KEY, nextProducts);
-  return product;
-}
-
-export function updateAdminProduct(productId, updates) {
-  const draftProducts = getAdminProducts();
-  const index = draftProducts.findIndex((p) => p.id === productId);
-  if (index === -1) {
-    return null;
-  }
-  const existing = draftProducts[index];
-  const updated = {
-    ...existing,
-    name: String(updates.name ?? existing.name).trim(),
-    category: String(updates.category ?? existing.category).trim(),
-    priceSek: updates.priceSek !== undefined ? Number(updates.priceSek) : existing.priceSek,
-    salePriceSek: updates.salePriceSek !== undefined
-      ? (updates.salePriceSek ? Number(updates.salePriceSek) : null)
-      : existing.salePriceSek,
-    inventory: updates.inventory !== undefined ? Number(updates.inventory) : existing.inventory,
-    description: updates.description !== undefined ? String(updates.description).trim() : existing.description,
-    sizes: updates.sizes !== undefined
-      ? String(updates.sizes).split(',').map((s) => s.trim()).filter(Boolean)
-      : existing.sizes,
-    image: updates.image !== undefined ? String(updates.image).trim() : existing.image,
-  };
-  draftProducts[index] = updated;
-  saveStorageItem(ADMIN_PRODUCTS_KEY, draftProducts);
-  return updated;
-}
-
-export function deleteAdminProduct(productId) {
-  const draftProducts = getAdminProducts();
-  const next = draftProducts.filter((p) => p.id !== productId);
-  saveStorageItem(ADMIN_PRODUCTS_KEY, next);
 }
 
 export function getCartItems() {
@@ -210,6 +227,8 @@ export function clearCart() {
   notifyCartChange();
 }
 
+// ── Checkout draft (localStorage-backed, synchronous) ─────────────────────────
+
 export function getCheckoutDraft() {
   return parseStorageItem(CHECKOUT_DRAFT_KEY, {});
 }
@@ -222,35 +241,7 @@ export function clearCheckoutDraft() {
   localStorage.removeItem(CHECKOUT_DRAFT_KEY);
 }
 
-export function getShopSettings() {
-  const defaults = {
-    shippingRate: 49,
-    freeShippingThreshold: 799,
-    taxRate: 25,
-    currency: 'SEK',
-    shopEmail: '',
-    shopName: 'JokerFashion',
-  };
-  const saved = parseStorageItem(ADMIN_SETTINGS_KEY, {});
-  return { ...defaults, ...saved };
-}
-
-export function setShopSettings(settings) {
-  const current = getShopSettings();
-  const next = {
-    ...current,
-    shippingRate: settings.shippingRate !== undefined ? Number(settings.shippingRate) : current.shippingRate,
-    freeShippingThreshold: settings.freeShippingThreshold !== undefined
-      ? Number(settings.freeShippingThreshold)
-      : current.freeShippingThreshold,
-    taxRate: settings.taxRate !== undefined ? Number(settings.taxRate) : current.taxRate,
-    currency: settings.currency !== undefined ? String(settings.currency).trim() : current.currency,
-    shopEmail: settings.shopEmail !== undefined ? String(settings.shopEmail).trim() : current.shopEmail,
-    shopName: settings.shopName !== undefined ? String(settings.shopName).trim() : current.shopName,
-  };
-  saveStorageItem(ADMIN_SETTINGS_KEY, next);
-  return next;
-}
+// ── Mock session (localStorage-backed, synchronous) ───────────────────────────
 
 export function getMockSession() {
   try {
@@ -274,3 +265,4 @@ export function setMockSession(role) {
 export function clearMockSession() {
   localStorage.removeItem(MOCK_SESSION_KEY);
 }
+

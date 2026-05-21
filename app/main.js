@@ -20,7 +20,9 @@ const pageKey = document.body.dataset.page;
 const initPage = initializers[pageKey];
 
 if (typeof initPage === 'function') {
-  initPage();
+  Promise.resolve(initPage()).catch((err) => {
+    console.error('[JokerFashion] Page initialization error:', err);
+  });
 }
 
 function updateCartBadges() {

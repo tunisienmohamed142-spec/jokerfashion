@@ -114,10 +114,10 @@ function renderProductDetail(container, product) {
   `;
 }
 
-export function initProductPage() {
+export async function initProductPage() {
   const params = new URLSearchParams(window.location.search);
   const productId = params.get('id');
-  const product = productId ? getCatalogProductById(productId) : null;
+  const product = productId ? await getCatalogProductById(productId) : null;
 
   const detailContainer = document.querySelector('[data-product-detail]');
   const relatedSection = document.querySelector('[data-product-related-section]');
@@ -219,7 +219,8 @@ export function initProductPage() {
   });
 
   // Related products (same category, excluding current)
-  const related = getCatalogProducts()
+  const allProducts = await getCatalogProducts();
+  const related = allProducts
     .filter((p) => p.category === product.category && p.id !== product.id)
     .slice(0, 4);
 
