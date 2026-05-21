@@ -59,20 +59,31 @@ export default async function handler(req, res) {
   const timestamp = Math.floor(Date.now() / 1000);
   const safeUsage = validation.usage.replace(/[^a-z0-9_-]/g, '').slice(0, 40) || 'general';
   const folder = `${config.uploadFolder}/${safeUsage}`;
-  const signature = buildCloudinarySignature({ folder, timestamp }, config.apiSecret);
+  const paramsToSign = {
+  folder,
+  timestamp,
+};
 
-  const formData = new FormData();
-  formData.append('file', validation.image.dataUrl);
-  formData.append('api_key', config.apiKey);
-  formData.append('timestamp', String(timestamp));
-  formData.append('signature', signature);
-  formData.append('folder', folder);
+if (validation.fileName) {
+  paramsToSign.filename_override = validation.fileName.replace(/\.[^/.]+$/, '');
+  paramsToSign.use_filename = 'true';
+  paramsToSign.unique_filename = 'true';
+}
 
-  if (validation.fileName) {
-    formData.append('filename_override', validation.fileName.replace(/\.[^/.]+$/, ''));
-    formData.append('use_filename', 'true');
-    formData.append('unique_filename', 'true');
-  }
+const signature = buildCloudinarySignature(paramsToSign, config.apiSecret);
+
+const formData = new FormData();
+formData.append('file', validation.image.dataUrl);
+formData.append('api_key', config.apiKey);
+formData.append('timestamp', String(timestamp));
+formData.append('signature', signature);
+formData.append('folder', folder);
+
+if (validation.fileName) {
+  formData.append('filename_override', paramsToSign.filename_override);
+  formData.append('use_filename', 'true');
+  formData.append('unique_filename', 'true');
+}
 
   try {
     const uploadResponse = await fetch(
