@@ -15,6 +15,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
   </head>
   <body>
     <header class="site-header">
@@ -244,8 +245,8 @@
               <p class="eyebrow">Kunduppgifter</p>
               <h2>Skicka beställning</h2>
               <p class="lead small-lead">
-                Fyll i dina uppgifter noggrant. Beställningen ska senare kunna
-                användas för mejl och PDF med priser, storlek, antal och adress.
+                Fyll i dina uppgifter noggrant. Du kan sedan ladda ner en PDF med
+                priser, storlek, antal, adress och alla personuppgifter.
               </p>
             </div>
             <form id="order-form" class="order-form">
@@ -294,7 +295,10 @@
                   <li>Namn, e-post, telefon och full adress</li>
                 </ul>
               </div>
-              <button class="btn btn-primary submit-order" type="submit">Fortsätt till beställning</button>
+              <div class="order-actions">
+                <button class="btn btn-primary submit-order" type="submit">Skapa beställning</button>
+                <button id="download-pdf" class="btn btn-secondary submit-order" type="button">Ladda ner PDF</button>
+              </div>
               <p id="order-status" class="order-status"></p>
             </form>
           </div>
