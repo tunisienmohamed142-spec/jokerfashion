@@ -1,4 +1,5 @@
 import { baseProducts, categories } from '../data/catalog.js';
+import { DEFAULT_HOME_CONTENT, mergeHomeContent } from '../data/home-content.js';
 
 const MOCK_SESSION_KEY = 'jokerfashion-auth-session';
 const CART_STORAGE_KEY = 'jokerfashion-cart';
@@ -79,6 +80,27 @@ export async function uploadAdminMedia({ dataUrl, usage, fileName }) {
       fileName: String(fileName || ''),
     }),
   });
+}
+
+// ── Homepage CMS content (API-backed, graceful fallback) ──────────────────────
+
+export async function getHomepageContent() {
+  try {
+    const content = await apiFetch('/api/content/home', {
+      cache: 'no-store',
+    });
+    return mergeHomeContent(content, DEFAULT_HOME_CONTENT);
+  } catch {
+    return mergeHomeContent({}, DEFAULT_HOME_CONTENT);
+  }
+}
+
+export async function updateHomepageContent(contentInput) {
+  const updated = await apiFetch('/api/content/home', {
+    method: 'PUT',
+    body: JSON.stringify(contentInput || {}),
+  });
+  return mergeHomeContent(updated, DEFAULT_HOME_CONTENT);
 }
 
 // ── Admin products (API-backed) ───────────────────────────────────────────────

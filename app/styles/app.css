@@ -488,13 +488,20 @@ label {
 }
 
 input,
-select {
+select,
+textarea {
   width: 100%;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   padding: 0.58rem 0.7rem;
   background: var(--surface-soft);
   color: var(--text);
+}
+
+textarea {
+  resize: vertical;
+  min-height: 110px;
+  font: inherit;
 }
 
 .full {
@@ -1101,6 +1108,12 @@ select {
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   display: block;
+}
+
+.admin-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 0.35rem 0 0;
 }
 
 .table-actions {

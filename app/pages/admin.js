@@ -11,8 +11,10 @@ import {
   deleteAdminProduct,
   getShopSettings,
   getAdminSession,
+  getHomepageContent,
   logoutAdmin,
   setShopSettings,
+  updateHomepageContent,
   uploadAdminMedia,
 } from '../state/store.js';
 
@@ -559,6 +561,103 @@ async function initSettingsTab() {
   });
 }
 
+// ── Homepage CMS tab ───────────────────────────────────────────────────────────
+
+async function initContentTab() {
+  const form = document.querySelector('[data-admin-home-content-form]');
+  const feedback = document.querySelector('[data-home-content-feedback]');
+
+  if (!form) {
+    return;
+  }
+
+  const populateForm = (content) => {
+    form.querySelector('[name="heroEyebrow"]').value = content.hero.eyebrow;
+    form.querySelector('[name="heroTitle"]').value = content.hero.title;
+    form.querySelector('[name="heroBody"]').value = content.hero.body;
+    form.querySelector('[name="heroPrimaryCtaLabel"]').value = content.hero.primaryCtaLabel;
+    form.querySelector('[name="heroPrimaryCtaHref"]').value = content.hero.primaryCtaHref;
+    form.querySelector('[name="heroSecondaryCtaLabel"]').value = content.hero.secondaryCtaLabel;
+    form.querySelector('[name="heroSecondaryCtaHref"]').value = content.hero.secondaryCtaHref;
+    form.querySelector('[name="highlightEyebrow"]').value = content.highlight.eyebrow;
+    form.querySelector('[name="highlightTitle"]').value = content.highlight.title;
+    form.querySelector('[name="highlightBody"]').value = content.highlight.body;
+    form.querySelector('[name="highlightPrimaryCtaLabel"]').value = content.highlight.primaryCtaLabel;
+    form.querySelector('[name="highlightPrimaryCtaHref"]').value = content.highlight.primaryCtaHref;
+    form.querySelector('[name="highlightSecondaryCtaLabel"]').value = content.highlight.secondaryCtaLabel;
+    form.querySelector('[name="highlightSecondaryCtaHref"]').value = content.highlight.secondaryCtaHref;
+    form.querySelector('[name="categoriesEyebrow"]').value = content.categoriesSection.eyebrow;
+    form.querySelector('[name="categoriesTitle"]').value = content.categoriesSection.title;
+    form.querySelector('[name="featuredEyebrow"]').value = content.featuredSection.eyebrow;
+    form.querySelector('[name="featuredTitle"]').value = content.featuredSection.title;
+    form.querySelector('[name="featuredCtaLabel"]').value = content.featuredSection.ctaLabel;
+    form.querySelector('[name="featuredCtaHref"]').value = content.featuredSection.ctaHref;
+    form.querySelector('[name="newArrivalsEyebrow"]').value = content.newArrivalsSection.eyebrow;
+    form.querySelector('[name="newArrivalsTitle"]').value = content.newArrivalsSection.title;
+    form.querySelector('[name="newArrivalsCtaLabel"]').value = content.newArrivalsSection.ctaLabel;
+    form.querySelector('[name="newArrivalsCtaHref"]').value = content.newArrivalsSection.ctaHref;
+    form.querySelector('[name="footerMarketingLine"]').value = content.footer.marketingLine;
+  };
+
+  try {
+    populateForm(await getHomepageContent());
+  } catch (err) {
+    showFeedback(feedback, `Kunde inte ladda startsideinnehåll: ${err.message}`, true);
+  }
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const data = new FormData(form);
+
+    try {
+      const updated = await updateHomepageContent({
+        hero: {
+          eyebrow: data.get('heroEyebrow'),
+          title: data.get('heroTitle'),
+          body: data.get('heroBody'),
+          primaryCtaLabel: data.get('heroPrimaryCtaLabel'),
+          primaryCtaHref: data.get('heroPrimaryCtaHref'),
+          secondaryCtaLabel: data.get('heroSecondaryCtaLabel'),
+          secondaryCtaHref: data.get('heroSecondaryCtaHref'),
+        },
+        highlight: {
+          eyebrow: data.get('highlightEyebrow'),
+          title: data.get('highlightTitle'),
+          body: data.get('highlightBody'),
+          primaryCtaLabel: data.get('highlightPrimaryCtaLabel'),
+          primaryCtaHref: data.get('highlightPrimaryCtaHref'),
+          secondaryCtaLabel: data.get('highlightSecondaryCtaLabel'),
+          secondaryCtaHref: data.get('highlightSecondaryCtaHref'),
+        },
+        categoriesSection: {
+          eyebrow: data.get('categoriesEyebrow'),
+          title: data.get('categoriesTitle'),
+        },
+        featuredSection: {
+          eyebrow: data.get('featuredEyebrow'),
+          title: data.get('featuredTitle'),
+          ctaLabel: data.get('featuredCtaLabel'),
+          ctaHref: data.get('featuredCtaHref'),
+        },
+        newArrivalsSection: {
+          eyebrow: data.get('newArrivalsEyebrow'),
+          title: data.get('newArrivalsTitle'),
+          ctaLabel: data.get('newArrivalsCtaLabel'),
+          ctaHref: data.get('newArrivalsCtaHref'),
+        },
+        footer: {
+          marketingLine: data.get('footerMarketingLine'),
+        },
+      });
+
+      populateForm(updated);
+      showFeedback(feedback, 'Startsidans innehåll har sparats och används nu av storefronten.');
+    } catch (err) {
+      showFeedback(feedback, err.message || 'Kunde inte spara startsideinnehållet.', true);
+    }
+  });
+}
+
 // ── Entry point ───────────────────────────────────────────────────────────────
 
 export async function initAdminPage() {
@@ -596,4 +695,5 @@ export async function initAdminPage() {
   await initProductsTab();
   await initCategoriesTab();
   await initSettingsTab();
+  await initContentTab();
 }

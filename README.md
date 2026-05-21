@@ -26,6 +26,8 @@ JokerFashion är i **Rebuild Phase 2**: backend/API-lager för riktig datalagrin
 | DELETE | `/api/categories/:id` | Ta bort kategori |
 | GET | `/api/settings` | Hämta butiksinställningar |
 | PUT | `/api/settings` | Uppdatera butiksinställningar |
+| GET | `/api/content/home` | Hämta publicerat startsideinnehåll |
+| PUT | `/api/content/home` | Uppdatera startsideinnehåll (admin) |
 | POST | `/api/admin/login` | Admin-inloggning (sätter sessionscookie) |
 | POST | `/api/admin/logout` | Admin-utloggning (raderar sessionscookie) |
 | GET | `/api/admin/session` | Validera aktuell admin-session |
@@ -44,6 +46,7 @@ JokerFashion är i **Rebuild Phase 2**: backend/API-lager för riktig datalagrin
 - `app/pages/*` – sidinitiering per route (alla async)
 - `app/components/renderers.js` – återanvändbara UI-renderers
 - `app/data/catalog.js` – bas-kategorier + seed-produkter (statisk fallback)
+- `app/data/home-content.js` – default/saniterat CMS-innehåll för startsidan
 - `app/state/store.js` – API-klient för admin/catalog; localStorage för cart/checkout/session
 - `app/styles/app.css` – Joker design tokens + layout primitives
 - `api/_kv.js` – Vercel KV REST API-helper (pipeline-baserad)
@@ -52,6 +55,7 @@ JokerFashion är i **Rebuild Phase 2**: backend/API-lager för riktig datalagrin
 - `api/categories.js` – kategorier list + create
 - `api/categories/[id].js` – kategori get/update/delete
 - `api/settings.js` – butiksinställningar get + update
+- `api/content/home.js` – publikt homepage-CMS get + adminskyddad update
 - `api/_auth.js` – server-side admin-auth helper (credentials + sessionscookie)
 - `api/admin/login.js` – admin login endpoint
 - `api/admin/logout.js` – admin logout endpoint
@@ -68,6 +72,7 @@ Admin-panel (admin.html)
 Storefront (catalog.html, index.html, product.html)
   └─→ app/state/store.js (async, graceful fallback)
         ├─→ /api/products → mergas med bas-produkter
+        ├─→ /api/content/home → mergas med default homepage content
         └─→ vid fel: visar bara bas-produkter (ingen blackout)
 
 Varukorg / Checkout / Session
@@ -112,7 +117,18 @@ Utan dessa variabler:
 
 1. **Shipping kopplat till checkout** – fraktkostnader finns i settings men räknas inte in i checkout-totalen ännu
 2. **Orderhantering** – ordrar sparas inte i databasen; admin kan inte se inkomna ordrar
-3. **CMS-kontroll av startsidans textblock** – hero/promotexter är fortfarande kodstyrda
+3. **Rikare homepage-CMS** – denna PR gör hero/highlight/rubriker/CTA dynamiska, men fler block/ordning/fler homepage-bilder kan fortfarande byggas ut senare
+
+## Homepage CMS (detta PR-steg)
+
+- Ny skyddad CMS-yta i `admin.html` för startsidans viktigaste marketing-block.
+- Admin kan nu uppdatera:
+  - hero-överblick, rubrik, supporting text och båda hero-CTA:erna
+  - highlight-/bannerkortets text och två CTA-länkar
+  - rubriker/CTA för kategori-, featured- och nyhetssektionerna
+  - footerns sammanfattande marketingrad
+- `index.html` läser detta dynamiskt via `/api/content/home` och faller tillbaka till säkra defaultvärden om inget är sparat eller API:t inte svarar.
+- Kategorikortens bilder fortsätter styras via kategori-adminen och produktgriderna fortsätter läsa riktiga katalog-/adminprodukter.
 
 ## Mediahantering i admin (detta PR-steg)
 
@@ -131,6 +147,7 @@ Utan dessa variabler:
   - `POST /api/categories`
   - `GET/PUT/DELETE /api/categories/:id`
   - `GET/PUT /api/settings`
+  - `PUT /api/content/home`
 
 ## Migration från Phase 1
 
