@@ -12,6 +12,7 @@ const orderFeedback = document.querySelector('#order-feedback');
 const orderFeedbackTitle = document.querySelector('#order-feedback-title');
 const orderFeedbackText = document.querySelector('#order-feedback-text');
 const submitOrderButton = document.querySelector('.submit-order[type="submit"]');
+const fieldErrors = document.querySelectorAll('.field-error');
 
 const CART_STORAGE_KEY = 'jokerfashion-cart';
 const FORM_STORAGE_KEY = 'jokerfashion-order-form';
@@ -157,6 +158,51 @@ function resetOrderFeedback() {
   }
 }
 
+function clearFieldErrors() {
+  fieldErrors.forEach((errorElement) => {
+    errorElement.textContent = '';
+  });
+
+  if (!orderForm) {
+    return;
+  }
+
+  const fields = orderForm.querySelectorAll('input, textarea, select');
+  fields.forEach((field) => {
+    field.classList.remove('input-error');
+    field.removeAttribute('aria-invalid');
+  });
+}
+
+function setFieldError(fieldName, message) {
+  if (!orderForm) {
+    return;
+  }
+
+  const field = orderForm.elements.namedItem(fieldName);
+  const errorElement = orderForm.querySelector(`[data-error-for="${fieldName}"]`);
+
+  if (field) {
+    field.classList.add('input-error');
+    field.setAttribute('aria-invalid', 'true');
+  }
+
+  if (errorElement) {
+    errorElement.textContent = message;
+  }
+}
+
+function focusFirstFieldError() {
+  if (!orderForm) {
+    return;
+  }
+
+  const firstErrorField = orderForm.querySelector('.input-error');
+  if (firstErrorField) {
+    firstErrorField.focus();
+  }
+}
+
 function getOrderData() {
   if (!orderForm) {
     return null;
@@ -199,36 +245,53 @@ function isValidPostalCode(postalCode) {
 
 function validateOrderData(orderData) {
   const { customer } = orderData;
+  clearFieldErrors();
 
-  if (!customer.firstName || !customer.lastName || !customer.email || !customer.phone || !customer.address || !customer.postalCode || !customer.city) {
-    return {
-      valid: false,
-      title: 'Uppgifter saknas',
-      message: 'Fyll i alla kunduppgifter innan du fortsätter.',
-    };
+  const errors = [];
+
+  if (!customer.firstName) {
+    errors.push({ field: 'firstName', message: 'Ange ditt förnamn.' });
   }
 
-  if (!isValidEmail(customer.email)) {
-    return {
-      valid: false,
-      title: 'Ogiltig e-post',
-      message: 'Ange en giltig e-postadress innan du fortsätter.',
-    };
+  if (!customer.lastName) {
+    errors.push({ field: 'lastName', message: 'Ange ditt efternamn.' });
   }
 
-  if (!isValidPhone(customer.phone)) {
-    return {
-      valid: false,
-      title: 'Ogiltigt telefonnummer',
-      message: 'Ange ett giltigt telefonnummer med minst 7 tecken.',
-    };
+  if (!customer.email) {
+    errors.push({ field: 'email', message: 'Ange din e-postadress.' });
+  } else if (!isValidEmail(customer.email)) {
+    errors.push({ field: 'email', message: 'Ange en giltig e-postadress.' });
   }
 
-  if (!isValidPostalCode(customer.postalCode)) {
+  if (!customer.phone) {
+    errors.push({ field: 'phone', message: 'Ange ditt telefonnummer.' });
+  } else if (!isValidPhone(customer.phone)) {
+    errors.push({ field: 'phone', message: 'Ange ett giltigt telefonnummer med minst 7 tecken.' });
+  }
+
+  if (!customer.address) {
+    errors.push({ field: 'address', message: 'Ange din adress.' });
+  }
+
+  if (!customer.postalCode) {
+    errors.push({ field: 'postalCode', message: 'Ange ditt postnummer.' });
+  } else if (!isValidPostalCode(customer.postalCode)) {
+    errors.push({ field: 'postalCode', message: 'Ange ett giltigt postnummer, t.ex. 12345 eller 123 45.' });
+  }
+
+  if (!customer.city) {
+    errors.push({ field: 'city', message: 'Ange din stad.' });
+  }
+
+  errors.forEach(({ field, message }) => {
+    setFieldError(field, message);
+  });
+
+  if (errors.length > 0) {
     return {
       valid: false,
-      title: 'Ogiltigt postnummer',
-      message: 'Ange ett giltigt svenskt postnummer, till exempel 12345 eller 123 45.',
+      title: 'Kontrollera formuläret',
+      message: 'Vissa uppgifter saknas eller är ogiltiga. Kontrollera fälten markerade nedan.',
     };
   }
 
@@ -245,6 +308,7 @@ function clearOrderState() {
   }
 
   clearSavedFormData();
+  clearFieldErrors();
 
   productCards.forEach((card) => {
     const quantityField = card.querySelector('.product-qty');
@@ -470,6 +534,7 @@ if (orderForm) {
     const validation = validateOrderData(orderData);
     if (!validation.valid) {
       setOrderFeedback('error', validation.message, validation.title);
+      focusFirstFieldError();
       scrollToOrderFeedback();
       return;
     }
@@ -510,6 +575,7 @@ if (downloadPdfButton) {
     const validation = validateOrderData(orderData);
     if (!validation.valid) {
       setOrderFeedback('error', validation.message, validation.title);
+      focusFirstFieldError();
       scrollToOrderFeedback();
       return;
     }
@@ -528,9 +594,20 @@ if (downloadPdfButton) {
 }
 
 if (orderForm) {
-  orderForm.addEventListener('input', () => {
+  orderForm.addEventListener('input', (event) => {
     saveFormData();
     resetOrderFeedback();
+
+    const field = event.target;
+    if (field && field.name) {
+      field.classList.remove('input-error');
+      field.removeAttribute('aria-invalid');
+
+      const errorElement = orderForm.querySelector(`[data-error-for="${field.name}"]`);
+      if (errorElement) {
+        errorElement.textContent = '';
+      }
+    }
   });
 }
 
