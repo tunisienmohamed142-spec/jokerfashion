@@ -470,10 +470,13 @@ function createPdf(orderData) {
 
 function createOrderPdfAttachment(orderData) {
   const doc = getOrderPdfDocument(orderData);
+  const pdfDataUri = doc
+    .output('datauristring')
+    .replace(/^data:application\/pdf;filename=[^;]+;base64,/i, 'data:application/pdf;base64,');
 
   return {
     name: `jokerfashion-bestallning-${Date.now()}.pdf`,
-    data: doc.output('datauristring'),
+    data: pdfDataUri,
   };
 }
 
