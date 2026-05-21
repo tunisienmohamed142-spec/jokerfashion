@@ -54,6 +54,7 @@
           <button class="admin-tab" data-admin-tab="products">🛍 Produkter</button>
           <button class="admin-tab" data-admin-tab="categories">📂 Kategorier</button>
           <button class="admin-tab" data-admin-tab="settings">⚙️ Frakt &amp; inställningar</button>
+          <button class="admin-tab" data-admin-tab="content">🏠 Startsida / CMS</button>
         </nav>
 
         <!-- ── PRODUCTS PANEL ─────────────────────────────────── -->
@@ -276,6 +277,153 @@
             </div>
           </section>
         </div><!-- /settings panel -->
+
+        <!-- ── HOMEPAGE CMS PANEL ─────────────────────────────── -->
+        <div data-admin-panel="content" hidden>
+          <section class="page-section">
+            <div class="section-header">
+              <div>
+                <p class="eyebrow">Homepage CMS</p>
+                <h2>Redigera startsidans innehåll</h2>
+              </div>
+            </div>
+            <div class="grid-2">
+              <article class="form-card">
+                <h3>Hero</h3>
+                <form class="form-grid" data-admin-home-content-form novalidate>
+                  <div class="full">
+                    <label for="home-hero-eyebrow">Hero överrubrik</label>
+                    <input id="home-hero-eyebrow" name="heroEyebrow" maxlength="80" />
+                  </div>
+                  <div class="full">
+                    <label for="home-hero-title">Hero rubrik</label>
+                    <input id="home-hero-title" name="heroTitle" maxlength="160" />
+                  </div>
+                  <div class="full">
+                    <label for="home-hero-body">Hero brödtext</label>
+                    <textarea id="home-hero-body" name="heroBody" rows="4" maxlength="320"></textarea>
+                  </div>
+                  <div>
+                    <label for="home-hero-primary-label">Primär CTA text</label>
+                    <input id="home-hero-primary-label" name="heroPrimaryCtaLabel" maxlength="50" />
+                  </div>
+                  <div>
+                    <label for="home-hero-primary-href">Primär CTA länk</label>
+                    <input id="home-hero-primary-href" name="heroPrimaryCtaHref" placeholder="/catalog.html" />
+                  </div>
+                  <div>
+                    <label for="home-hero-secondary-label">Sekundär CTA text</label>
+                    <input id="home-hero-secondary-label" name="heroSecondaryCtaLabel" maxlength="50" />
+                  </div>
+                  <div>
+                    <label for="home-hero-secondary-href">Sekundär CTA länk</label>
+                    <input id="home-hero-secondary-href" name="heroSecondaryCtaHref" placeholder="/checkout.html" />
+                  </div>
+
+                  <div class="full">
+                    <hr class="admin-divider" />
+                    <h3 class="compact">Highlight / bannerkort</h3>
+                  </div>
+                  <div class="full">
+                    <label for="home-highlight-eyebrow">Highlight överrubrik</label>
+                    <input id="home-highlight-eyebrow" name="highlightEyebrow" maxlength="80" />
+                  </div>
+                  <div class="full">
+                    <label for="home-highlight-title">Highlight rubrik</label>
+                    <input id="home-highlight-title" name="highlightTitle" maxlength="140" />
+                  </div>
+                  <div class="full">
+                    <label for="home-highlight-body">Highlight text</label>
+                    <textarea id="home-highlight-body" name="highlightBody" rows="4" maxlength="280"></textarea>
+                  </div>
+                  <div>
+                    <label for="home-highlight-primary-label">Primär highlight-knapp</label>
+                    <input id="home-highlight-primary-label" name="highlightPrimaryCtaLabel" maxlength="50" />
+                  </div>
+                  <div>
+                    <label for="home-highlight-primary-href">Primär highlight-länk</label>
+                    <input id="home-highlight-primary-href" name="highlightPrimaryCtaHref" placeholder="/catalog.html?category=women" />
+                  </div>
+                  <div>
+                    <label for="home-highlight-secondary-label">Sekundär highlight-knapp</label>
+                    <input id="home-highlight-secondary-label" name="highlightSecondaryCtaLabel" maxlength="50" />
+                  </div>
+                  <div>
+                    <label for="home-highlight-secondary-href">Sekundär highlight-länk</label>
+                    <input id="home-highlight-secondary-href" name="highlightSecondaryCtaHref" placeholder="/catalog.html?category=men" />
+                  </div>
+
+                  <div class="full">
+                    <hr class="admin-divider" />
+                    <h3 class="compact">Sektioner</h3>
+                  </div>
+                  <div>
+                    <label for="home-categories-eyebrow">Kategori-sektion överrubrik</label>
+                    <input id="home-categories-eyebrow" name="categoriesEyebrow" maxlength="80" />
+                  </div>
+                  <div>
+                    <label for="home-categories-title">Kategori-sektion rubrik</label>
+                    <input id="home-categories-title" name="categoriesTitle" maxlength="120" />
+                  </div>
+                  <div>
+                    <label for="home-featured-eyebrow">Featured överrubrik</label>
+                    <input id="home-featured-eyebrow" name="featuredEyebrow" maxlength="80" />
+                  </div>
+                  <div>
+                    <label for="home-featured-title">Featured rubrik</label>
+                    <input id="home-featured-title" name="featuredTitle" maxlength="120" />
+                  </div>
+                  <div>
+                    <label for="home-featured-link-label">Featured knapptext</label>
+                    <input id="home-featured-link-label" name="featuredCtaLabel" maxlength="50" />
+                  </div>
+                  <div>
+                    <label for="home-featured-link-href">Featured knapp-länk</label>
+                    <input id="home-featured-link-href" name="featuredCtaHref" placeholder="/catalog.html" />
+                  </div>
+                  <div>
+                    <label for="home-new-eyebrow">Nyheter överrubrik</label>
+                    <input id="home-new-eyebrow" name="newArrivalsEyebrow" maxlength="80" />
+                  </div>
+                  <div>
+                    <label for="home-new-title">Nyheter rubrik</label>
+                    <input id="home-new-title" name="newArrivalsTitle" maxlength="120" />
+                  </div>
+                  <div>
+                    <label for="home-new-link-label">Nyheter knapptext</label>
+                    <input id="home-new-link-label" name="newArrivalsCtaLabel" maxlength="50" />
+                  </div>
+                  <div>
+                    <label for="home-new-link-href">Nyheter knapp-länk</label>
+                    <input id="home-new-link-href" name="newArrivalsCtaHref" placeholder="/catalog.html" />
+                  </div>
+                  <div class="full">
+                    <label for="home-footer-marketing">Footer / marketingrad</label>
+                    <input id="home-footer-marketing" name="footerMarketingLine" maxlength="220" />
+                  </div>
+                  <div class="full admin-form-actions">
+                    <button class="button primary" type="submit">Spara startsideinnehåll</button>
+                  </div>
+                </form>
+                <p class="notice" data-home-content-feedback></p>
+              </article>
+
+              <article class="panel admin-info-panel">
+                <h3>Ytor som nu blir admin-styrda</h3>
+                <ul class="admin-info-list">
+                  <li><strong>Hero</strong> – överrubrik, rubrik, supporting text och båda CTA-knapparna.</li>
+                  <li><strong>Highlight-kort</strong> – kampanj-/bannertext samt två snabblänkar.</li>
+                  <li><strong>Sektionsrubriker</strong> – kategorier, featured och nyheter.</li>
+                  <li><strong>Sektionslänkar</strong> – knappar till katalog/landningssidor.</li>
+                  <li><strong>Footer-rad</strong> – sammanfattande marketing-/servicebudskap.</li>
+                </ul>
+                <p class="small-note" style="margin-top: 1rem;">
+                  Kategorikortens bilder kommer fortsatt från kategori-adminen och produktgriderna fortsätter läsa riktiga produkter. Senare faser kan göra fler block, ordning och fler homepage-bilder helt CMS-styrda.
+                </p>
+              </article>
+            </div>
+          </section>
+        </div><!-- /content panel -->
         </div><!-- /protected admin app -->
 
       </div>
