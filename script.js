@@ -11,7 +11,9 @@ const downloadPdfButton = document.querySelector('#download-pdf');
 const orderFeedback = document.querySelector('#order-feedback');
 const orderFeedbackTitle = document.querySelector('#order-feedback-title');
 const orderFeedbackText = document.querySelector('#order-feedback-text');
+const submitOrderButton = document.querySelector('.submit-order[type="submit"]');
 
+const CART_STORAGE_KEY = 'jokerfashion-cart';
 const cart = [];
 
 if (menuButton && navigation) {
@@ -22,6 +24,51 @@ if (menuButton && navigation) {
 
 function formatPrice(value) {
   return `${value} kr`;
+}
+
+function saveCart() {
+  try {
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+  } catch (error) {
+    console.error('Could not save cart to localStorage.', error);
+  }
+}
+
+function loadCart() {
+  try {
+    const storedCart = localStorage.getItem(CART_STORAGE_KEY);
+    if (!storedCart) {
+      return;
+    }
+
+    const parsedCart = JSON.parse(storedCart);
+    if (!Array.isArray(parsedCart)) {
+      return;
+    }
+
+    cart.splice(0, cart.length, ...parsedCart);
+  } catch (error) {
+    console.error('Could not load cart from localStorage.', error);
+  }
+}
+
+function clearSavedCart() {
+  try {
+    localStorage.removeItem(CART_STORAGE_KEY);
+  } catch (error) {
+    console.error('Could not clear cart from localStorage.', error);
+  }
+}
+
+function setButtonsDisabled(disabled) {
+  if (submitOrderButton) {
+    submitOrderButton.disabled = disabled;
+    submitOrderButton.textContent = disabled ? 'Skickar...' : 'Skapa beställning';
+  }
+
+  if (downloadPdfButton) {
+    downloadPdfButton.disabled = disabled;
+  }
 }
 
 function setOrderFeedback(type, message, title) {
@@ -82,6 +129,7 @@ function getOrderData() {
 
 function clearOrderState() {
   cart.length = 0;
+  clearSavedCart();
   renderCart();
 
   if (orderForm) {
@@ -141,9 +189,12 @@ function renderCart() {
     button.addEventListener('click', () => {
       const index = Number(button.dataset.index);
       cart.splice(index, 1);
+      saveCart();
       renderCart();
       if (cart.length === 0) {
         setOrderFeedback('info', 'Varukorgen är nu tom.', 'Varukorgen uppdaterad');
+      } else {
+        setOrderFeedback('info', 'Produkten togs bort från varukorgen.', 'Varukorgen uppdaterad');
       }
     });
   });
@@ -277,6 +328,7 @@ productCards.forEach((card) => {
       quantity,
     });
 
+    saveCart();
     renderCart();
     quantityField.value = '1';
     setOrderFeedback('success', `${card.dataset.name || 'Produkten'} har lagts till i varukorgen.`, 'Tillagd i varukorgen');
@@ -302,6 +354,7 @@ if (orderForm) {
       return;
     }
 
+    setButtonsDisabled(true);
     setOrderFeedback('info', 'Skickar beställningen...', 'Bearbetar order');
 
     try {
@@ -311,6 +364,8 @@ if (orderForm) {
     } catch (error) {
       console.error(error);
       setOrderFeedback('error', error.message || 'Det gick inte att skicka beställningen.', 'Något gick fel');
+    } finally {
+      setButtonsDisabled(false);
     }
   });
 }
@@ -349,4 +404,5 @@ if (orderForm) {
   orderForm.addEventListener('input', resetOrderFeedback);
 }
 
+loadCart();
 renderCart();
