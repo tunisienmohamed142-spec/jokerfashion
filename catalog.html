@@ -20,7 +20,7 @@
         <nav class="main-nav" aria-label="Huvudnavigation">
           <a class="nav-link" href="index.html">Hem</a>
           <a class="nav-link active" href="catalog.html">Katalog</a>
-          <a class="nav-link" href="checkout.html">Checkout <span class="cart-count" data-cart-count>0</span></a>
+          <a class="nav-link" href="checkout.html">Varukorg <span class="cart-count" data-cart-count>0</span></a>
           <a class="nav-link" href="account.html">Konto</a>
           <a class="nav-link" href="admin.html">Admin</a>
         </nav>
@@ -30,13 +30,20 @@
     <main>
       <div class="container">
         <section class="hero">
-          <p class="eyebrow">Shop by category</p>
+          <p class="eyebrow">Curated catalog</p>
           <h1 data-catalog-heading>Katalog</h1>
-          <p data-catalog-intro>Utforska produkter per kategori och öppna en detaljvy som går att handla från.</p>
+          <p data-catalog-intro>Utforska produkter per kategori och bygg din look med snabbköp eller detaljvy.</p>
         </section>
 
         <section class="page-section">
           <div class="pill-row" data-catalog-categories></div>
+        </section>
+
+        <section class="page-section">
+          <div class="catalog-toolbar">
+            <p class="small-note" data-catalog-product-count></p>
+            <a class="button secondary" href="checkout.html">Gå till varukorg</a>
+          </div>
         </section>
 
         <section class="page-section grid-2">

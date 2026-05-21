@@ -23,7 +23,7 @@
         <nav class="main-nav" aria-label="Huvudnavigation">
           <a class="nav-link active" href="index.html">Hem</a>
           <a class="nav-link" href="catalog.html">Katalog</a>
-          <a class="nav-link" href="checkout.html">Checkout <span class="cart-count" data-cart-count>0</span></a>
+          <a class="nav-link" href="checkout.html">Varukorg <span class="cart-count" data-cart-count>0</span></a>
           <a class="nav-link" href="account.html">Konto</a>
           <a class="nav-link" href="admin.html">Admin</a>
         </nav>
@@ -33,15 +33,33 @@
     <main>
       <div class="container">
         <section class="hero">
-          <p class="eyebrow">Rebuild Shop Slice</p>
-          <h1>Why shop serious? JokerFashion känns nu som en riktig butik.</h1>
-          <p>
-            Nästa vertikala slice flyttar shoppen från foundation till faktisk kundupplevelse:
-            produktbrowse, rikare produktsidor, varukorg och checkout i den nya Joker-arkitekturen.
-          </p>
-          <div class="hero-actions">
-            <a class="button primary" href="catalog.html">Utforska katalog</a>
-            <a class="button secondary" href="checkout.html">Öppna checkout</a>
+          <div class="hero-grid">
+            <div>
+              <p class="eyebrow">JokerFashion Atelier</p>
+              <h1>Premium street couture med Joker-signatur</h1>
+              <p>
+                Shoppen har nu tydligare shoppingflöde med snabbköp från korten, förbättrad hierarki och en mer
+                exklusiv presentation av sortimentet.
+              </p>
+              <div class="hero-actions">
+                <a class="button primary" href="catalog.html">Shoppa kollektion</a>
+                <a class="button secondary" href="checkout.html">Öppna varukorg</a>
+              </div>
+              <div class="hero-kpis">
+                <p><strong>Fri frakt</strong> över 999 kr</p>
+                <p><strong>2–4 dagar</strong> snabb leverans</p>
+                <p><strong>14 dagar</strong> öppet köp</p>
+              </div>
+            </div>
+            <aside class="hero-highlight">
+              <p class="eyebrow">Kundflöde</p>
+              <h2>Från inspiration till checkout</h2>
+              <p>Utforska kategorier, lägg produkter direkt i varukorgen och checka ut i samma upplevelse.</p>
+              <div class="panel-actions">
+                <a class="button primary" href="catalog.html">Till katalog</a>
+                <a class="button secondary" href="checkout.html">Till checkout</a>
+              </div>
+            </aside>
           </div>
         </section>
 
@@ -62,7 +80,9 @@
               <h2>Joker-kuraterat sortiment</h2>
             </div>
           </div>
+          <p class="small-note">Snabbköp direkt från korten eller öppna detaljläget i katalogen.</p>
           <div class="product-grid" data-home-featured-products></div>
+          <p class="notice" data-home-feedback></p>
         </section>
 
         <section class="page-section">
