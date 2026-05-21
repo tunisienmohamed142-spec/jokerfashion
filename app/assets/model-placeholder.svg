@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 1100" role="img" aria-labelledby="title desc">
+  <title id="title">Jokerfashion model placeholder</title>
+  <desc id="desc">Stylized fashion model placeholder with dark gradient background.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#202028"/>
+      <stop offset="55%" stop-color="#15151a"/>
+      <stop offset="100%" stop-color="#08090b"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#5A189A" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#00A86B" stop-opacity="0.82"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="900" height="1100" fill="url(#bg)"/>
+  <circle cx="600" cy="300" r="380" fill="url(#accent)" opacity="0.38"/>
+  <circle cx="300" cy="900" r="300" fill="#5A189A" opacity="0.2"/>
+  <ellipse cx="450" cy="240" rx="105" ry="130" fill="#1b1d23"/>
+  <path d="M245 1030C270 750 315 520 450 520s180 230 205 510" fill="#0f1015"/>
+  <path d="M315 760c72 40 196 40 268 0" stroke="#2a2d36" stroke-width="58" stroke-linecap="round"/>
+  <path d="M375 360c22 17 49 26 75 26s53-9 75-26" stroke="#2d313c" stroke-width="18" stroke-linecap="round"/>
+  <rect x="250" y="70" width="400" height="960" fill="url(#glow)" opacity="0.7"/>
+  <text x="450" y="1020" font-family="Inter, Arial, sans-serif" font-size="46" fill="#e9eaec" text-anchor="middle" letter-spacing="8">JOKERFASHION</text>
+</svg>
