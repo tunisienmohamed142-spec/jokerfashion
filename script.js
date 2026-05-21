@@ -8,6 +8,9 @@ const cartTotalPrice = document.querySelector('#cart-total-price');
 const orderForm = document.querySelector('#order-form');
 const orderStatus = document.querySelector('#order-status');
 const downloadPdfButton = document.querySelector('#download-pdf');
+const orderFeedback = document.querySelector('#order-feedback');
+const orderFeedbackTitle = document.querySelector('#order-feedback-title');
+const orderFeedbackText = document.querySelector('#order-feedback-text');
 
 const cart = [];
 
@@ -19,6 +22,34 @@ if (menuButton && navigation) {
 
 function formatPrice(value) {
   return `${value} kr`;
+}
+
+function setOrderFeedback(type, message, title) {
+  if (orderStatus) {
+    orderStatus.textContent = message;
+    orderStatus.className = `order-status order-status--${type}`;
+  }
+
+  if (!orderFeedback || !orderFeedbackTitle || !orderFeedbackText) {
+    return;
+  }
+
+  orderFeedback.hidden = false;
+  orderFeedback.className = `order-feedback order-feedback--${type}`;
+  orderFeedbackTitle.textContent = title;
+  orderFeedbackText.textContent = message;
+}
+
+function resetOrderFeedback() {
+  if (orderStatus) {
+    orderStatus.textContent = '';
+    orderStatus.className = 'order-status';
+  }
+
+  if (orderFeedback) {
+    orderFeedback.hidden = true;
+    orderFeedback.className = 'order-feedback';
+  }
 }
 
 function getOrderData() {
@@ -111,6 +142,9 @@ function renderCart() {
       const index = Number(button.dataset.index);
       cart.splice(index, 1);
       renderCart();
+      if (cart.length === 0) {
+        setOrderFeedback('info', 'Varukorgen är nu tom.', 'Varukorgen uppdaterad');
+      }
     });
   });
 }
@@ -230,6 +264,7 @@ productCards.forEach((card) => {
 
     if (!quantity || quantity < 1) {
       quantityField.value = '1';
+      setOrderFeedback('error', 'Ange ett giltigt antal innan du lägger till produkten.', 'Fel antal');
       return;
     }
 
@@ -244,6 +279,7 @@ productCards.forEach((card) => {
 
     renderCart();
     quantityField.value = '1';
+    setOrderFeedback('success', `${card.dataset.name || 'Produkten'} har lagts till i varukorgen.`, 'Tillagd i varukorgen');
   });
 });
 
@@ -252,9 +288,7 @@ if (orderForm) {
     event.preventDefault();
 
     if (cart.length === 0) {
-      if (orderStatus) {
-        orderStatus.textContent = 'Lägg till minst en produkt i varukorgen innan du fortsätter.';
-      }
+      setOrderFeedback('error', 'Lägg till minst en produkt i varukorgen innan du fortsätter.', 'Varukorgen är tom');
       return;
     }
 
@@ -264,27 +298,19 @@ if (orderForm) {
     }
 
     if (!hasRequiredCustomerFields(orderData)) {
-      if (orderStatus) {
-        orderStatus.textContent = 'Fyll i alla kunduppgifter innan du skickar beställningen.';
-      }
+      setOrderFeedback('error', 'Fyll i alla kunduppgifter innan du skickar beställningen.', 'Uppgifter saknas');
       return;
     }
 
-    if (orderStatus) {
-      orderStatus.textContent = 'Skickar beställningen...';
-    }
+    setOrderFeedback('info', 'Skickar beställningen...', 'Bearbetar order');
 
     try {
       await sendOrderEmail(orderData);
       clearOrderState();
-      if (orderStatus) {
-        orderStatus.textContent = 'Beställningen har skickats. Varukorgen och formuläret har tömts.';
-      }
+      setOrderFeedback('success', 'Beställningen har skickats. Varukorgen och formuläret har tömts.', 'Tack för din beställning!');
     } catch (error) {
       console.error(error);
-      if (orderStatus) {
-        orderStatus.textContent = error.message || 'Det gick inte att skicka beställningen.';
-      }
+      setOrderFeedback('error', error.message || 'Det gick inte att skicka beställningen.', 'Något gick fel');
     }
   });
 }
@@ -292,9 +318,7 @@ if (orderForm) {
 if (downloadPdfButton) {
   downloadPdfButton.addEventListener('click', () => {
     if (cart.length === 0) {
-      if (orderStatus) {
-        orderStatus.textContent = 'Lägg till minst en produkt i varukorgen innan du laddar ner PDF.';
-      }
+      setOrderFeedback('error', 'Lägg till minst en produkt i varukorgen innan du laddar ner PDF.', 'Varukorgen är tom');
       return;
     }
 
@@ -305,24 +329,24 @@ if (downloadPdfButton) {
     }
 
     if (!hasRequiredCustomerFields(orderData)) {
-      if (orderStatus) {
-        orderStatus.textContent = 'Fyll i alla kunduppgifter innan du laddar ner PDF.';
-      }
+      setOrderFeedback('error', 'Fyll i alla kunduppgifter innan du laddar ner PDF.', 'Uppgifter saknas');
       return;
     }
 
     try {
       createPdf(orderData);
-      if (orderStatus) {
-        orderStatus.textContent = 'PDF-filen har laddats ner.';
-      }
+      setOrderFeedback('success', 'PDF-filen har laddats ner.', 'PDF skapad');
     } catch (error) {
       console.error(error);
-      if (orderStatus) {
-        orderStatus.textContent = 'Det gick inte att skapa PDF-filen.';
-      }
+      setOrderFeedback('error', 'Det gick inte att skapa PDF-filen.', 'PDF-fel');
     }
   });
+
+  downloadPdfButton.addEventListener('focus', resetOrderFeedback);
+}
+
+if (orderForm) {
+  orderForm.addEventListener('input', resetOrderFeedback);
 }
 
 renderCart();
