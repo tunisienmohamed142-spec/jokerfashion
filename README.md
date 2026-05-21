@@ -2,6 +2,12 @@
 
 JokerFashion är nu i **Rebuild Phase 1**: första vertikala steget från enkel storefront/orderform till en skalbar e-handelsapplikation med Joker-inspirerad design.
 
+Den senaste vertical slice:en gör även kundflödet funktionellt i den nya arkitekturen med:
+
+- kategoribaserad katalog med rikare produktspotlight
+- varukorg i `localStorage`
+- checkout-sida som skickar order via befintligt `/api/send-order`
+
 ## Vad som ingår i Phase 1
 
 - Joker-inspirerat designsystem (färgtema, typografi, UI-primitiver)
@@ -9,6 +15,8 @@ JokerFashion är nu i **Rebuild Phase 1**: första vertikala steget från enkel 
 - ny startsida med tydlig e-handelsriktning
 - kategoribaserad produktvisning med strukturerad lokal datamodell
 - produktkort/grid-komponenter för återanvändning
+- produktspotlight med storleksval och add-to-cart
+- `checkout.html` för varukorg, orderöversikt och leveransuppgifter
 - auth-ready kontostruktur (`account.html`) med sessionscaffold
 - admin foundation (`admin.html`) för lokal produkt-draft-hantering
 
@@ -16,6 +24,7 @@ JokerFashion är nu i **Rebuild Phase 1**: första vertikala steget från enkel 
 
 - `index.html` – ny Joker-themed landningssida
 - `catalog.html` – kategoribaserad browsing
+- `checkout.html` – kundvagn + checkout i rebuild-UI
 - `account.html` – scaffold för konto/login-flöden
 - `admin.html` – scaffold för admininnehåll och produktutkast
 - `app/main.js` – page-bootstrap per route
