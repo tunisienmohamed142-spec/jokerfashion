@@ -14,6 +14,7 @@ const orderFeedbackText = document.querySelector('#order-feedback-text');
 const submitOrderButton = document.querySelector('.submit-order[type="submit"]');
 
 const CART_STORAGE_KEY = 'jokerfashion-cart';
+const FORM_STORAGE_KEY = 'jokerfashion-order-form';
 const cart = [];
 
 if (menuButton && navigation) {
@@ -60,6 +61,55 @@ function clearSavedCart() {
   }
 }
 
+function saveFormData() {
+  if (!orderForm) {
+    return;
+  }
+
+  try {
+    const formData = new FormData(orderForm);
+    const payload = Object.fromEntries(formData.entries());
+    localStorage.setItem(FORM_STORAGE_KEY, JSON.stringify(payload));
+  } catch (error) {
+    console.error('Could not save form to localStorage.', error);
+  }
+}
+
+function loadFormData() {
+  if (!orderForm) {
+    return;
+  }
+
+  try {
+    const storedForm = localStorage.getItem(FORM_STORAGE_KEY);
+    if (!storedForm) {
+      return;
+    }
+
+    const parsedForm = JSON.parse(storedForm);
+    if (!parsedForm || typeof parsedForm !== 'object') {
+      return;
+    }
+
+    Object.entries(parsedForm).forEach(([key, value]) => {
+      const field = orderForm.elements.namedItem(key);
+      if (field && typeof value === 'string') {
+        field.value = value;
+      }
+    });
+  } catch (error) {
+    console.error('Could not load form from localStorage.', error);
+  }
+}
+
+function clearSavedFormData() {
+  try {
+    localStorage.removeItem(FORM_STORAGE_KEY);
+  } catch (error) {
+    console.error('Could not clear form from localStorage.', error);
+  }
+}
+
 function setButtonsDisabled(disabled) {
   if (submitOrderButton) {
     submitOrderButton.disabled = disabled;
@@ -68,6 +118,14 @@ function setButtonsDisabled(disabled) {
 
   if (downloadPdfButton) {
     downloadPdfButton.disabled = disabled;
+  }
+}
+
+function scrollToOrderFeedback() {
+  if (orderFeedback && !orderFeedback.hidden) {
+    orderFeedback.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  } else if (orderStatus) {
+    orderStatus.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 }
 
@@ -127,6 +185,56 @@ function getOrderData() {
   };
 }
 
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function isValidPhone(phone) {
+  return /^[0-9+()\-\s]{7,20}$/.test(phone);
+}
+
+function isValidPostalCode(postalCode) {
+  return /^[0-9]{3}\s?[0-9]{2}$/.test(postalCode);
+}
+
+function validateOrderData(orderData) {
+  const { customer } = orderData;
+
+  if (!customer.firstName || !customer.lastName || !customer.email || !customer.phone || !customer.address || !customer.postalCode || !customer.city) {
+    return {
+      valid: false,
+      title: 'Uppgifter saknas',
+      message: 'Fyll i alla kunduppgifter innan du fortsätter.',
+    };
+  }
+
+  if (!isValidEmail(customer.email)) {
+    return {
+      valid: false,
+      title: 'Ogiltig e-post',
+      message: 'Ange en giltig e-postadress innan du fortsätter.',
+    };
+  }
+
+  if (!isValidPhone(customer.phone)) {
+    return {
+      valid: false,
+      title: 'Ogiltigt telefonnummer',
+      message: 'Ange ett giltigt telefonnummer med minst 7 tecken.',
+    };
+  }
+
+  if (!isValidPostalCode(customer.postalCode)) {
+    return {
+      valid: false,
+      title: 'Ogiltigt postnummer',
+      message: 'Ange ett giltigt svenskt postnummer, till exempel 12345 eller 123 45.',
+    };
+  }
+
+  return { valid: true };
+}
+
 function clearOrderState() {
   cart.length = 0;
   clearSavedCart();
@@ -135,6 +243,8 @@ function clearOrderState() {
   if (orderForm) {
     orderForm.reset();
   }
+
+  clearSavedFormData();
 
   productCards.forEach((card) => {
     const quantityField = card.querySelector('.product-qty');
@@ -196,6 +306,7 @@ function renderCart() {
       } else {
         setOrderFeedback('info', 'Produkten togs bort från varukorgen.', 'Varukorgen uppdaterad');
       }
+      scrollToOrderFeedback();
     });
   });
 }
@@ -207,30 +318,44 @@ function createPdf(orderData) {
 
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
+  const pageHeight = doc.internal.pageSize.height;
+  const maxWidth = 180;
   let y = 20;
+
+  const addWrappedText = (label, value, spacing = 7) => {
+    const lines = doc.splitTextToSize(`${label}${value}`, maxWidth);
+    lines.forEach((line) => {
+      if (y > pageHeight - 20) {
+        doc.addPage();
+        y = 20;
+      }
+      doc.text(line, 14, y);
+      y += spacing;
+    });
+  };
 
   doc.setFontSize(18);
   doc.text('JokerFashion - Beställning', 14, y);
   y += 10;
 
   doc.setFontSize(11);
-  doc.text(`Kund: ${orderData.customer.firstName} ${orderData.customer.lastName}`, 14, y);
-  y += 7;
-  doc.text(`E-post: ${orderData.customer.email}`, 14, y);
-  y += 7;
-  doc.text(`Telefon: ${orderData.customer.phone}`, 14, y);
-  y += 7;
-  doc.text(`Adress: ${orderData.customer.address}`, 14, y);
-  y += 7;
-  doc.text(`Postnummer/Stad: ${orderData.customer.postalCode} ${orderData.customer.city}`, 14, y);
-  y += 10;
+  addWrappedText('Kund: ', `${orderData.customer.firstName} ${orderData.customer.lastName}`);
+  addWrappedText('E-post: ', orderData.customer.email);
+  addWrappedText('Telefon: ', orderData.customer.phone);
+  addWrappedText('Adress: ', orderData.customer.address);
+  addWrappedText('Postnummer/Stad: ', `${orderData.customer.postalCode} ${orderData.customer.city}`);
+  y += 3;
 
   if (orderData.customer.message) {
-    doc.text(`Meddelande: ${orderData.customer.message}`, 14, y);
-    y += 10;
+    addWrappedText('Meddelande: ', orderData.customer.message);
+    y += 3;
   }
 
   doc.setFontSize(13);
+  if (y > pageHeight - 30) {
+    doc.addPage();
+    y = 20;
+  }
   doc.text('Produkter', 14, y);
   y += 8;
   doc.setFontSize(10);
@@ -243,21 +368,25 @@ function createPdf(orderData) {
       `Antal: ${item.quantity}`,
       `Pris/st: ${formatPrice(item.price)}`,
       `Delsumma: ${formatPrice(item.subtotal)}`,
+      '----------------------------------------',
     ];
 
     lines.forEach((line) => {
-      if (y > 270) {
-        doc.addPage();
-        y = 20;
-      }
-      doc.text(line, 14, y);
-      y += 6;
+      const wrappedLines = doc.splitTextToSize(line, maxWidth);
+      wrappedLines.forEach((wrappedLine) => {
+        if (y > pageHeight - 20) {
+          doc.addPage();
+          y = 20;
+        }
+        doc.text(wrappedLine, 14, y);
+        y += 6;
+      });
     });
 
-    y += 3;
+    y += 2;
   });
 
-  if (y > 270) {
+  if (y > pageHeight - 25) {
     doc.addPage();
     y = 20;
   }
@@ -268,19 +397,6 @@ function createPdf(orderData) {
   doc.text(`Totalsumma: ${formatPrice(orderData.totalPrice)}`, 14, y);
 
   doc.save(`jokerfashion-bestallning-${Date.now()}.pdf`);
-}
-
-function hasRequiredCustomerFields(orderData) {
-  const { customer } = orderData;
-  return Boolean(
-    customer.firstName &&
-      customer.lastName &&
-      customer.email &&
-      customer.phone &&
-      customer.address &&
-      customer.postalCode &&
-      customer.city
-  );
 }
 
 async function sendOrderEmail(orderData) {
@@ -316,6 +432,7 @@ productCards.forEach((card) => {
     if (!quantity || quantity < 1) {
       quantityField.value = '1';
       setOrderFeedback('error', 'Ange ett giltigt antal innan du lägger till produkten.', 'Fel antal');
+      scrollToOrderFeedback();
       return;
     }
 
@@ -341,6 +458,7 @@ if (orderForm) {
 
     if (cart.length === 0) {
       setOrderFeedback('error', 'Lägg till minst en produkt i varukorgen innan du fortsätter.', 'Varukorgen är tom');
+      scrollToOrderFeedback();
       return;
     }
 
@@ -349,21 +467,26 @@ if (orderForm) {
       return;
     }
 
-    if (!hasRequiredCustomerFields(orderData)) {
-      setOrderFeedback('error', 'Fyll i alla kunduppgifter innan du skickar beställningen.', 'Uppgifter saknas');
+    const validation = validateOrderData(orderData);
+    if (!validation.valid) {
+      setOrderFeedback('error', validation.message, validation.title);
+      scrollToOrderFeedback();
       return;
     }
 
     setButtonsDisabled(true);
     setOrderFeedback('info', 'Skickar beställningen...', 'Bearbetar order');
+    scrollToOrderFeedback();
 
     try {
       await sendOrderEmail(orderData);
       clearOrderState();
       setOrderFeedback('success', 'Beställningen har skickats. Varukorgen och formuläret har tömts.', 'Tack för din beställning!');
+      scrollToOrderFeedback();
     } catch (error) {
       console.error(error);
       setOrderFeedback('error', error.message || 'Det gick inte att skicka beställningen.', 'Något gick fel');
+      scrollToOrderFeedback();
     } finally {
       setButtonsDisabled(false);
     }
@@ -374,6 +497,7 @@ if (downloadPdfButton) {
   downloadPdfButton.addEventListener('click', () => {
     if (cart.length === 0) {
       setOrderFeedback('error', 'Lägg till minst en produkt i varukorgen innan du laddar ner PDF.', 'Varukorgen är tom');
+      scrollToOrderFeedback();
       return;
     }
 
@@ -383,8 +507,10 @@ if (downloadPdfButton) {
       return;
     }
 
-    if (!hasRequiredCustomerFields(orderData)) {
-      setOrderFeedback('error', 'Fyll i alla kunduppgifter innan du laddar ner PDF.', 'Uppgifter saknas');
+    const validation = validateOrderData(orderData);
+    if (!validation.valid) {
+      setOrderFeedback('error', validation.message, validation.title);
+      scrollToOrderFeedback();
       return;
     }
 
@@ -394,6 +520,7 @@ if (downloadPdfButton) {
     } catch (error) {
       console.error(error);
       setOrderFeedback('error', 'Det gick inte att skapa PDF-filen.', 'PDF-fel');
+      scrollToOrderFeedback();
     }
   });
 
@@ -401,8 +528,12 @@ if (downloadPdfButton) {
 }
 
 if (orderForm) {
-  orderForm.addEventListener('input', resetOrderFeedback);
+  orderForm.addEventListener('input', () => {
+    saveFormData();
+    resetOrderFeedback();
+  });
 }
 
 loadCart();
+loadFormData();
 renderCart();
