@@ -1,4 +1,5 @@
 import { isKvAvailable, kvGet, kvSet } from '../_kv.js';
+import { requireAdminSession } from '../_auth.js';
 
 const KV_KEY = 'jf:categories';
 
@@ -12,6 +13,11 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'GET') {
+    const session = requireAdminSession(req, res);
+    if (!session) {
+      return;
+    }
+
     try {
       const categories = (await kvGet(KV_KEY)) || [];
       const category = categories.find((c) => c.id === id);
@@ -25,6 +31,11 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'PUT') {
+    const session = requireAdminSession(req, res);
+    if (!session) {
+      return;
+    }
+
     if (!isKvAvailable) {
       return res.status(503).json({ message: 'Storage not configured.' });
     }
@@ -59,6 +70,11 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'DELETE') {
+    const session = requireAdminSession(req, res);
+    if (!session) {
+      return;
+    }
+
     if (!isKvAvailable) {
       return res.status(503).json({ message: 'Storage not configured.' });
     }

@@ -10,6 +10,8 @@ import {
   updateAdminProduct,
   deleteAdminProduct,
   getShopSettings,
+  getAdminSession,
+  logoutAdmin,
   setShopSettings,
 } from '../state/store.js';
 
@@ -43,6 +45,11 @@ function showFeedback(element, message, isError = false) {
   element._timer = setTimeout(() => {
     element.textContent = '';
   }, 4000);
+}
+
+function getSafeLoginRedirect() {
+  const next = encodeURIComponent('admin.html');
+  return `admin-login.html?next=${next}`;
 }
 
 // ── Tab switching ─────────────────────────────────────────────────────────────
@@ -451,6 +458,36 @@ async function initSettingsTab() {
 // ── Entry point ───────────────────────────────────────────────────────────────
 
 export async function initAdminPage() {
+  const protectedApp = document.querySelector('[data-admin-app]');
+  const gateStatus = document.querySelector('[data-admin-gate-status]');
+  const sessionMeta = document.querySelector('[data-admin-session-meta]');
+  const logoutButton = document.querySelector('[data-admin-logout]');
+
+  try {
+    const session = await getAdminSession();
+    if (sessionMeta && session?.user?.username) {
+      sessionMeta.textContent = `Inloggad som ${session.user.username} (admin).`;
+    }
+    if (gateStatus) {
+      gateStatus.textContent = '';
+    }
+  } catch {
+    window.location.replace(getSafeLoginRedirect());
+    return;
+  }
+
+  if (protectedApp) {
+    protectedApp.hidden = false;
+  }
+
+  logoutButton?.addEventListener('click', async () => {
+    try {
+      await logoutAdmin();
+    } finally {
+      window.location.replace(getSafeLoginRedirect());
+    }
+  });
+
   initTabs();
   await initProductsTab();
   await initCategoriesTab();

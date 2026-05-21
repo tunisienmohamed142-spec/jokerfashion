@@ -36,11 +36,19 @@
           <p class="eyebrow">Admin Studio</p>
           <h1>Hantera din butik</h1>
           <p>
-            Skapa och redigera produkter, bygg egna kategorier och ställ in fraktkostnader direkt härifrån.
-            Data sparas i webbläsaren och kan kopplas till ett API när backend är redo.
+            Adminpanelen kräver inloggning. Produkter, kategorier och butiksinställningar hanteras via
+            skyddade API-endpoints.
           </p>
+          <p class="notice" data-admin-session-meta></p>
+          <div class="hero-actions">
+            <a class="button secondary" href="admin-login.html">Byt konto</a>
+            <button class="button secondary" type="button" data-admin-logout>Logga ut</button>
+          </div>
         </section>
 
+        <p class="notice" data-admin-gate-status>Verifierar adminåtkomst…</p>
+
+        <div data-admin-app hidden>
         <!-- Tab navigation -->
         <nav class="admin-tabs" aria-label="Adminsektioner">
           <button class="admin-tab" data-admin-tab="products">🛍 Produkter</button>
@@ -80,7 +88,7 @@
           <section class="page-section">
             <article class="form-card">
               <h2 data-form-title>Lägg till produkt</h2>
-              <p class="small-note">Data sparas lokalt tills ett backend-API kopplas in.</p>
+              <p class="small-note">Data sparas via skyddade backend-API-anrop.</p>
               <form class="form-grid" data-admin-product-form novalidate>
                 <div>
                   <label for="admin-name">Produktnamn *</label>
@@ -248,13 +256,14 @@
             </div>
           </section>
         </div><!-- /settings panel -->
+        </div><!-- /protected admin app -->
 
       </div>
     </main>
 
     <footer class="site-footer">
       <div class="container">
-        <p>Adminpanelen sparar data lokalt. Backend-koppling planeras i nästa fas.</p>
+        <p>Adminpanelen är skyddad med server-side admin-auth och sessionscookie.</p>
       </div>
     </footer>
 

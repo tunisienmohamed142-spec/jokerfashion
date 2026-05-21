@@ -3,6 +3,7 @@ import { initCatalogPage } from './pages/catalog.js';
 import { initCheckoutPage } from './pages/checkout.js';
 import { initAccountPage } from './pages/account.js';
 import { initAdminPage } from './pages/admin.js';
+import { initAdminLoginPage } from './pages/admin-login.js';
 import { initProductPage } from './pages/product.js';
 import { getCartSummary } from './state/store.js';
 import { syncCartCountBadges } from './components/renderers.js';
@@ -13,6 +14,7 @@ const initializers = {
   checkout: initCheckoutPage,
   account: initAccountPage,
   admin: initAdminPage,
+  'admin-login': initAdminLoginPage,
   product: initProductPage,
 };
 

@@ -1,4 +1,5 @@
 import { isKvAvailable, kvGet, kvSet } from './_kv.js';
+import { requireAdminSession } from './_auth.js';
 
 const KV_KEY = 'jf:products';
 
@@ -40,6 +41,11 @@ export default async function handler(req, res) {
   }
 
   if (req.method === 'POST') {
+    const session = requireAdminSession(req, res);
+    if (!session) {
+      return;
+    }
+
     if (!isKvAvailable) {
       return res.status(503).json({
         message: 'Storage not configured. Set KV_REST_API_URL and KV_REST_API_TOKEN in Vercel.',
