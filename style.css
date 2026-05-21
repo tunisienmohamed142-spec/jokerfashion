@@ -271,6 +271,12 @@ h3 {
   transform: translateY(-1px);
 }
 
+.btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+}
+
 .btn-primary {
   background: var(--accent);
   color: #fff;
@@ -406,6 +412,29 @@ h3 {
   padding: 0.85rem 0.95rem;
   background: #fff;
   color: var(--text);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.order-form input:focus,
+.order-form textarea:focus,
+.product-select:focus,
+.product-qty:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px rgba(17, 17, 17, 0.08);
+}
+
+.input-error {
+  border-color: var(--error-border) !important;
+  box-shadow: 0 0 0 4px rgba(228, 155, 146, 0.18) !important;
+}
+
+.field-error {
+  min-height: 1.2rem;
+  margin: 0.35rem 0 0;
+  color: var(--error-text);
+  font-size: 0.82rem;
+  font-weight: 600;
 }
 
 .product-qty {
