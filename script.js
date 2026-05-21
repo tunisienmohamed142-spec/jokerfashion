@@ -7,7 +7,6 @@ const cartTotalItems = document.querySelector('#cart-total-items');
 const cartTotalPrice = document.querySelector('#cart-total-price');
 const orderForm = document.querySelector('#order-form');
 const orderStatus = document.querySelector('#order-status');
-const downloadPdfButton = document.querySelector('#download-pdf');
 const orderFeedback = document.querySelector('#order-feedback');
 const orderFeedbackTitle = document.querySelector('#order-feedback-title');
 const orderFeedbackText = document.querySelector('#order-feedback-text');
@@ -115,10 +114,6 @@ function setButtonsDisabled(disabled) {
   if (submitOrderButton) {
     submitOrderButton.disabled = disabled;
     submitOrderButton.textContent = disabled ? 'Skickar...' : 'Skapa beställning';
-  }
-
-  if (downloadPdfButton) {
-    downloadPdfButton.disabled = disabled;
   }
 }
 
@@ -375,123 +370,13 @@ function renderCart() {
   });
 }
 
-function getOrderPdfDocument(orderData) {
-  if (!window.jspdf || !window.jspdf.jsPDF) {
-    throw new Error('PDF-biblioteket kunde inte laddas.');
-  }
-
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-  const pageHeight = doc.internal.pageSize.height;
-  const maxWidth = 180;
-  let y = 20;
-
-  const addWrappedText = (label, value, spacing = 7) => {
-    const lines = doc.splitTextToSize(`${label}${value}`, maxWidth);
-    lines.forEach((line) => {
-      if (y > pageHeight - 20) {
-        doc.addPage();
-        y = 20;
-      }
-      doc.text(line, 14, y);
-      y += spacing;
-    });
-  };
-
-  doc.setFontSize(18);
-  doc.text('JokerFashion - Beställning', 14, y);
-  y += 10;
-
-  doc.setFontSize(11);
-  addWrappedText('Kund: ', `${orderData.customer.firstName} ${orderData.customer.lastName}`);
-  addWrappedText('E-post: ', orderData.customer.email);
-  addWrappedText('Telefon: ', orderData.customer.phone);
-  addWrappedText('Adress: ', orderData.customer.address);
-  addWrappedText('Postnummer/Stad: ', `${orderData.customer.postalCode} ${orderData.customer.city}`);
-  y += 3;
-
-  if (orderData.customer.message) {
-    addWrappedText('Meddelande: ', orderData.customer.message);
-    y += 3;
-  }
-
-  doc.setFontSize(13);
-  if (y > pageHeight - 30) {
-    doc.addPage();
-    y = 20;
-  }
-  doc.text('Produkter', 14, y);
-  y += 8;
-  doc.setFontSize(10);
-
-  orderData.items.forEach((item, index) => {
-    const lines = [
-      `${index + 1}. ${item.name}`,
-      `Kategori: ${item.category}`,
-      `Storlek/variant: ${item.size}`,
-      `Antal: ${item.quantity}`,
-      `Pris/st: ${formatPrice(item.price)}`,
-      `Delsumma: ${formatPrice(item.subtotal)}`,
-      '----------------------------------------',
-    ];
-
-    lines.forEach((line) => {
-      const wrappedLines = doc.splitTextToSize(line, maxWidth);
-      wrappedLines.forEach((wrappedLine) => {
-        if (y > pageHeight - 20) {
-          doc.addPage();
-          y = 20;
-        }
-        doc.text(wrappedLine, 14, y);
-        y += 6;
-      });
-    });
-
-    y += 2;
-  });
-
-  if (y > pageHeight - 25) {
-    doc.addPage();
-    y = 20;
-  }
-
-  doc.setFontSize(13);
-  doc.text(`Totalt antal artiklar: ${orderData.totalItems}`, 14, y);
-  y += 8;
-  doc.text(`Totalsumma: ${formatPrice(orderData.totalPrice)}`, 14, y);
-
-  return doc;
-}
-
-function createPdf(orderData) {
-  const doc = getOrderPdfDocument(orderData);
-  doc.save(`jokerfashion-bestallning-${Date.now()}.pdf`);
-}
-
-function createOrderPdfAttachment(orderData) {
-  const doc = getOrderPdfDocument(orderData);
-  const pdfDataUri = doc
-    .output('datauristring')
-    .replace(/^data:application\/pdf;filename=[^;]+;base64,/i, 'data:application/pdf;base64,');
-
-  return {
-    name: `jokerfashion-bestallning-${Date.now()}.pdf`,
-    data: pdfDataUri,
-  };
-}
-
 async function sendOrderEmail(orderData) {
-  const payload = {
-    ...orderData,
-    orderPdfAttachment: createOrderPdfAttachment(orderData),
-  };
-
   const response = await fetch('/api/send-order', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(payload),
+    body: JSON.stringify(orderData),
   });
 
   const result = await response.json().catch(() => ({}));
@@ -578,41 +463,6 @@ if (orderForm) {
       setButtonsDisabled(false);
     }
   });
-}
-
-if (downloadPdfButton) {
-  downloadPdfButton.addEventListener('click', () => {
-    if (cart.length === 0) {
-      setOrderFeedback('error', 'Lägg till minst en produkt i varukorgen innan du laddar ner PDF.', 'Varukorgen är tom');
-      scrollToOrderFeedback();
-      return;
-    }
-
-    const orderData = getOrderData();
-
-    if (!orderData) {
-      return;
-    }
-
-    const validation = validateOrderData(orderData);
-    if (!validation.valid) {
-      setOrderFeedback('error', validation.message, validation.title);
-      focusFirstFieldError();
-      scrollToOrderFeedback();
-      return;
-    }
-
-    try {
-      createPdf(orderData);
-      setOrderFeedback('success', 'PDF-filen har laddats ner.', 'PDF skapad');
-    } catch (error) {
-      console.error(error);
-      setOrderFeedback('error', 'Det gick inte att skapa PDF-filen.', 'PDF-fel');
-      scrollToOrderFeedback();
-    }
-  });
-
-  downloadPdfButton.addEventListener('focus', resetOrderFeedback);
 }
 
 if (orderForm) {
