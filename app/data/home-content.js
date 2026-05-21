@@ -2,13 +2,13 @@ const INTERNAL_BASE_URL = 'https://jokerfashion.local';
 
 export const DEFAULT_HOME_CONTENT = {
   hero: {
-    eyebrow: 'Jokerfashion Collection',
-    title: 'Våga sticka ut. Våga Jokerfashion.',
-    body: 'En mörk och uttrycksfull stil med exklusiva detaljer för dig som vill bära något djärvare än mängden.',
+    eyebrow: 'JokerFashion Studio',
+    title: 'Mörk elegans i en ren premium-look',
+    body: 'Upptäck en modern modebutik med tydlig navigation, kuraterade kollektioner och subtil Joker-energi i varje detalj.',
     primaryCtaLabel: 'Shoppa nu',
     primaryCtaHref: '/catalog.html',
-    secondaryCtaLabel: 'Se nyheter',
-    secondaryCtaHref: '/catalog.html',
+    secondaryCtaLabel: 'Se kampanjer',
+    secondaryCtaHref: '/catalog.html?targetGroup=kvinna',
   },
   highlight: {
     eyebrow: 'Trending now',
@@ -24,9 +24,9 @@ export const DEFAULT_HOME_CONTENT = {
     title: 'Shoppa efter målgrupp',
   },
   featuredSection: {
-    eyebrow: 'Trendande',
-    title: 'Populärt just nu',
-    ctaLabel: 'Se hela sortimentet',
+    eyebrow: 'Populärt just nu',
+    title: 'Utvalda premiumprodukter',
+    ctaLabel: 'Se hela katalogen',
     ctaHref: '/catalog.html',
   },
   newArrivalsSection: {
@@ -36,10 +36,7 @@ export const DEFAULT_HOME_CONTENT = {
     ctaHref: '/catalog.html',
   },
   footer: {
-    marketingLine: 'Jokerfashion',
-    followTitle: 'Följ oss',
-    instagramUrl: 'https://www.instagram.com/jokerfashion01',
-    tiktokUrl: 'https://www.tiktok.com/@joker.fashion.7',
+    marketingLine: 'JokerFashion • Exklusiv modekänsla • Fri frakt över 999 kr • Leverans 2–4 dagar',
   },
 };
 
@@ -151,9 +148,6 @@ export function mergeHomeContent(input = {}, baseContent = DEFAULT_HOME_CONTENT)
     },
     footer: {
       marketingLine: sanitizeText(source.footer?.marketingLine, baseContent.footer.marketingLine, 220),
-      followTitle: sanitizeText(source.footer?.followTitle, baseContent.footer.followTitle, 60),
-      instagramUrl: sanitizeContentLink(source.footer?.instagramUrl, baseContent.footer.instagramUrl),
-      tiktokUrl: sanitizeContentLink(source.footer?.tiktokUrl, baseContent.footer.tiktokUrl),
     },
   };
 }
