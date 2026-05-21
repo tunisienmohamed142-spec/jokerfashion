@@ -7,6 +7,8 @@ Den senaste vertical slice:en gör även kundflödet funktionellt i den nya arki
 - kategoribaserad katalog med rikare produktspotlight
 - varukorg i `localStorage`
 - checkout-sida som skickar order via befintligt `/api/send-order`
+- premium-polish för startsida och katalog (tydligare hierarki, spacing och CTA)
+- snabbköp direkt från produktkort + tydligare varukorgsnavigering
 
 ## Vad som ingår i Phase 1
 

@@ -30,8 +30,11 @@ export function initCatalogPage() {
 
   const heading = document.querySelector('[data-catalog-heading]');
   const intro = document.querySelector('[data-catalog-intro]');
+  const productCount = document.querySelector('[data-catalog-product-count]');
   const feedback = document.querySelector('[data-catalog-feedback]');
+  const grid = document.querySelector('[data-catalog-grid]');
   const spotlightContainer = document.querySelector('[data-catalog-spotlight]');
+  const cartSummaryContainer = document.querySelector('[data-catalog-cart-summary]');
 
   if (heading && activeCategory) {
     heading.textContent = activeCategory.name;
@@ -41,13 +44,48 @@ export function initCatalogPage() {
     intro.textContent = activeCategory.description;
   }
 
+  if (productCount) {
+    productCount.textContent = `${products.length} ${products.length === 1 ? 'produkt' : 'produkter'} i ${activeCategory?.name || 'kategorin'}`;
+  }
+
+  function renderCatalogCartSummary(helperText) {
+    renderCartSummary(cartSummaryContainer, getCartSummary(), { helperText });
+  }
+
   renderCategoryPills(document.querySelector('[data-catalog-categories]'), categories, activeCategoryId);
-  renderProductGrid(document.querySelector('[data-catalog-grid]'), products, { activeProductId: activeProduct?.id });
+  renderProductGrid(grid, products, { activeProductId: activeProduct?.id, enableQuickAdd: true });
   renderProductSpotlight(spotlightContainer, activeProduct);
-  renderCartSummary(document.querySelector('[data-catalog-cart-summary]'), getCartSummary(), {
-    helperText: activeProduct
-      ? `Lägg ${activeProduct.name} i varukorgen och fortsätt sedan till checkout.`
-      : 'Välj en produkt för att börja shoppa.',
+  renderCatalogCartSummary(
+    activeProduct ? `Lägg ${activeProduct.name} i varukorgen och fortsätt sedan till checkout.` : 'Välj en produkt för att börja shoppa.'
+  );
+
+  grid?.addEventListener('click', (event) => {
+    const button = event.target.closest('[data-add-to-cart]');
+    if (!button) {
+      return;
+    }
+
+    const product = getCatalogProductById(String(button.dataset.addToCart || ''));
+    if (!product) {
+      return;
+    }
+
+    const size = product.sizes?.[0] || 'One size';
+
+    addCartItem({
+      productId: product.id,
+      name: product.name,
+      category: product.category,
+      image: product.image,
+      size,
+      quantity: 1,
+      priceSek: product.priceSek,
+    });
+
+    renderCatalogCartSummary(`${product.name} (${size}) lades till i varukorgen.`);
+    if (feedback) {
+      feedback.textContent = `${product.name} tillagd. Du kan fortsätta handla eller gå direkt till varukorgen.`;
+    }
   });
 
   spotlightContainer?.querySelector('[data-product-form]')?.addEventListener('submit', (event) => {
@@ -71,9 +109,7 @@ export function initCatalogPage() {
       priceSek: activeProduct.priceSek,
     });
 
-    renderCartSummary(document.querySelector('[data-catalog-cart-summary]'), getCartSummary(), {
-      helperText: `${activeProduct.name} (${size}) lades till i varukorgen.`,
-    });
+    renderCatalogCartSummary(`${activeProduct.name} (${size}) lades till i varukorgen.`);
 
     if (feedback) {
       feedback.textContent = `${activeProduct.name} lades till i varukorgen. Du kan fortsätta handla eller gå direkt till checkout.`;

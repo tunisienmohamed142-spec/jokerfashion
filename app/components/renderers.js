@@ -56,6 +56,7 @@ export function renderProductGrid(container, products, options = {}) {
       const description = product.description || 'Mer produktdetaljer visas i spotlight-läget.';
       const imageUrl = sanitizeImageUrl(product.image);
       const isActive = product.id === options.activeProductId;
+      const quickAddLabel = options.quickAddLabel || 'Lägg i varukorg';
 
       return `
         <article class="product-card ${isActive ? 'is-active' : ''}">
@@ -69,8 +70,8 @@ export function renderProductGrid(container, products, options = {}) {
             <p class="product-description">${escapeHtml(description)}</p>
             <p class="price">${formatPrice(product.priceSek)}</p>
             <div class="product-card-actions">
+              ${options.enableQuickAdd ? `<button class="button primary" type="button" data-add-to-cart="${escapeHtml(product.id)}">${escapeHtml(quickAddLabel)}</button>` : ''}
               <a class="button secondary" href="${detailUrl}">${isActive ? 'Aktiv produkt' : 'Visa detaljer'}</a>
-              <a class="text-link compact" href="checkout.html">Till varukorg</a>
             </div>
           </div>
         </article>
