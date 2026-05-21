@@ -64,6 +64,10 @@ export default async function handler(req, res) {
           body.image !== undefined
             ? sanitizeRemoteImageUrl(body.image, existing.image || '')
             : existing.image,
+        targetGroup:
+          body.targetGroup !== undefined ? String(body.targetGroup).trim() : (existing.targetGroup || ''),
+        parentId: body.parentId !== undefined ? String(body.parentId).trim() : (existing.parentId || ''),
+        level: body.level !== undefined ? String(body.level).trim() : (existing.level || 'subcategory'),
       };
 
       categories[index] = updated;

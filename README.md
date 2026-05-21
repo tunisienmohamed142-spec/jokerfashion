@@ -9,6 +9,7 @@ JokerFashion är i **Rebuild Phase 2**: backend/API-lager för riktig datalagrin
 - Admin-CRUD går nu via riktiga API-anrop – inte längre bara localStorage
 - Produkter och kategorier skapade via adminpanelen överlever sessioner och enheter
 - Storefront (katalog, startsida, produktsida) hämtar data via API och faller tillbaka på bas-data vid fel
+- Storefronten använder nu en Zalando-lik navigation med målgrupperna **Kvinna / Man / Barn** och målgruppsspecifika kategorier/underkategorier
 
 ## API-endpoints
 
@@ -47,6 +48,7 @@ JokerFashion är i **Rebuild Phase 2**: backend/API-lager för riktig datalagrin
 
 - `index.html` – Joker-themed landningssida
 - `catalog.html` – kategoribaserad browsing (API-backed)
+- `catalog.html` – målgruppsbaserad browsing med Man / Kvinna / Barn + kategori + underkategori
 - `checkout.html` – kundvagn + checkout
 - `account.html` – scaffold för konto/login-flöden
 - `admin.html` – adminpanel med API-backed CRUD
@@ -56,6 +58,7 @@ JokerFashion är i **Rebuild Phase 2**: backend/API-lager för riktig datalagrin
 - `app/pages/*` – sidinitiering per route (alla async)
 - `app/components/renderers.js` – återanvändbara UI-renderers
 - `app/data/catalog.js` – bas-kategorier + seed-produkter (statisk fallback)
+- `app/data/catalog.js` – bas-taxonomi för målgrupp/kategori/underkategori + seed-produkter
 - `app/data/home-content.js` – default/saniterat CMS-innehåll för startsidan
 - `app/state/store.js` – API-klient för admin/catalog; localStorage för cart/checkout/session
 - `app/styles/app.css` – Joker design tokens + layout primitives
@@ -182,6 +185,21 @@ Utan dessa variabler:
 ## Migration från Phase 1
 
 Produkter och kategorier skapade i Phase 1 (lagrades i `localStorage` under `jokerfashion-admin-products` / `jokerfashion-admin-categories`) migreras inte automatiskt. Lägg in dem på nytt via adminpanelen när Vercel KV är konfigurerat.
+
+## Målgruppstaxonomi (detta PR-steg)
+
+- Toppnivån i storefronten är nu exakt tre målgrupper: **Kvinna**, **Man** och **Barn**.
+- Under varje målgrupp finns egna huvudkategorier: **Kläder**, **Skor**, **Accessoarer** och **Sport**.
+- Produkter kan nu bära:
+  - `targetGroup`
+  - `mainCategory`
+  - `subcategory`
+  - samt fortsatt `category` som leaf-id för bakåtkompatibilitet
+- Adminpanelen låter dig:
+  - välja underkategori direkt när du skapar/redigerar produkter
+  - skapa egna admin-underkategorier och placera dem under vald målgrupp + huvudkategori
+- Barn är implementerat som MVP-säker struktur med generella underkategorier (`Alla barnkläder`, `Alla barnskor`, osv.) som enkelt kan utökas i admin senare.
+- Äldre platta kategorivärden utan målgruppsmetadata får en fallbackplacering så att de fortsatt går att browsa tills de har redigerats i admin.
 
 ## Lokal verifiering
 

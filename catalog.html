@@ -19,7 +19,9 @@
         <a class="brand" href="index.html">Joker<span>Fashion</span></a>
         <nav class="main-nav" aria-label="Huvudnavigation">
           <a class="nav-link" href="index.html">Hem</a>
-          <a class="nav-link active" href="catalog.html">Katalog</a>
+          <a class="nav-link" href="catalog.html?targetGroup=kvinna" data-target-link="kvinna">Kvinna</a>
+          <a class="nav-link" href="catalog.html?targetGroup=man" data-target-link="man">Man</a>
+          <a class="nav-link" href="catalog.html?targetGroup=barn" data-target-link="barn">Barn</a>
           <a class="nav-link" href="checkout.html">Varukorg <span class="cart-count" data-cart-count>0</span></a>
           <a class="nav-link" href="account.html">Konto</a>
           <a class="nav-link" href="admin.html">Admin</a>
@@ -30,13 +32,16 @@
     <main>
       <div class="container">
         <section class="hero">
-          <p class="eyebrow">Curated catalog</p>
-          <h1 data-catalog-heading>Katalog</h1>
-          <p data-catalog-intro>Utforska produkter per kategori och bygg din look med snabbköp eller detaljvy.</p>
+          <p class="eyebrow">Target-group navigation</p>
+          <h1 data-catalog-heading>Kvinna</h1>
+          <p data-catalog-intro>Utforska produkter per målgrupp, kategori och underkategori.</p>
+          <p class="small-note" data-catalog-trail></p>
         </section>
 
-        <section class="page-section">
-          <div class="pill-row" data-catalog-categories></div>
+        <section class="page-section catalog-nav-stack">
+          <div class="pill-row pill-row--level-1" data-catalog-target-groups></div>
+          <div class="pill-row pill-row--level-2" data-catalog-main-categories></div>
+          <div class="pill-row pill-row--level-3" data-catalog-subcategories></div>
         </section>
 
         <section class="page-section">

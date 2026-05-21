@@ -6,6 +6,7 @@ import {
 import {
   clearCart,
   clearCheckoutDraft,
+  getCatalogCategories,
   getCheckoutTotals,
   getCartItems,
   getCheckoutDraft,
@@ -161,6 +162,7 @@ export async function initCheckoutPage() {
   const freeShippingText = document.querySelector('[data-checkout-free-shipping]');
   const footerShippingText = document.querySelector('[data-checkout-footer-shipping]');
   const settings = await getStorefrontShopSettings();
+  const categories = await getCatalogCategories();
   const thresholdPreview = getCheckoutTotals([], settings);
 
   function getShippingHelperText(summary) {
@@ -187,7 +189,7 @@ export async function initCheckoutPage() {
     const summary = getCheckoutTotals(cartItems, settings);
     const computedHelperText = helperText || getShippingHelperText(summary);
 
-    renderCheckoutCart(cartContainer, cartItems);
+    renderCheckoutCart(cartContainer, cartItems, { categories });
     renderCartSummary(summaryContainer, summary, { helperText: computedHelperText });
 
     if (totalElement) {

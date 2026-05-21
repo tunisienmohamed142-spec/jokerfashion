@@ -1,5 +1,13 @@
 import { formatPrice } from '../components/renderers.js';
 import {
+  formatTaxonomyPath,
+  getCategoryById,
+  getMainCategoryPlacementOptions,
+  getSubcategoryOptions,
+  getTargetGroupById,
+  resolveProductTaxonomy,
+} from '../data/catalog.js';
+import {
   getCatalogCategories,
   getAdminCategories,
   createAdminCategory,
@@ -175,6 +183,33 @@ function setupImageUpload({ target, usage, feedbackElement }) {
   });
 }
 
+function getPlacementLabel(category) {
+  const mainCategory = category.level === 'main' ? category : getCategoryById(category.parentId);
+  const taxonomy = {
+    targetGroup: category.targetGroup ? getTargetGroupById(category.targetGroup) : null,
+    mainCategory,
+    subcategory: category.level === 'main' ? null : category,
+  };
+  const label = formatTaxonomyPath(taxonomy, { includeTargetGroup: false, separator: ' / ' });
+  if (!label && mainCategory?.name) {
+    return mainCategory.name;
+  }
+  return label || 'Ej placerad';
+}
+
+function renderPlacementOptions(selectElement) {
+  if (!selectElement) {
+    return;
+  }
+
+  selectElement.innerHTML = getMainCategoryPlacementOptions()
+    .map(
+      (option) =>
+        `<option value="${escapeHtml(option.id)}" data-target-group="${escapeHtml(option.targetGroupId)}">${escapeHtml(option.label)}</option>`
+    )
+    .join('');
+}
+
 // ── Tab switching ─────────────────────────────────────────────────────────────
 
 function initTabs() {
@@ -203,8 +238,13 @@ async function renderCategoryOptions(selectElement) {
   }
   try {
     const cats = await getCatalogCategories();
-    selectElement.innerHTML = cats
-      .map((c) => `<option value="${escapeHtml(c.id)}">${escapeHtml(c.name)}</option>`)
+    const options = getSubcategoryOptions(cats);
+    selectElement.innerHTML = options
+      .map((category) => {
+        const taxonomy = resolveProductTaxonomy({ category: category.id }, cats);
+        const label = formatTaxonomyPath(taxonomy, { includeTargetGroup: true, separator: ' / ' });
+        return `<option value="${escapeHtml(category.id)}">${escapeHtml(label || category.name)}</option>`;
+      })
       .join('');
   } catch {
     // keep whatever is currently rendered
@@ -228,10 +268,11 @@ async function renderProductsTable() {
     }
 
     const cats = await getCatalogCategories();
-    const catMap = Object.fromEntries(cats.map((c) => [c.id, c.name]));
 
     tbody.innerHTML = products
       .map((p) => {
+        const taxonomy = resolveProductTaxonomy(p, cats);
+        const categoryLabel = formatTaxonomyPath(taxonomy, { includeTargetGroup: true, separator: ' / ' });
         const displayPrice = p.salePriceSek
           ? `<span class="price-sale">${formatPrice(p.salePriceSek)}</span> <s class="price-original">${formatPrice(p.priceSek)}</s>`
           : formatPrice(p.priceSek);
@@ -245,7 +286,7 @@ async function renderProductsTable() {
             <div class="table-product-name">${escapeHtml(p.name)}</div>
             <div class="table-sub">${escapeHtml(p.sizes.join(', '))}</div>
           </td>
-          <td>${escapeHtml(catMap[p.category] || p.category)}</td>
+          <td>${escapeHtml(categoryLabel || p.category)}</td>
           <td class="table-price">${displayPrice}</td>
           <td>${inventoryBadge(p.inventory)}</td>
           <td>${badgeCell}</td>
@@ -292,10 +333,10 @@ function populateProductEditForm(product) {
   if (isBestsellerCheck) isBestsellerCheck.checked = Boolean(product.isBestseller);
   const catSelect = form.querySelector('[data-admin-category]');
   if (catSelect) {
-    catSelect.value = product.category;
+    catSelect.value = product.subcategory || product.category;
   }
   form.dataset.editingId = product.id;
-  form.querySelector('[data-form-title]').textContent = 'Redigera produkt';
+  document.querySelector('[data-form-title]').textContent = 'Redigera produkt';
   form.querySelector('[data-submit-label]').textContent = 'Spara ändringar';
   form.querySelector('[data-cancel-edit]').hidden = false;
   form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -309,7 +350,7 @@ function resetProductForm() {
   form.reset();
   setImagePreview('product', '');
   delete form.dataset.editingId;
-  form.querySelector('[data-form-title]').textContent = 'Lägg till produkt';
+  document.querySelector('[data-form-title]').textContent = 'Lägg till produkt';
   form.querySelector('[data-submit-label]').textContent = 'Lägg till produkt';
   form.querySelector('[data-cancel-edit]').hidden = true;
 }
@@ -373,7 +414,6 @@ async function initProductsTab() {
     const isNew = Boolean(data.get('isNew'));
     const featured = Boolean(data.get('featured'));
     const isBestseller = Boolean(data.get('isBestseller'));
-
     if (!name || !category || Number.isNaN(priceSek) || priceSek <= 0) {
       showFeedback(feedback, 'Fyll i namn, kategori och ett giltigt pris.', true);
       return;
@@ -392,11 +432,54 @@ async function initProductsTab() {
     const editingId = form.dataset.editingId;
 
     try {
+      const cats = await getCatalogCategories();
+      const selectedCategory = getCategoryById(category, cats);
+      if (!selectedCategory) {
+        showFeedback(feedback, 'Välj en giltig underkategori för produkten.', true);
+        return;
+      }
+
+      const targetGroup = selectedCategory.targetGroup || '';
+      const mainCategory = selectedCategory.parentId || '';
+      const subcategory = selectedCategory.id;
+
       if (editingId) {
-        await updateAdminProduct(editingId, { name, category, priceSek, salePriceSek, inventory, image, description, sizes, badge, isNew, featured, isBestseller });
+        await updateAdminProduct(editingId, {
+          name,
+          category,
+          targetGroup,
+          mainCategory,
+          subcategory,
+          priceSek,
+          salePriceSek,
+          inventory,
+          image,
+          description,
+          sizes,
+          badge,
+          isNew,
+          featured,
+          isBestseller,
+        });
         showFeedback(feedback, `"${name}" har uppdaterats.`);
       } else {
-        await createAdminProduct({ name, category, priceSek, salePriceSek, inventory, image, description, sizes, badge, isNew, featured, isBestseller });
+        await createAdminProduct({
+          name,
+          category,
+          targetGroup,
+          mainCategory,
+          subcategory,
+          priceSek,
+          salePriceSek,
+          inventory,
+          image,
+          description,
+          sizes,
+          badge,
+          isNew,
+          featured,
+          isBestseller,
+        });
         showFeedback(feedback, `"${name}" har lagts till.`);
       }
 
@@ -418,8 +501,8 @@ async function renderCategoriesTable() {
 
   try {
     const allCats = await getCatalogCategories();
-    const baseCats = allCats.filter((c) => !c.isAdminCreated);
-    const adminCats = allCats.filter((c) => c.isAdminCreated);
+    const baseCats = allCats.filter((c) => !c.isAdminCreated && !c.hiddenFromNavigation);
+    const adminCats = allCats.filter((c) => c.isAdminCreated && !c.hiddenFromNavigation);
 
     let html = baseCats
       .map(
@@ -428,7 +511,7 @@ async function renderCategoriesTable() {
         <td>${escapeHtml(c.icon || '📁')}</td>
         <td><strong>${escapeHtml(c.name)}</strong></td>
         <td>${escapeHtml(c.description || '–')}</td>
-        <td><span class="inv-badge ok">Inbyggd</span></td>
+        <td><span class="inv-badge ok">${escapeHtml(c.level === 'main' ? 'Inbyggd huvudkategori' : 'Inbyggd underkategori')}</span><div class="table-sub">${escapeHtml(getPlacementLabel(c))}</div></td>
         <td>–</td>
       </tr>`
       )
@@ -442,7 +525,7 @@ async function renderCategoriesTable() {
           <td>${c.image ? `<img src="${escapeHtml(c.image)}" alt="" class="table-thumb" loading="lazy" />` : escapeHtml(c.icon || '🏷️')}</td>
           <td><strong>${escapeHtml(c.name)}</strong></td>
           <td>${escapeHtml(c.description || '–')}</td>
-          <td><span class="inv-badge low">Admin</span></td>
+          <td><span class="inv-badge low">Admin-underkategori</span><div class="table-sub">${escapeHtml(getPlacementLabel(c))}</div></td>
           <td>
             <div class="table-actions">
               <button class="button secondary btn-sm" data-edit-category="${escapeHtml(c.id)}">Redigera</button>
@@ -473,9 +556,10 @@ function populateCategoryEditForm(category) {
   form.querySelector('[name="catDescription"]').value = category.description || '';
   form.querySelector('[name="catIcon"]').value = category.icon || '';
   form.querySelector('[name="catImage"]').value = category.image || '';
+  form.querySelector('[name="catPlacement"]').value = category.parentId || '';
   setImagePreview('category', category.image || '');
   form.dataset.editingId = category.id;
-  form.querySelector('[data-cat-form-title]').textContent = 'Redigera kategori';
+  document.querySelector('[data-cat-form-title]').textContent = 'Redigera kategori';
   form.querySelector('[data-cat-submit-label]').textContent = 'Spara ändringar';
   form.querySelector('[data-cancel-cat-edit]').hidden = false;
   form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -489,7 +573,7 @@ function resetCategoryForm() {
   form.reset();
   setImagePreview('category', '');
   delete form.dataset.editingId;
-  form.querySelector('[data-cat-form-title]').textContent = 'Skapa kategori';
+  document.querySelector('[data-cat-form-title]').textContent = 'Skapa kategori';
   form.querySelector('[data-cat-submit-label]').textContent = 'Skapa kategori';
   form.querySelector('[data-cancel-cat-edit]').hidden = true;
 }
@@ -498,6 +582,7 @@ async function initCategoriesTab() {
   const form = document.querySelector('[data-admin-category-form]');
   const feedback = document.querySelector('[data-category-feedback]');
 
+  renderPlacementOptions(form?.querySelector('[name="catPlacement"]'));
   await renderCategoriesTable();
   bindImageUrlPreview('category');
   setupImageUpload({ target: 'category', usage: 'categories', feedbackElement: feedback });
@@ -545,9 +630,12 @@ async function initCategoriesTab() {
     const description = String(data.get('catDescription') || '').trim();
     const icon = String(data.get('catIcon') || '').trim() || '🏷️';
     const image = String(data.get('catImage') || '').trim();
+    const parentId = String(data.get('catPlacement') || '').trim();
+    const placementOption = getMainCategoryPlacementOptions().find((option) => option.id === parentId);
+    const targetGroup = placementOption?.targetGroupId || '';
 
-    if (!name) {
-      showFeedback(feedback, 'Fyll i ett kategorinamn.', true);
+    if (!name || !parentId || !targetGroup) {
+      showFeedback(feedback, 'Fyll i kategorinamn och välj var underkategorin ska ligga.', true);
       return;
     }
 
@@ -560,10 +648,10 @@ async function initCategoriesTab() {
 
     try {
       if (editingId) {
-        await updateAdminCategory(editingId, { name, description, icon, image });
+        await updateAdminCategory(editingId, { name, description, icon, image, targetGroup, parentId, level: 'subcategory' });
         showFeedback(feedback, `"${name}" har uppdaterats.`);
       } else {
-        await createAdminCategory({ name, description, icon, image });
+        await createAdminCategory({ name, description, icon, image, targetGroup, parentId, level: 'subcategory' });
         showFeedback(feedback, `"${name}" har skapats.`);
       }
 

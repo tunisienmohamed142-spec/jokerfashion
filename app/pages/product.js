@@ -1,6 +1,6 @@
 import { formatPrice, renderProductGrid } from '../components/renderers.js';
-import { addCartItem, getCatalogProductById, getCatalogProducts } from '../state/store.js';
-import { getCategoryById } from '../data/catalog.js';
+import { addCartItem, getCatalogCategories, getCatalogProductById, getCatalogProducts } from '../state/store.js';
+import { buildCatalogUrl, formatTaxonomyPath, getCategoryById, resolveProductTaxonomy } from '../data/catalog.js';
 
 function escapeHtml(value) {
   return String(value)
@@ -42,9 +42,10 @@ function showCartToast(productName) {
   }, { once: true });
 }
 
-function renderProductDetail(container, product) {
-  const category = getCategoryById(product.category);
-  const categoryName = category ? category.name : 'Övrigt';
+function renderProductDetail(container, product, categories) {
+  const category = getCategoryById(product.category, categories);
+  const taxonomy = resolveProductTaxonomy(product, categories);
+  const categoryName = formatTaxonomyPath(taxonomy, { includeTargetGroup: true, separator: ' • ' }) || category?.name || 'Övrigt';
   const imageUrl = sanitizeImageUrl(product.image);
 
   const sizeButtons = (product.sizes || ['One size'])
@@ -128,6 +129,7 @@ export async function initProductPage() {
   const params = new URLSearchParams(window.location.search);
   const productId = params.get('id');
   const product = productId ? await getCatalogProductById(productId) : null;
+  const categories = await getCatalogCategories();
 
   const detailContainer = document.querySelector('[data-product-detail]');
   const relatedSection = document.querySelector('[data-product-related-section]');
@@ -152,9 +154,15 @@ export async function initProductPage() {
 
   document.title = `${product.name} | JokerFashion`;
 
-  const category = getCategoryById(product.category);
-  const categoryName = category ? category.name : 'Katalog';
-  const categoryUrl = `catalog.html?category=${encodeURIComponent(product.category)}`;
+  const category = getCategoryById(product.category, categories);
+  const taxonomy = resolveProductTaxonomy(product, categories);
+  const categoryName =
+    formatTaxonomyPath(taxonomy, { includeTargetGroup: true, separator: ' / ' }) || category?.name || 'Katalog';
+  const categoryUrl = buildCatalogUrl({
+    targetGroupId: taxonomy.targetGroupId,
+    mainCategoryId: taxonomy.mainCategoryId,
+    subcategoryId: taxonomy.subcategoryId,
+  });
 
   if (breadcrumbName) {
     breadcrumbName.textContent = product.name;
@@ -169,8 +177,12 @@ export async function initProductPage() {
     catalogLink.href = categoryUrl;
   }
 
+  document.querySelectorAll('[data-target-link]').forEach((link) => {
+    link.classList.toggle('active', link.getAttribute('data-target-link') === taxonomy.targetGroupId);
+  });
+
   if (detailContainer) {
-    renderProductDetail(detailContainer, product);
+    renderProductDetail(detailContainer, product, categories);
   }
 
   // Size selection
@@ -232,12 +244,19 @@ export async function initProductPage() {
   // Related products (same category, excluding current)
   const allProducts = await getCatalogProducts();
   const related = allProducts
-    .filter((p) => p.category === product.category && p.id !== product.id)
+    .filter((candidate) => {
+      if (candidate.id === product.id) {
+        return false;
+      }
+
+      const candidateTaxonomy = resolveProductTaxonomy(candidate, categories);
+      return candidateTaxonomy.subcategoryId === taxonomy.subcategoryId;
+    })
     .slice(0, 4);
 
   if (related.length > 0 && relatedSection && relatedGrid) {
     relatedSection.style.display = '';
-    renderProductGrid(relatedGrid, related, { enableQuickAdd: false });
+    renderProductGrid(relatedGrid, related, { enableQuickAdd: false, categories });
 
     // Make related product cards link to product detail
     relatedGrid.querySelectorAll('.product-card .button.secondary').forEach((btn) => {

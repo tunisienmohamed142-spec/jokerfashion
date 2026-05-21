@@ -98,7 +98,7 @@
                   <input id="admin-name" name="name" required placeholder="T.ex. Chaos Blazer" />
                 </div>
                 <div>
-                  <label for="admin-category">Kategori *</label>
+                  <label for="admin-category">Underkategori *</label>
                   <select id="admin-category" name="category" data-admin-category required></select>
                 </div>
                 <div>
@@ -206,11 +206,15 @@
           <section class="page-section">
             <article class="form-card">
               <h2 data-cat-form-title>Skapa kategori</h2>
-              <p class="small-note">Egna kategorier kan tilldelas dina adminprodukter.</p>
+              <p class="small-note">Lägg till egna underkategorier under Man, Kvinna eller Barn utan att ändra kod.</p>
               <form class="form-grid" data-admin-category-form novalidate>
                 <div>
                   <label for="cat-name">Kategorinamn *</label>
-                  <input id="cat-name" name="catName" required placeholder="T.ex. Unisex" />
+                  <input id="cat-name" name="catName" required placeholder="T.ex. Overshirts" />
+                </div>
+                <div>
+                  <label for="cat-placement">Placering i navigationen *</label>
+                  <select id="cat-placement" name="catPlacement" required></select>
                 </div>
                 <div>
                   <label for="cat-icon">Ikon (emoji)</label>

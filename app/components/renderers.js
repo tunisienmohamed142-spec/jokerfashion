@@ -1,4 +1,4 @@
-import { getCategoryById } from '../data/catalog.js';
+import { buildCatalogUrl, formatTaxonomyPath, getCategoryById, resolveProductTaxonomy } from '../data/catalog.js';
 
 function escapeHtml(value) {
   return String(value)
@@ -22,16 +22,20 @@ export function formatPrice(priceSek) {
   return `${new Intl.NumberFormat('sv-SE').format(priceSek)} kr`;
 }
 
-export function renderCategoryPills(container, categories, activeCategoryId) {
+export function renderCategoryPills(container, categories, activeCategoryId, options = {}) {
   if (!container) {
     return;
   }
 
+  const getHref = options.getHref || ((category) => buildCatalogUrl({ mainCategoryId: category.id }));
+  const getLabel = options.getLabel || ((category) => category.name);
+  const pillClassName = options.pillClassName || 'pill';
+
   container.innerHTML = categories
     .map(
       (category) => `
-      <a class="pill ${category.id === activeCategoryId ? 'is-active' : ''}" href="catalog.html?category=${category.id}">
-        <span>${category.name}</span>
+      <a class="${pillClassName} ${category.id === activeCategoryId ? 'is-active' : ''}" href="${escapeHtml(getHref(category))}">
+        <span>${escapeHtml(getLabel(category))}</span>
       </a>
     `
     )
@@ -50,8 +54,9 @@ export function renderProductGrid(container, products, options = {}) {
 
   container.innerHTML = products
     .map((product) => {
-      const category = getCategoryById(product.category);
-      const categoryName = category ? category.name : 'Övrigt';
+      const taxonomy = resolveProductTaxonomy(product, options.categories);
+      const category = getCategoryById(taxonomy.subcategoryId || product.category, options.categories);
+      const categoryName = formatTaxonomyPath(taxonomy, { includeTargetGroup: true, separator: ' • ' }) || category?.name || 'Övrigt';
       const detailUrl = `product.html?id=${encodeURIComponent(product.id)}`;
       const description = product.description || 'Mer produktdetaljer visas i spotlight-läget.';
       const imageUrl = sanitizeImageUrl(product.image);
@@ -89,7 +94,7 @@ export function renderProductGrid(container, products, options = {}) {
     .join('');
 }
 
-export function renderProductSpotlight(container, product) {
+export function renderProductSpotlight(container, product, options = {}) {
   if (!container) {
     return;
   }
@@ -99,8 +104,9 @@ export function renderProductSpotlight(container, product) {
     return;
   }
 
-  const category = getCategoryById(product.category);
-  const categoryName = category ? category.name : 'Övrigt';
+  const category = getCategoryById(product.category, options.categories);
+  const taxonomy = resolveProductTaxonomy(product, options.categories);
+  const categoryName = formatTaxonomyPath(taxonomy, { includeTargetGroup: true, separator: ' • ' }) || category?.name || 'Övrigt';
   const imageUrl = sanitizeImageUrl(product.image);
   const sizeOptions = (product.sizes || ['One size'])
     .map((size) => `<option value="${escapeHtml(size)}">${escapeHtml(size)}</option>`)
@@ -174,7 +180,7 @@ export function renderCartSummary(container, summary, options = {}) {
   `;
 }
 
-export function renderCheckoutCart(container, cartItems) {
+export function renderCheckoutCart(container, cartItems, options = {}) {
   if (!container) {
     return;
   }
@@ -192,6 +198,11 @@ export function renderCheckoutCart(container, cartItems) {
   container.innerHTML = cartItems
     .map(
       (item, index) => {
+        const taxonomy = resolveProductTaxonomy(item, options.categories);
+        const itemCategoryLabel =
+          formatTaxonomyPath(taxonomy, { includeTargetGroup: true, separator: ' • ' }) ||
+          getCategoryById(item.category, options.categories)?.name ||
+          item.category;
         const itemPriceHtml = item.compareAtPriceSek
           ? `<span class="price-sale">${formatPrice(item.priceSek * item.quantity)}</span> <s class="price-original">${formatPrice(item.compareAtPriceSek * item.quantity)}</s>`
           : formatPrice(item.priceSek * item.quantity);
@@ -199,7 +210,7 @@ export function renderCheckoutCart(container, cartItems) {
         <article class="checkout-item">
           <img class="checkout-item-image" src="${sanitizeImageUrl(item.image)}" alt="${escapeHtml(item.name)}" loading="lazy" />
           <div class="checkout-item-copy">
-            <p class="meta">${escapeHtml(getCategoryById(item.category)?.name || item.category)}</p>
+            <p class="meta">${escapeHtml(itemCategoryLabel || 'Övrigt')}</p>
             <h3>${escapeHtml(item.name)}</h3>
             <p class="small-note">Storlek: ${escapeHtml(item.size || 'One size')}</p>
             <div class="checkout-item-controls">
