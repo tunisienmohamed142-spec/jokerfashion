@@ -136,11 +136,22 @@ export function renderCartSummary(container, summary, options = {}) {
 
   const itemLabel = summary.itemCount === 1 ? 'produkt' : 'produkter';
   const helperText = options.helperText || 'Fortsätt till checkout när du är redo att skicka ordern.';
+  const hasShippingDetails =
+    Number.isFinite(Number(summary.subtotalPrice)) && Number.isFinite(Number(summary.shippingPrice));
+  const summaryMarkup = hasShippingDetails
+    ? `
+      <div>
+        <p>Subtotal: ${formatPrice(summary.subtotalPrice)}</p>
+        <p>Frakt: ${summary.freeShippingApplied ? `Gratis (${formatPrice(summary.shippingRate)})` : formatPrice(summary.shippingPrice)}</p>
+        <p class="price">Totalt: ${formatPrice(summary.totalPrice)}</p>
+      </div>
+    `
+    : `<p class="price">${formatPrice(summary.totalPrice)}</p>`;
 
   container.innerHTML = `
     <p class="eyebrow">Varukorg</p>
     <h2>${summary.itemCount} ${itemLabel}</h2>
-    <p class="price">${formatPrice(summary.totalPrice)}</p>
+    ${summaryMarkup}
     <p>${escapeHtml(helperText)}</p>
     <div class="panel-actions">
       <a class="button primary" href="checkout.html">Öppna checkout</a>
