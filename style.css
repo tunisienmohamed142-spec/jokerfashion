@@ -10,6 +10,15 @@
   --accent-soft: #efe8df;
   --border: rgba(23, 20, 18, 0.1);
   --shadow: 0 18px 40px rgba(23, 20, 18, 0.08);
+  --success-bg: #e8f6ee;
+  --success-border: #87c79e;
+  --success-text: #1d6b3d;
+  --error-bg: #fce9e7;
+  --error-border: #e49b92;
+  --error-text: #9f2f25;
+  --info-bg: #eceffb;
+  --info-border: #a8b5eb;
+  --info-text: #31469a;
 }
 
 * {
@@ -461,7 +470,6 @@ h3 {
 }
 
 .empty-cart,
-.order-status,
 .site-footer p,
 .editorial-card p,
 .feature-card p {
@@ -503,8 +511,92 @@ h3 {
   border: 1px solid var(--border);
 }
 
+.order-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+
 .submit-order {
   width: 100%;
+}
+
+.order-status {
+  min-height: 1.5rem;
+  margin-top: 1rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.order-status--success {
+  color: var(--success-text);
+}
+
+.order-status--error {
+  color: var(--error-text);
+}
+
+.order-status--info {
+  color: var(--info-text);
+}
+
+.order-feedback {
+  margin-top: 1rem;
+}
+
+.order-feedback-card {
+  border-radius: 22px;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--border);
+  background: var(--surface-soft);
+}
+
+.order-feedback-label {
+  margin: 0 0 0.45rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.order-feedback-card h3 {
+  margin-bottom: 0.45rem;
+}
+
+.order-feedback-card p:last-child {
+  margin-bottom: 0;
+}
+
+.order-feedback--success .order-feedback-card {
+  background: var(--success-bg);
+  border-color: var(--success-border);
+}
+
+.order-feedback--success #order-feedback-title,
+.order-feedback--success #order-feedback-text {
+  color: var(--success-text);
+}
+
+.order-feedback--error .order-feedback-card {
+  background: var(--error-bg);
+  border-color: var(--error-border);
+}
+
+.order-feedback--error #order-feedback-title,
+.order-feedback--error #order-feedback-text {
+  color: var(--error-text);
+}
+
+.order-feedback--info .order-feedback-card {
+  background: var(--info-bg);
+  border-color: var(--info-border);
+}
+
+.order-feedback--info #order-feedback-title,
+.order-feedback--info #order-feedback-text {
+  color: var(--info-text);
 }
 
 .site-footer {
@@ -573,7 +665,8 @@ h3 {
   .footer-grid,
   .product-grid,
   .category-strip,
-  .form-grid {
+  .form-grid,
+  .order-actions {
     grid-template-columns: 1fr;
   }
 
