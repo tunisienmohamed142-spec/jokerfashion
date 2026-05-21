@@ -375,7 +375,7 @@ function renderCart() {
   });
 }
 
-function createPdf(orderData) {
+function getOrderPdfDocument(orderData) {
   if (!window.jspdf || !window.jspdf.jsPDF) {
     throw new Error('PDF-biblioteket kunde inte laddas.');
   }
@@ -460,16 +460,35 @@ function createPdf(orderData) {
   y += 8;
   doc.text(`Totalsumma: ${formatPrice(orderData.totalPrice)}`, 14, y);
 
+  return doc;
+}
+
+function createPdf(orderData) {
+  const doc = getOrderPdfDocument(orderData);
   doc.save(`jokerfashion-bestallning-${Date.now()}.pdf`);
 }
 
+function createOrderPdfAttachment(orderData) {
+  const doc = getOrderPdfDocument(orderData);
+
+  return {
+    name: `jokerfashion-bestallning-${Date.now()}.pdf`,
+    data: doc.output('datauristring'),
+  };
+}
+
 async function sendOrderEmail(orderData) {
+  const payload = {
+    ...orderData,
+    orderPdfAttachment: createOrderPdfAttachment(orderData),
+  };
+
   const response = await fetch('/api/send-order', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(orderData),
+    body: JSON.stringify(payload),
   });
 
   const result = await response.json().catch(() => ({}));

@@ -29,6 +29,13 @@ Följande miljövariabler måste finnas i din deploymiljö:
 - `EMAILJS_SERVICE_ID`
 - `EMAILJS_TEMPLATE_ID`
 - `EMAILJS_PUBLIC_KEY`
+- `EMAILJS_PRIVATE_KEY`
+
+## Ordermejl med PDF-bilaga
+
+När en order skickas genererar frontend en PDF och skickar den till `api/send-order.js`.
+Serverless-funktionen skickar sedan PDF-filen vidare till EmailJS som en bilaga via `template_params.attachments_1`.
+Se till att din EmailJS-tjänst och mall tillåter bilagor för REST-anrop.
 
 ## Deploy
 

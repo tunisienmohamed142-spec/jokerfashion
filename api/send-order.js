@@ -5,10 +5,25 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { customer, items, totalPrice } = req.body || {};
+    const { customer, items, totalPrice, orderPdfAttachment } = req.body || {};
 
     if (!customer || !items || !Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ message: 'Missing order data.' });
+    }
+
+    if (
+      !orderPdfAttachment
+      || typeof orderPdfAttachment !== 'object'
+      || typeof orderPdfAttachment.name !== 'string'
+      || !orderPdfAttachment.name.trim()
+      || typeof orderPdfAttachment.data !== 'string'
+      || !orderPdfAttachment.data.startsWith('data:application/pdf;base64,')
+    ) {
+      return res.status(400).json({ message: 'Missing valid PDF attachment.' });
+    }
+
+    if (orderPdfAttachment.data.length > 7_000_000) {
+      return res.status(400).json({ message: 'PDF attachment is too large.' });
     }
 
     const lines = items
@@ -33,6 +48,10 @@ export default async function handler(req, res) {
         customer_message: customer.message || '-',
         order_items: lines,
         order_total: `${totalPrice} kr`,
+        attachments_1: {
+          name: orderPdfAttachment.name,
+          data: orderPdfAttachment.data,
+        },
       },
     };
 
