@@ -1,4 +1,4 @@
-import { isKvAvailable, kvGet, kvSet } from './_kv.js';
+import { isKvAvailable, kvGet, kvSet, STORAGE_CONFIG_MESSAGE } from './_kv.js';
 
 const ORDERS_KEY = 'jf:orders';
 
@@ -108,7 +108,7 @@ export default async function handler(req, res) {
   try {
     if (!isKvAvailable) {
       return res.status(503).json({
-        message: 'Storage not configured. Set KV_REST_API_URL and KV_REST_API_TOKEN in Vercel.',
+        message: STORAGE_CONFIG_MESSAGE,
       });
     }
 

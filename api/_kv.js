@@ -1,26 +1,76 @@
-// Vercel KV (Upstash Redis) REST API helper.
+// Vercel KV / Upstash Redis REST API helper.
 // Uses the pipeline endpoint so any-length JSON values are safe in the request body.
-// Required environment variables (set via Vercel dashboard → Storage → KV → Connect):
-//   KV_REST_API_URL   – e.g. https://xxx.upstash.io
-//   KV_REST_API_TOKEN – read-write token
+// Supported environment variable sets:
+//   - KV_REST_API_URL + KV_REST_API_TOKEN
+//   - REDIS_REST_URL + REDIS_REST_TOKEN
+//   - UPSTASH_REDIS_REST_URL + UPSTASH_REDIS_REST_TOKEN
+//   - REDIS_URL (Upstash redis:// / rediss://, auto-derived to REST credentials)
 
-const KV_REST_API_URL = process.env.KV_REST_API_URL;
-const KV_REST_API_TOKEN = process.env.KV_REST_API_TOKEN;
+function parseRedisUrl(redisUrl) {
+  if (!redisUrl) return null;
 
-export const isKvAvailable = !!(KV_REST_API_URL && KV_REST_API_TOKEN);
+  try {
+    const parsed = new URL(redisUrl);
+    const protocol = parsed.protocol.toLowerCase();
+    const isRedisProtocol = protocol === 'redis:' || protocol === 'rediss:';
+    if (!isRedisProtocol || !parsed.hostname || !parsed.password) {
+      return null;
+    }
+
+    return {
+      url: `https://${parsed.hostname}`,
+      token: decodeURIComponent(parsed.password),
+    };
+  } catch {
+    return null;
+  }
+}
+
+function resolveRestCredentials() {
+  if (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) {
+    return {
+      url: process.env.KV_REST_API_URL,
+      token: process.env.KV_REST_API_TOKEN,
+    };
+  }
+
+  if (process.env.REDIS_REST_URL && process.env.REDIS_REST_TOKEN) {
+    return {
+      url: process.env.REDIS_REST_URL,
+      token: process.env.REDIS_REST_TOKEN,
+    };
+  }
+
+  if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
+    return {
+      url: process.env.UPSTASH_REDIS_REST_URL,
+      token: process.env.UPSTASH_REDIS_REST_TOKEN,
+    };
+  }
+
+  return parseRedisUrl(process.env.REDIS_URL);
+}
+
+const STORAGE_REST = resolveRestCredentials();
+const STORAGE_REST_API_URL = STORAGE_REST?.url;
+const STORAGE_REST_API_TOKEN = STORAGE_REST?.token;
+
+export const isKvAvailable = !!(STORAGE_REST_API_URL && STORAGE_REST_API_TOKEN);
+export const STORAGE_CONFIG_MESSAGE =
+  'Storage not configured. Configure KV_REST_API_URL/KV_REST_API_TOKEN, REDIS_REST_URL/REDIS_REST_TOKEN, UPSTASH_REDIS_REST_URL/UPSTASH_REDIS_REST_TOKEN, or REDIS_URL in Vercel.';
 
 async function pipeline(commands) {
-  const res = await fetch(`${KV_REST_API_URL}/pipeline`, {
+  const res = await fetch(`${STORAGE_REST_API_URL}/pipeline`, {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${KV_REST_API_TOKEN}`,
+      Authorization: `Bearer ${STORAGE_REST_API_TOKEN}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(commands),
   });
 
   if (!res.ok) {
-    throw new Error(`KV pipeline error: ${res.status} ${res.statusText}`);
+    throw new Error(`Storage pipeline error: ${res.status} ${res.statusText}`);
   }
 
   return res.json();

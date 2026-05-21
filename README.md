@@ -93,12 +93,16 @@ Varukorg / Checkout / Session
   └─→ localStorage (client-side, oförändrat)
 ```
 
-## Sätt upp Vercel KV (krävs för persistence)
+## Sätt upp Vercel Storage (krävs för persistence)
 
 1. Öppna [Vercel Dashboard](https://vercel.com/dashboard)
-2. Gå till **Storage** → **Create Database** → välj **KV**
+2. Gå till **Storage** → **Create Database** och välj **Redis** (Upstash)
 3. Anslut databasen till ditt project via **Connect to Project**
-4. Vercel sätter automatiskt `KV_REST_API_URL` och `KV_REST_API_TOKEN` i din deploy-miljö
+4. Appen stöder följande env-sets:
+   - `KV_REST_API_URL` + `KV_REST_API_TOKEN`
+   - `REDIS_REST_URL` + `REDIS_REST_TOKEN`
+   - `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN`
+   - `REDIS_URL` (Upstash `redis://` / `rediss://`, härleds automatiskt)
 
 Utan dessa variabler:
 - GET-endpoints returnerar tomma arrayer (inga adminprodukter)
@@ -113,8 +117,10 @@ Utan dessa variabler:
 - `ORDER_TO_EMAIL`
 
 ### Persistence (ny i Phase 2)
-- `KV_REST_API_URL` – sätts automatiskt av Vercel KV
-- `KV_REST_API_TOKEN` – sätts automatiskt av Vercel KV
+- `KV_REST_API_URL` och `KV_REST_API_TOKEN`
+- `REDIS_REST_URL` och `REDIS_REST_TOKEN`
+- `UPSTASH_REDIS_REST_URL` och `UPSTASH_REDIS_REST_TOKEN`
+- `REDIS_URL` (Upstash `redis://` / `rediss://` anslutningssträng)
 
 ### Admin-auth (ny i detta steg)
 - `ADMIN_USERNAME` – admin-användarnamn (t.ex. `admin`)
