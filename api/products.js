@@ -26,6 +26,10 @@ function sanitizeProductInput(input) {
           .filter(Boolean)
       : ['One size'],
     image: sanitizeRemoteImageUrl(input.image, FALLBACK_IMAGE),
+    badge: String(input.badge || '').trim(),
+    isNew: Boolean(input.isNew),
+    featured: Boolean(input.featured),
+    isBestseller: Boolean(input.isBestseller),
   };
 }
 
@@ -74,7 +78,6 @@ export default async function handler(req, res) {
 
     const product = {
       id: `jf-admin-${Date.now()}`,
-      badge: 'Admin',
       story: 'Produkt tillagd via adminpanelen.',
       highlights: ['Admin-skapad produkt'],
       isAdminCreated: true,

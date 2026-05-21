@@ -275,6 +275,10 @@ function populateProductEditForm(product) {
   setImagePreview('product', product.image || '');
   form.querySelector('[name="description"]').value = product.description || '';
   form.querySelector('[name="sizes"]').value = product.sizes.join(', ');
+  form.querySelector('[name="badge"]').value = product.badge || '';
+  form.querySelector('[name="isNew"]').checked = Boolean(product.isNew);
+  form.querySelector('[name="featured"]').checked = Boolean(product.featured);
+  form.querySelector('[name="isBestseller"]').checked = Boolean(product.isBestseller);
   const catSelect = form.querySelector('[data-admin-category]');
   if (catSelect) {
     catSelect.value = product.category;
@@ -354,6 +358,10 @@ async function initProductsTab() {
     const image = String(data.get('image') || '').trim();
     const description = String(data.get('description') || '').trim();
     const sizes = String(data.get('sizes') || '').trim();
+    const badge = String(data.get('badge') || '').trim();
+    const isNew = data.get('isNew') === '1';
+    const featured = data.get('featured') === '1';
+    const isBestseller = data.get('isBestseller') === '1';
 
     if (!name || !category || Number.isNaN(priceSek) || priceSek <= 0) {
       showFeedback(feedback, 'Fyll i namn, kategori och ett giltigt pris.', true);
@@ -374,10 +382,10 @@ async function initProductsTab() {
 
     try {
       if (editingId) {
-        await updateAdminProduct(editingId, { name, category, priceSek, salePriceSek, inventory, image, description, sizes });
+        await updateAdminProduct(editingId, { name, category, priceSek, salePriceSek, inventory, image, description, sizes, badge, isNew, featured, isBestseller });
         showFeedback(feedback, `"${name}" har uppdaterats.`);
       } else {
-        await createAdminProduct({ name, category, priceSek, salePriceSek, inventory, image, description, sizes });
+        await createAdminProduct({ name, category, priceSek, salePriceSek, inventory, image, description, sizes, badge, isNew, featured, isBestseller });
         showFeedback(feedback, `"${name}" har lagts till.`);
       }
 

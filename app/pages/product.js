@@ -61,6 +61,11 @@ function renderProductDetail(container, product) {
     .map((h) => `<li>${escapeHtml(h)}</li>`)
     .join('');
 
+  const badgeText = product.badge || (product.isNew ? 'Nyhet' : product.featured ? 'Utvald' : product.isBestseller ? 'Populär' : '');
+  const priceHtml = product.salePriceSek && product.salePriceSek < product.priceSek
+    ? `<span class="price-sale product-detail-price">${formatPrice(product.salePriceSek)}</span><s class="price-original product-detail-price-compare">${formatPrice(product.priceSek)}</s>`
+    : `<span class="product-detail-price">${formatPrice(product.priceSek)}</span>`;
+
   container.innerHTML = `
     <div class="product-detail-grid">
       <div class="product-detail-media">
@@ -69,11 +74,11 @@ function renderProductDetail(container, product) {
 
       <div class="product-detail-copy">
         <div>
-          <p class="eyebrow">${escapeHtml(categoryName)} &bull; ${escapeHtml(product.badge || 'Shop')}</p>
+          <p class="eyebrow">${escapeHtml(categoryName)}${badgeText ? ` &bull; ${escapeHtml(badgeText)}` : ''}</p>
           <h1>${escapeHtml(product.name)}</h1>
         </div>
 
-        <p class="product-detail-price">${formatPrice(product.priceSek)}</p>
+        <p class="product-detail-price-row">${priceHtml}</p>
 
         <p class="product-detail-story">${escapeHtml(product.story || product.description || '')}</p>
 
@@ -209,6 +214,7 @@ export async function initProductPage() {
       size: selectedSize,
       quantity,
       priceSek: product.priceSek,
+      salePriceSek: product.salePriceSek || null,
     });
 
     if (feedback) {

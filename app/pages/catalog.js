@@ -111,6 +111,7 @@ export async function initCatalogPage() {
       size,
       quantity: 1,
       priceSek: product.priceSek,
+      salePriceSek: product.salePriceSek || null,
     });
 
     renderCatalogCartSummary(`${product.name} (${size}) lades till i varukorgen.`);
@@ -140,6 +141,7 @@ export async function initCatalogPage() {
       size,
       quantity,
       priceSek: activeProduct.priceSek,
+      salePriceSek: activeProduct.salePriceSek || null,
     });
 
     renderCatalogCartSummary(`${activeProduct.name} (${size}) lades till i varukorgen.`);
